@@ -9,6 +9,7 @@ import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import { enviarEmail, escaparHtml } from "./emails";
 import { esAdmin } from "./auth";
 import { limitarPorIp } from "./limites";
+import { crearNotificacion } from "./notificaciones";
 
 function clienteServidor() {
   return createClient(
@@ -77,6 +78,13 @@ export async function enviarMensaje(animalId: string, contenido: string) {
     contenido: texto,
   });
   if (error) throw new Error(error.message);
+
+  // Notificación in-app para el receptor (la campanita del Header)
+  await crearNotificacion(
+    receptorId,
+    "mensaje",
+    `${yo.nombre} te escribió por ${animal.nombre} 💬`
+  );
 
   if (recientes) return;
 

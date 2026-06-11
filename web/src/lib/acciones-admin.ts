@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { esAdmin } from "./auth";
 import { emailRefugioAprobado, emailRefugioRechazado } from "./emails";
+import { crearNotificacion } from "./notificaciones";
 
 function clienteServidor() {
   return createClient(
@@ -163,7 +164,7 @@ export async function decidirRefugio(formData: FormData) {
     .from("refugios")
     .update({ estado })
     .eq("id", id)
-    .select("nombre,email")
+    .select("nombre,email,usuario_id")
     .single();
   if (error) throw new Error(error.message);
 
@@ -175,6 +176,14 @@ export async function decidirRefugio(formData: FormData) {
       await emailRefugioAprobado(data.email, data.nombre);
     }
   }
+  // ...y notificación in-app si el refugio tiene cuenta vinculada
+  await crearNotificacion(
+    data?.usuario_id ?? null,
+    "refugio",
+    estado === "suspendido"
+      ? `Tu solicitud de refugio "${data?.nombre}" fue rechazada.`
+      : `¡Tu refugio "${data?.nombre}" fue aprobado${estado === "estrella" ? " como estrella ⭐" : ""}! 🎉`
+  );
   revalidatePath("/admin");
   revalidatePath("/refugios");
 }
@@ -186,8 +195,23 @@ export async function decidirAnimal(formData: FormData) {
   const sb = clienteServidor();
 
   const estado = decision === "aprobar" ? "disponible" : "rechazado";
-  const { error } = await sb.from("animales").update({ estado }).eq("id", id);
+  const { data, error } = await sb
+    .from("animales")
+    .update({ estado })
+    .eq("id", id)
+    .select("nombre,particular_id,refugios(usuario_id)")
+    .single();
   if (error) throw new Error(error.message);
+
+  // Notificación in-app a quien lo publicó (particular o refugio)
+  const refugio = Array.isArray(data?.refugios) ? data.refugios[0] : data?.refugios;
+  await crearNotificacion(
+    data?.particular_id ?? (refugio as { usuario_id?: string } | null)?.usuario_id ?? null,
+    "animal",
+    estado === "disponible"
+      ? `¡Tu publicación de ${data?.nombre} fue aprobada y ya está visible! 🐾`
+      : `Tu publicación de ${data?.nombre} fue rechazada.`
+  );
   revalidatePath("/admin");
   revalidatePath("/animales");
   revalidatePath("/");
