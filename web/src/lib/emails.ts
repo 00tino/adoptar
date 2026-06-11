@@ -4,7 +4,7 @@
 
 import { Resend } from "resend";
 
-const REMITENTE = "AdoptAR <onboarding@resend.dev>";
+const REMITENTE = "AdoptAR <hola@adoptar.dpdns.org>";
 
 /** Escapa texto que viene de usuarios antes de meterlo en HTML de emails */
 export function escaparHtml(texto: string): string {
@@ -14,9 +14,6 @@ export function escaparHtml(texto: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
-// ↑ Cuando el dominio adoptaar.com esté verificado en Resend,
-//   cambiar por "AdoptAR <hola@adoptaar.com>".
-
 export async function enviarEmail(opciones: {
   para: string;
   asunto: string;
@@ -43,7 +40,7 @@ function plantilla(titulo: string, cuerpo: string): string {
     <h1 style="color:#2e2118;font-size:24px">🐾 AdoptAR</h1>
     <h2 style="color:#d95d28">${titulo}</h2>
     <p style="color:#5c4a3a;font-size:16px;line-height:1.6">${cuerpo}</p>
-    <p style="color:#5c4a3a;font-size:13px;margin-top:32px">— El equipo de AdoptAR · adoptaar.com</p>
+    <p style="color:#5c4a3a;font-size:13px;margin-top:32px">— El equipo de AdoptAR · adoptar.dpdns.org</p>
   </div>`;
 }
 
