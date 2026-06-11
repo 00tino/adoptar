@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/*
+  AdoptAR — Sistema de diseño
+  Paleta cálida y esperanzadora: crema, terracota, verde salvia y amarillo sol.
+  Nada de azul corporativo. Mobile-first.
+*/
+@theme {
+  /* Colores de marca */
+  --color-crema: #faf4ea;
+  --color-crema-2: #f3e9d8;
+  --color-tinta: #2e2118;
+  --color-tinta-suave: #5c4a3a;
+  --color-terracota: #d95d28;
+  --color-terracota-oscuro: #b34719;
+  --color-salvia: #5f7d56;
+  --color-salvia-oscuro: #46603f;
+  --color-sol: #f2b734;
+  --color-blanco-calido: #fffdf8;
+
+  /* Tipografías (cargadas con next/font en layout.tsx) */
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-crema);
+  color: var(--color-tinta);
+  font-family: var(--font-body);
+  /* Textura sutil de puntitos, para que no se sienta clínico */
+  background-image: radial-gradient(
+    rgba(46, 33, 24, 0.04) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}
+
+/* Foco de teclado visible (accesibilidad AA) */
+:focus-visible {
+  outline: 3px solid var(--color-sol);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--color-sol);
+  color: var(--color-tinta);
+}

@@ -1,0 +1,50 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { obtenerAnimales } from "@/lib/datos";
+import CardAnimal from "@/components/CardAnimal";
+
+export const metadata: Metadata = {
+  title: "Hogares de tránsito para animales en Argentina",
+  description:
+    "¿Qué es el tránsito? Animales que necesitan un hogar temporal mientras encuentran familia definitiva. Sumate como hogar de tránsito o publicá un animal.",
+};
+
+export default async function PaginaTransito() {
+  const enTransito = await obtenerAnimales({ tipo: "transito" });
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="rounded-3xl bg-terracota text-blanco-calido p-8 sm:p-12">
+        <h1 className="font-display text-4xl sm:text-5xl font-black">¿Qué es el tránsito? 💛</h1>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed">
+          Un hogar de tránsito es un hogar temporal: recibís a un animal
+          rescatado por unas semanas o meses mientras le buscamos su familia
+          definitiva. No tiene costo (los rescatistas suelen cubrir alimento y
+          veterinaria) y salva vidas: sin tránsito, muchos animales no pueden
+          salir de la calle.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3 font-bold text-sm">
+          <Link href="/publicar-transito" className="rounded-full bg-sol text-tinta px-6 py-3 hover:brightness-105">
+            Tengo un animal que necesita tránsito
+          </Link>
+          <a href="mailto:hola@adoptaar.com?subject=Quiero ser hogar de tránsito" className="rounded-full border-2 border-blanco-calido px-6 py-3 hover:bg-blanco-calido hover:text-terracota transition-colors">
+            Quiero ser hogar de tránsito
+          </a>
+        </div>
+      </div>
+
+      <section className="mt-12">
+        <h2 className="font-display text-3xl font-black">Necesitan tránsito ahora</h2>
+        {enTransito.length === 0 ? (
+          <p className="mt-4 text-tinta-suave">No hay animales en tránsito por el momento. 🎉</p>
+        ) : (
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {enTransito.map((a) => (
+              <CardAnimal key={a.id} animal={a} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
