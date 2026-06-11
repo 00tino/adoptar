@@ -44,27 +44,67 @@ export async function enviarMensaje(animalId: string, contenido: string) {
   if (!animal) throw new Error("El animal no existe.");
 
   const refugio = Array.isArray(animal.refugios) ? animal.refugios[0] : animal.refugios;
+  const soyQuienPublica = refugio?.usuario_id === yo.id;
+
+  // Receptor: si escribe un interesado, quien publica; si responde quien
+  // publica, el último interesado que escribió en la conversación.
+  let receptorId: string | null = refugio?.usuario_id ?? null;
+  if (soyQuienPublica) {
+    const { data: ultimoAjeno } = await sb
+      .from("mensajes")
+      .select("sender_id")
+      .eq("animal_id", animalId)
+      .neq("sender_id", yo.id)
+      .order("creado_el", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    receptorId = ultimoAjeno?.sender_id ?? null;
+  }
+
+  // Throttle del aviso: si yo ya escribí en esta conversación en la última
+  // hora, el receptor ya recibió un email; no lo spameamos de nuevo.
+  const haceUnaHora = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { count: recientes } = await sb
+    .from("mensajes")
+    .select("id", { count: "exact", head: true })
+    .eq("animal_id", animalId)
+    .eq("sender_id", yo.id)
+    .gte("creado_el", haceUnaHora);
 
   const { error } = await sb.from("mensajes").insert({
     sender_id: yo.id,
-    receiver_id: refugio?.usuario_id ?? null,
+    receiver_id: receptorId,
     animal_id: animalId,
     contenido: texto,
   });
   if (error) throw new Error(error.message);
 
-  // Aviso por email a quien publica (si tiene email cargado)
-  if (refugio?.email) {
+  if (recientes) return;
+
+  // Email del receptor: su fila en usuarios, o el del refugio como respaldo
+  let emailReceptor: string | null = null;
+  if (receptorId) {
+    const { data: receptor } = await sb
+      .from("usuarios")
+      .select("email")
+      .eq("id", receptorId)
+      .maybeSingle();
+    emailReceptor = receptor?.email ?? null;
+  }
+  if (!emailReceptor && !soyQuienPublica) emailReceptor = refugio?.email ?? null;
+
+  if (emailReceptor) {
+    const urlBase = process.env.NEXT_PUBLIC_URL_BASE ?? "http://localhost:3000";
     await enviarEmail({
-      para: refugio.email,
-      asunto: `Nueva consulta por ${animal.nombre} 🐾`,
+      para: emailReceptor,
+      asunto: `Nuevo mensaje por ${animal.nombre} 🐾`,
       html: `
       <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;background:#faf4ea;border-radius:16px;padding:32px">
         <h1 style="color:#2e2118;font-size:24px">🐾 AdoptAR</h1>
-        <h2 style="color:#d95d28">${escaparHtml(yo.nombre)} preguntó por ${escaparHtml(animal.nombre)}</h2>
+        <h2 style="color:#d95d28">${escaparHtml(yo.nombre)} te escribió por ${escaparHtml(animal.nombre)}</h2>
         <p style="color:#5c4a3a;font-size:16px;line-height:1.6;background:#fffdf8;border-radius:8px;padding:16px">${escaparHtml(texto)}</p>
         <p style="color:#5c4a3a;font-size:14px">Respondé desde el chat de la publicación:</p>
-        <a href="https://adoptaar.com/animales/${animal.slug}" style="color:#d95d28;font-weight:bold">Ver la conversación →</a>
+        <a href="${urlBase}/animales/${animal.slug}" style="color:#d95d28;font-weight:bold">Ver la conversación →</a>
       </div>`,
     });
   }

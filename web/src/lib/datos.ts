@@ -291,8 +291,18 @@ export interface FiltrosAnimales {
   especie?: string;
   tipo?: string;
   provincia?: string;
+  tamano?: string;
+  sexo?: string;
+  edad?: string; // cachorro (<1 año) | adulto (1-7) | mayor (7+)
   q?: string;
 }
+
+// Rangos de edad en meses para el filtro "edad"
+const rangosEdad: Record<string, [number, number]> = {
+  cachorro: [0, 11],
+  adulto: [12, 83],
+  mayor: [84, 10000],
+};
 
 export async function obtenerAnimales(
   filtros: FiltrosAnimales = {}
@@ -307,6 +317,11 @@ export async function obtenerAnimales(
     if (filtros.especie) consulta = consulta.eq("especie", filtros.especie);
     if (filtros.tipo) consulta = consulta.eq("tipo", filtros.tipo);
     if (filtros.provincia) consulta = consulta.eq("provincia", filtros.provincia);
+    if (filtros.tamano) consulta = consulta.eq("tamano", filtros.tamano);
+    if (filtros.sexo) consulta = consulta.eq("sexo", filtros.sexo);
+    const rango = filtros.edad ? rangosEdad[filtros.edad] : null;
+    if (rango)
+      consulta = consulta.gte("edad_meses", rango[0]).lte("edad_meses", rango[1]);
     if (filtros.q) {
       // Solo letras, números y espacios: evita inyectar operadores de filtro
       const q = filtros.q.replace(/[^\p{L}\p{N} ]/gu, "").trim().slice(0, 60);
@@ -325,6 +340,10 @@ export async function obtenerAnimales(
     if (filtros.especie && a.especie !== filtros.especie) return false;
     if (filtros.tipo && a.tipo !== filtros.tipo) return false;
     if (filtros.provincia && a.provincia !== filtros.provincia) return false;
+    if (filtros.tamano && a.tamano !== filtros.tamano) return false;
+    if (filtros.sexo && a.sexo !== filtros.sexo) return false;
+    const rango = filtros.edad ? rangosEdad[filtros.edad] : null;
+    if (rango && (a.edadMeses < rango[0] || a.edadMeses > rango[1])) return false;
     if (filtros.q) {
       const q = filtros.q.toLowerCase();
       const texto = `${a.nombre} ${a.raza} ${a.ciudad} ${a.provincia}`.toLowerCase();

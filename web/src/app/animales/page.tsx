@@ -14,7 +14,15 @@ export const metadata: Metadata = {
 export default async function PaginaAnimales({
   searchParams,
 }: {
-  searchParams: Promise<{ especie?: string; tipo?: string; provincia?: string; q?: string }>;
+  searchParams: Promise<{
+    especie?: string;
+    tipo?: string;
+    provincia?: string;
+    tamano?: string;
+    sexo?: string;
+    edad?: string;
+    q?: string;
+  }>;
 }) {
   const filtros = await searchParams;
   const [animales, provincias] = await Promise.all([
@@ -74,6 +82,38 @@ export default async function PaginaAnimales({
           {provincias.map((p) => (
             <option key={p} value={p}>{p}</option>
           ))}
+        </select>
+        <select
+          name="tamano"
+          aria-label="Tamaño"
+          defaultValue={filtros.tamano ?? ""}
+          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
+        >
+          <option value="">Cualquier tamaño</option>
+          <option value="chico">Chico</option>
+          <option value="mediano">Mediano</option>
+          <option value="grande">Grande</option>
+        </select>
+        <select
+          name="edad"
+          aria-label="Edad"
+          defaultValue={filtros.edad ?? ""}
+          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
+        >
+          <option value="">Cualquier edad</option>
+          <option value="cachorro">Cachorros (menos de 1 año)</option>
+          <option value="adulto">Adultos (1 a 7 años)</option>
+          <option value="mayor">Mayores (7+ años)</option>
+        </select>
+        <select
+          name="sexo"
+          aria-label="Sexo"
+          defaultValue={filtros.sexo ?? ""}
+          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
+        >
+          <option value="">Cualquier sexo</option>
+          <option value="hembra">Hembras</option>
+          <option value="macho">Machos</option>
         </select>
         <input
           type="text"
