@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SignInButton } from "@clerk/nextjs";
 import { obtenerConversaciones } from "@/lib/acciones-chat";
+import { miRefugio } from "@/lib/acciones-refugio";
+import {
+  calificarUsuario,
+  obtenerRatingUsuario,
+  type RatingUsuario,
+} from "@/lib/acciones-ratings";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
 import { supabaseDisponible } from "@/lib/supabase";
 
@@ -52,6 +58,22 @@ export default async function PaginaMensajes() {
 
   const conversaciones = await obtenerConversaciones();
 
+  // Si soy un refugio, veo la calificación de cada interlocutor (solo refugios)
+  const soyRefugio = Boolean(await miRefugio());
+  const ratings = new Map<string, RatingUsuario>();
+  if (soyRefugio) {
+    const ids = [
+      ...new Set(
+        conversaciones.map((c) => c.interlocutorId).filter((id): id is string => !!id)
+      ),
+    ];
+    const resultados = await Promise.all(ids.map((id) => obtenerRatingUsuario(id)));
+    ids.forEach((id, i) => {
+      const r = resultados[i];
+      if (r) ratings.set(id, r);
+    });
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="font-display text-4xl font-black">Mis mensajes 💬</h1>
@@ -72,7 +94,9 @@ export default async function PaginaMensajes() {
         </div>
       ) : (
         <ul className="mt-8 space-y-3">
-          {conversaciones.map((c) => (
+          {conversaciones.map((c) => {
+            const rating = c.interlocutorId ? ratings.get(c.interlocutorId) : null;
+            return (
             <li key={`${c.animalId}|${c.interlocutorId ?? "?"}`}>
               <Link
                 href={`/animales/${c.animalSlug}`}
@@ -102,8 +126,62 @@ export default async function PaginaMensajes() {
                   )}
                 </div>
               </Link>
+
+              {/* Calificación del usuario: visible y editable SOLO para refugios */}
+              {soyRefugio && rating && c.interlocutorId && (
+                <details className="mt-1 rounded-2xl border-2 border-crema-2 bg-blanco-calido px-4 py-2 text-sm">
+                  <summary className="cursor-pointer font-bold text-tinta-suave">
+                    {rating.cantidad > 0
+                      ? `★ ${rating.promedio.toFixed(1)} (${rating.cantidad}) — calificación entre refugios`
+                      : "Calificar a este usuario (solo lo ven otros refugios)"}
+                  </summary>
+                  {rating.comentarios.filter((co) => co.comentario).length > 0 && (
+                    <ul className="mt-2 space-y-1 text-tinta-suave">
+                      {rating.comentarios
+                        .filter((co) => co.comentario)
+                        .slice(0, 3)
+                        .map((co, i) => (
+                          <li key={i}>
+                            {"★".repeat(co.estrellas)} “{co.comentario}” — {co.refugio}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                  <form action={calificarUsuario} className="mt-3 flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="usuarioId" value={c.interlocutorId} />
+                    <label className="font-bold" htmlFor={`estrellas-${c.animalId}-${c.interlocutorId}`}>
+                      Tu puntaje:
+                    </label>
+                    <select
+                      id={`estrellas-${c.animalId}-${c.interlocutorId}`}
+                      name="estrellas"
+                      defaultValue={rating.miPuntaje ?? 5}
+                      className="rounded-xl border-2 border-crema-2 bg-blanco-calido px-2 py-1"
+                    >
+                      {[5, 4, 3, 2, 1].map((n) => (
+                        <option key={n} value={n}>
+                          {"★".repeat(n)}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      name="comentario"
+                      placeholder="Comentario (opcional)"
+                      className="min-w-40 flex-1 rounded-xl border-2 border-crema-2 px-3 py-1"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full bg-salvia text-blanco-calido px-4 py-1 font-bold hover:bg-salvia-oscuro transition-colors"
+                    >
+                      Guardar
+                    </button>
+                  </form>
+                </details>
+              )}
             </li>
-          ))}
+          );
+          })}
         </ul>
       )}
     </div>
