@@ -308,8 +308,12 @@ export interface FiltrosAnimales {
   tamano?: string;
   sexo?: string;
   edad?: string; // cachorro (<1 año) | adulto (1-7) | mayor (7+)
+  castrado?: string; // "si" | "no"
   q?: string;
 }
+
+/** Cantidad de animales por página del catálogo */
+export const ANIMALES_POR_PAGINA = 12;
 
 // Rangos de edad en meses para el filtro "edad"
 const rangosEdad: Record<string, [number, number]> = {
@@ -333,6 +337,7 @@ export async function obtenerAnimales(
     if (filtros.provincia) consulta = consulta.eq("provincia", filtros.provincia);
     if (filtros.tamano) consulta = consulta.eq("tamano", filtros.tamano);
     if (filtros.sexo) consulta = consulta.eq("sexo", filtros.sexo);
+    if (filtros.castrado) consulta = consulta.eq("castrado", filtros.castrado === "si");
     const rango = filtros.edad ? rangosEdad[filtros.edad] : null;
     if (rango)
       consulta = consulta.gte("edad_meses", rango[0]).lte("edad_meses", rango[1]);
@@ -356,6 +361,7 @@ export async function obtenerAnimales(
     if (filtros.provincia && a.provincia !== filtros.provincia) return false;
     if (filtros.tamano && a.tamano !== filtros.tamano) return false;
     if (filtros.sexo && a.sexo !== filtros.sexo) return false;
+    if (filtros.castrado && a.castrado !== (filtros.castrado === "si")) return false;
     const rango = filtros.edad ? rangosEdad[filtros.edad] : null;
     if (rango && (a.edadMeses < rango[0] || a.edadMeses > rango[1])) return false;
     if (filtros.q) {
@@ -365,6 +371,51 @@ export async function obtenerAnimales(
     }
     return true;
   });
+}
+
+/** Catálogo paginado: una página de resultados + total para la paginación */
+export async function obtenerAnimalesPaginados(
+  filtros: FiltrosAnimales = {},
+  pagina = 1
+): Promise<{ animales: Animal[]; total: number }> {
+  const desde = (Math.max(pagina, 1) - 1) * ANIMALES_POR_PAGINA;
+
+  if (supabaseDisponible()) {
+    const sb = crearClienteSupabase();
+    let consulta = sb
+      .from("animales")
+      .select("*", { count: "exact" })
+      .in("estado", ["disponible", "en_proceso", "adoptado"])
+      .order("creado_el", { ascending: false });
+    if (filtros.especie) consulta = consulta.eq("especie", filtros.especie);
+    if (filtros.tipo) consulta = consulta.eq("tipo", filtros.tipo);
+    if (filtros.provincia) consulta = consulta.eq("provincia", filtros.provincia);
+    if (filtros.tamano) consulta = consulta.eq("tamano", filtros.tamano);
+    if (filtros.sexo) consulta = consulta.eq("sexo", filtros.sexo);
+    if (filtros.castrado) consulta = consulta.eq("castrado", filtros.castrado === "si");
+    const rango = filtros.edad ? rangosEdad[filtros.edad] : null;
+    if (rango)
+      consulta = consulta.gte("edad_meses", rango[0]).lte("edad_meses", rango[1]);
+    if (filtros.q) {
+      const q = filtros.q.replace(/[^\p{L}\p{N} ]/gu, "").trim().slice(0, 60);
+      if (q)
+        consulta = consulta.or(
+          `nombre.ilike.%${q}%,ciudad.ilike.%${q}%,provincia.ilike.%${q}%,raza.ilike.%${q}%`
+        );
+    }
+    const { data, count, error } = await consulta.range(
+      desde,
+      desde + ANIMALES_POR_PAGINA - 1
+    );
+    if (error) throw error;
+    return { animales: (data ?? []).map(filaAAnimal), total: count ?? 0 };
+  }
+
+  const todos = await obtenerAnimales(filtros);
+  return {
+    animales: todos.slice(desde, desde + ANIMALES_POR_PAGINA),
+    total: todos.length,
+  };
 }
 
 export async function obtenerAnimalPorSlug(slug: string): Promise<Animal | null> {

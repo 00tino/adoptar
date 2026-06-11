@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { obtenerAnimales, obtenerProvincias } from "@/lib/datos";
+import {
+  ANIMALES_POR_PAGINA,
+  obtenerAnimalesPaginados,
+  obtenerProvincias,
+} from "@/lib/datos";
 import CardAnimal from "@/components/CardAnimal";
 
 export const metadata: Metadata = {
@@ -21,20 +25,35 @@ export default async function PaginaAnimales({
     tamano?: string;
     sexo?: string;
     edad?: string;
+    castrado?: string;
     q?: string;
+    pagina?: string;
   }>;
 }) {
-  const filtros = await searchParams;
-  const [animales, provincias] = await Promise.all([
-    obtenerAnimales(filtros),
+  const { pagina: paginaCruda, ...filtros } = await searchParams;
+  const pagina = Math.max(1, Number(paginaCruda) || 1);
+  const [{ animales, total }, provincias] = await Promise.all([
+    obtenerAnimalesPaginados(filtros, pagina),
     obtenerProvincias(),
   ]);
+  const totalPaginas = Math.max(1, Math.ceil(total / ANIMALES_POR_PAGINA));
+
+  // Link de paginación que conserva todos los filtros activos
+  const urlPagina = (n: number) => {
+    const params = new URLSearchParams(
+      Object.entries(filtros).filter(([, v]) => v) as [string, string][]
+    );
+    if (n > 1) params.set("pagina", String(n));
+    const qs = params.toString();
+    return qs ? `/animales?${qs}` : "/animales";
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="font-display text-4xl font-black">Animales que buscan hogar</h1>
       <p className="mt-2 text-tinta-suave">
-        {animales.length} {animales.length === 1 ? "animal encontrado" : "animales encontrados"}
+        {total} {total === 1 ? "animal encontrado" : "animales encontrados"}
+        {totalPaginas > 1 && ` · página ${pagina} de ${totalPaginas}`}
       </p>
 
       {/* Pestañas adopción / tránsito */}
@@ -115,6 +134,16 @@ export default async function PaginaAnimales({
           <option value="hembra">Hembras</option>
           <option value="macho">Machos</option>
         </select>
+        <select
+          name="castrado"
+          aria-label="Castrado o esterilizado"
+          defaultValue={filtros.castrado ?? ""}
+          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
+        >
+          <option value="">Castrado: indistinto</option>
+          <option value="si">Castrado/esterilizado</option>
+          <option value="no">Sin castrar</option>
+        </select>
         <input
           type="text"
           name="q"
@@ -146,6 +175,48 @@ export default async function PaginaAnimales({
             <CardAnimal key={a.id} animal={a} />
           ))}
         </div>
+      )}
+
+      {/* Paginación */}
+      {totalPaginas > 1 && (
+        <nav aria-label="Paginación" className="mt-10 flex items-center justify-center gap-2">
+          {pagina > 1 && (
+            <Link
+              href={urlPagina(pagina - 1)}
+              className="rounded-full border-2 border-crema-2 bg-blanco-calido px-4 py-2 text-sm font-bold hover:border-tinta transition-colors"
+            >
+              ← Anterior
+            </Link>
+          )}
+          {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+            .filter((n) => n === 1 || n === totalPaginas || Math.abs(n - pagina) <= 2)
+            .map((n, i, arr) => (
+              <span key={n} className="flex items-center gap-2">
+                {i > 0 && arr[i - 1] !== n - 1 && (
+                  <span className="text-tinta-suave">…</span>
+                )}
+                <Link
+                  href={urlPagina(n)}
+                  aria-current={n === pagina ? "page" : undefined}
+                  className={`rounded-full px-4 py-2 text-sm font-bold border-2 transition-colors ${
+                    n === pagina
+                      ? "bg-tinta text-crema border-tinta"
+                      : "border-crema-2 bg-blanco-calido hover:border-tinta"
+                  }`}
+                >
+                  {n}
+                </Link>
+              </span>
+            ))}
+          {pagina < totalPaginas && (
+            <Link
+              href={urlPagina(pagina + 1)}
+              className="rounded-full border-2 border-crema-2 bg-blanco-calido px-4 py-2 text-sm font-bold hover:border-tinta transition-colors"
+            >
+              Siguiente →
+            </Link>
+          )}
+        </nav>
       )}
     </div>
   );

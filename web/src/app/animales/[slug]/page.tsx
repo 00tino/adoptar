@@ -8,6 +8,7 @@ import {
 } from "@/lib/datos";
 import { edadLegible } from "@/lib/tipos";
 import GaleriaAnimal from "@/components/GaleriaAnimal";
+import MiniMapa from "@/components/MiniMapa";
 import CardAnimal from "@/components/CardAnimal";
 import ChatAnimal from "@/components/ChatAnimal";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
@@ -57,6 +58,22 @@ export default async function PaginaAnimal({
 
   const adoptado = animal.estado === "adoptado";
 
+  // Ubicación para el mini-mapa. La base ya guarda coordenadas aproximadas,
+  // pero para particulares sumamos un desplazamiento fijo (~500 m, derivado
+  // del id para que no cambie entre visitas) como capa extra de privacidad.
+  let ubicacion: { lat: number; lng: number } | null = null;
+  if (animal.latAprox && animal.lngAprox) {
+    if (animal.refugioId) {
+      ubicacion = { lat: animal.latAprox, lng: animal.lngAprox };
+    } else {
+      const hash = [...animal.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 997, 7);
+      ubicacion = {
+        lat: animal.latAprox + ((hash % 100) / 100 - 0.5) * 0.009,
+        lng: animal.lngAprox + ((Math.floor(hash / 10) % 100) / 100 - 0.5) * 0.009,
+      };
+    }
+  }
+
   // Datos de contacto: del refugio, o genéricos del particular (en la versión
   // con Supabase saldrán de su perfil aprobado)
   const whatsapp = refugio?.whatsapp ?? null;
@@ -104,6 +121,15 @@ export default async function PaginaAnimal({
             nombre={animal.nombre}
             semilla={animal.id}
           />
+          {ubicacion && (
+            <div className="mt-4">
+              <MiniMapa
+                lat={ubicacion.lat}
+                lng={ubicacion.lng}
+                etiqueta={`${animal.ciudad}, ${animal.provincia}`}
+              />
+            </div>
+          )}
         </div>
 
         {/* Datos */}
