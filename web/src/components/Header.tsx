@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { SignInButton, UserButton } from "@clerk/nextjs";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
+import { tieneRefugio } from "@/lib/acciones-refugio";
+import { supabaseDisponible } from "@/lib/supabase";
 
 // Encabezado principal con navegación. Mobile-first: los links secundarios
 // se muestran en una segunda fila scrolleable en pantallas chicas.
@@ -15,6 +17,9 @@ const links = [
 export default async function Header() {
   // Resolvemos la sesión en el servidor (Clerk puede no estar configurado)
   const usuario = clerkDisponible() ? await usuarioActual() : null;
+  // Link "Mi refugio" solo para usuarios con refugio verificado/estrella
+  const conRefugio =
+    usuario && supabaseDisponible() ? await tieneRefugio(usuario.id) : false;
   return (
     <header className="sticky top-0 z-50 bg-blanco-calido/90 backdrop-blur border-b-2 border-crema-2">
       <div className="mx-auto max-w-6xl px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -38,6 +43,14 @@ export default async function Header() {
               {l.texto}
             </Link>
           ))}
+          {conRefugio && (
+            <Link
+              href="/mi-refugio"
+              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-salvia-oscuro hover:bg-crema-2 transition-colors"
+            >
+              Mi refugio
+            </Link>
+          )}
           <Link
             href="/publicar-transito"
             className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold bg-terracota text-blanco-calido hover:bg-terracota-oscuro transition-colors"
