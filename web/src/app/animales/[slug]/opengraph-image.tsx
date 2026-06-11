@@ -36,6 +36,7 @@ export default async function Image({
   const [c1, c2] = animal
     ? gradientes[animal.id.charCodeAt(animal.id.length - 1) % gradientes.length]
     : gradientes[0];
+  const foto = animal?.fotos[0] ?? null;
   const detalle = animal
     ? `${animal.sexo === "hembra" ? "Hembra" : "Macho"} · ${edadLegible(animal.edadMeses)} · ${animal.ciudad}, ${animal.provincia}`
     : "Adopción de animales en Argentina";
@@ -59,11 +60,23 @@ export default async function Image({
             alignItems: "center",
             justifyContent: "center",
             borderRadius: 48,
+            overflow: "hidden",
             background: `linear-gradient(135deg, ${c1}b3, ${c2}99)`,
             fontSize: 220,
           }}
         >
-          {emoji}
+          {foto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={foto}
+              alt=""
+              width={420}
+              height={550}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            emoji
+          )}
         </div>
         <div
           style={{

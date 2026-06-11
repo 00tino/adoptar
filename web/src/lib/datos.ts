@@ -81,6 +81,8 @@ const animales: Animal[] = [
     estado: "disponible",
     refugioId: "r1",
     particularNombre: null,
+    fotos: [],
+    videoUrl: null,
     creadoEl: "2026-05-02",
   },
   {
@@ -104,6 +106,8 @@ const animales: Animal[] = [
     estado: "disponible",
     refugioId: "r2",
     particularNombre: null,
+    fotos: [],
+    videoUrl: null,
     creadoEl: "2026-05-20",
   },
   {
@@ -127,6 +131,8 @@ const animales: Animal[] = [
     estado: "disponible",
     refugioId: null,
     particularNombre: "Sofía R.",
+    fotos: [],
+    videoUrl: null,
     creadoEl: "2026-06-01",
   },
   {
@@ -150,6 +156,8 @@ const animales: Animal[] = [
     estado: "disponible",
     refugioId: "r3",
     particularNombre: null,
+    fotos: [],
+    videoUrl: null,
     creadoEl: "2026-04-18",
   },
   {
@@ -173,6 +181,8 @@ const animales: Animal[] = [
     estado: "en_proceso",
     refugioId: "r1",
     particularNombre: null,
+    fotos: [],
+    videoUrl: null,
     creadoEl: "2026-05-28",
   },
   {
@@ -196,6 +206,8 @@ const animales: Animal[] = [
     estado: "disponible",
     refugioId: null,
     particularNombre: "Marcos T.",
+    fotos: [],
+    videoUrl: null,
     creadoEl: "2026-06-05",
   },
 ];
@@ -249,6 +261,8 @@ function filaAAnimal(f: any): Animal {
     estado: f.estado,
     refugioId: f.refugio_id,
     particularNombre: f.particular_nombre ?? null,
+    fotos: Array.isArray(f.fotos) ? f.fotos : [],
+    videoUrl: f.video_url ?? null,
     creadoEl: f.creado_el,
   };
 }

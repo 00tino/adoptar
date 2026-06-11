@@ -16,6 +16,7 @@ export default function CardAnimal({ animal }: { animal: Animal }) {
           especie={animal.especie}
           nombre={animal.nombre}
           semilla={animal.id}
+          foto={animal.fotos[0]}
           clase="h-44 w-full"
         />
         <span

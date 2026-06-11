@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Fotos de animales servidas desde el bucket público de Supabase Storage
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "mkiedljddnlrncfzbkek.supabase.co",
+        pathname: "/storage/v1/object/public/media/**",
+      },
+    ],
+  },
   // Headers de seguridad para todas las respuestas
   async headers() {
     return [

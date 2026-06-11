@@ -57,6 +57,10 @@ export interface Animal {
   refugioId: string | null;
   /** Nombre visible del particular cuando no hay refugio */
   particularNombre: string | null;
+  /** URLs públicas de fotos en Supabase Storage (vacío = placeholder) */
+  fotos: string[];
+  /** URL pública del video de presentación, si hay */
+  videoUrl: string | null;
   creadoEl: string;
 }
 

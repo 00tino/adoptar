@@ -7,7 +7,7 @@ import {
   obtenerRefugioPorId,
 } from "@/lib/datos";
 import { edadLegible } from "@/lib/tipos";
-import FotoAnimal from "@/components/FotoAnimal";
+import GaleriaAnimal from "@/components/GaleriaAnimal";
 import CardAnimal from "@/components/CardAnimal";
 import ChatAnimal from "@/components/ChatAnimal";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
@@ -95,13 +95,14 @@ export default async function PaginaAnimal({
       </nav>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-        {/* Galería (placeholder hasta tener Supabase Storage) */}
+        {/* Galería: fotos reales de Supabase Storage (o placeholder) + video */}
         <div>
-          <FotoAnimal
+          <GaleriaAnimal
+            fotos={animal.fotos}
+            videoUrl={animal.videoUrl}
             especie={animal.especie}
             nombre={animal.nombre}
             semilla={animal.id}
-            clase="h-80 sm:h-96 w-full rounded-3xl"
           />
         </div>
 
