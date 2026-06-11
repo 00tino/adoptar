@@ -54,6 +54,29 @@ export default function GaleriaAnimal({
           priority
           className="object-cover"
         />
+        {fotos.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => setActual((actual - 1 + fotos.length) % fotos.length)}
+              aria-label="Foto anterior"
+              className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-blanco-calido/85 text-xl font-bold text-tinta shadow hover:bg-blanco-calido transition-colors"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={() => setActual((actual + 1) % fotos.length)}
+              aria-label="Foto siguiente"
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-blanco-calido/85 text-xl font-bold text-tinta shadow hover:bg-blanco-calido transition-colors"
+            >
+              ›
+            </button>
+            <span className="absolute bottom-3 right-3 rounded-full bg-tinta/60 px-3 py-1 text-xs font-bold text-blanco-calido">
+              {actual + 1} / {fotos.length}
+            </span>
+          </>
+        )}
       </div>
       {fotos.length > 1 && (
         <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
