@@ -15,7 +15,12 @@ function clienteServidor() {
 }
 
 /** Devuelve la fila de `usuarios` del usuario logueado, creándola si no existe */
-export async function asegurarUsuario(): Promise<{ id: string; email: string; nombre: string } | null> {
+export async function asegurarUsuario(): Promise<{
+  id: string;
+  email: string;
+  nombre: string;
+  suspendido: boolean;
+} | null> {
   const user = await usuarioActual();
   if (!user) return null;
 
@@ -31,8 +36,19 @@ export async function asegurarUsuario(): Promise<{ id: string; email: string; no
       { clerk_id: user.id, email, nombre },
       { onConflict: "clerk_id" }
     )
-    .select("id,email,nombre")
+    .select("id,email,nombre,suspendido")
     .single();
   if (error) throw new Error(error.message);
   return data;
+}
+
+/** Como asegurarUsuario, pero corta si la cuenta está suspendida.
+ *  Usar en toda acción que publica contenido o manda mensajes. */
+export async function exigirUsuarioActivo() {
+  const yo = await asegurarUsuario();
+  if (!yo) throw new Error("Tenés que iniciar sesión.");
+  if (yo.suspendido) {
+    throw new Error("Tu cuenta está suspendida. Escribinos si creés que es un error.");
+  }
+  return yo;
 }

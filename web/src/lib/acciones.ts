@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { supabaseDisponible } from "./supabase";
 import { clerkDisponible, usuarioActual } from "./auth";
+import { exigirUsuarioActivo } from "./usuarios";
 import { campoTexto, limitarPorIp } from "./limites";
 import { generarSlug, subirArchivos } from "./archivos";
 
@@ -32,6 +33,7 @@ export async function publicarTransito(formData: FormData) {
   if (clerkDisponible()) {
     const user = await usuarioActual();
     if (!user) throw new Error("Tenés que iniciar sesión para publicar.");
+    await exigirUsuarioActivo(); // corta si la cuenta está suspendida
     nombreParticular = `${user.firstName ?? "Particular"} ${(user.lastName ?? "").charAt(0)}.`.trim();
   }
 

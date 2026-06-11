@@ -60,6 +60,93 @@ export async function obtenerEstadisticas() {
   return { animales, disponibles, adoptados, refugios, campanas, usuarios };
 }
 
+// ---------- Gestión de usuarios ----------
+
+export interface UsuarioAdmin {
+  id: string;
+  email: string;
+  nombre: string;
+  tipo: string;
+  suspendido: boolean;
+  creadoEl: string;
+}
+
+/** Busca usuarios por email o nombre (o lista los últimos si no hay búsqueda) */
+export async function buscarUsuarios(q: string): Promise<UsuarioAdmin[]> {
+  await exigirAdmin();
+  const sb = clienteServidor();
+  let consulta = sb
+    .from("usuarios")
+    .select("id,email,nombre,tipo,suspendido,creado_el")
+    .order("creado_el", { ascending: false })
+    .limit(30);
+  const limpio = q.replace(/[^\p{L}\p{N}@. \-_]/gu, "").trim().slice(0, 80);
+  if (limpio) {
+    consulta = consulta.or(`email.ilike.%${limpio}%,nombre.ilike.%${limpio}%`);
+  }
+  const { data, error } = await consulta;
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((u) => ({
+    id: u.id,
+    email: u.email,
+    nombre: u.nombre,
+    tipo: u.tipo,
+    suspendido: u.suspendido,
+    creadoEl: u.creado_el,
+  }));
+}
+
+/** Suspende o reactiva una cuenta. Las acciones del server respetan el flag. */
+export async function alternarSuspension(formData: FormData) {
+  await exigirAdmin();
+  const id = String(formData.get("id"));
+  const suspender = String(formData.get("accion")) === "suspender";
+  const sb = clienteServidor();
+  const { error } = await sb
+    .from("usuarios")
+    .update({ suspendido: suspender })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin");
+}
+
+// ---------- Evolución mensual ----------
+
+export interface MesEvolucion {
+  mes: string; // "2026-06"
+  publicados: number;
+  adoptados: number;
+}
+
+/** Animales publicados y adoptados por mes (últimos 12), con lo que hay en la base */
+export async function obtenerEvolucionMensual(): Promise<MesEvolucion[]> {
+  await exigirAdmin();
+  const sb = clienteServidor();
+  const desde = new Date();
+  desde.setMonth(desde.getMonth() - 11);
+  desde.setDate(1);
+  const { data, error } = await sb
+    .from("animales")
+    .select("creado_el,estado")
+    .gte("creado_el", desde.toISOString());
+  if (error) throw new Error(error.message);
+
+  const meses = new Map<string, MesEvolucion>();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(desde.getFullYear(), desde.getMonth() + i, 1);
+    const clave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    meses.set(clave, { mes: clave, publicados: 0, adoptados: 0 });
+  }
+  for (const a of data ?? []) {
+    const clave = String(a.creado_el).slice(0, 7);
+    const mes = meses.get(clave);
+    if (!mes) continue;
+    mes.publicados += 1;
+    if (a.estado === "adoptado") mes.adoptados += 1;
+  }
+  return [...meses.values()];
+}
+
 // ---------- Decisiones de la cola ----------
 
 export async function decidirRefugio(formData: FormData) {

@@ -5,7 +5,7 @@
 // por email (Resend) para no perder consultas aunque no entre a la app.
 
 import { createClient } from "@supabase/supabase-js";
-import { asegurarUsuario } from "./usuarios";
+import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import { enviarEmail, escaparHtml } from "./emails";
 import { esAdmin } from "./auth";
 import { limitarPorIp } from "./limites";
@@ -28,8 +28,7 @@ export interface MensajeChat {
 /** Envía un mensaje sobre un animal. Requiere sesión. */
 export async function enviarMensaje(animalId: string, contenido: string) {
   await limitarPorIp("enviar-mensaje", 30, 10); // máx 30 mensajes / 10 min por IP
-  const yo = await asegurarUsuario();
-  if (!yo) throw new Error("Tenés que iniciar sesión para enviar mensajes.");
+  const yo = await exigirUsuarioActivo(); // corta si la cuenta está suspendida
   const texto = contenido.trim().slice(0, 2000);
   if (!texto) return;
 

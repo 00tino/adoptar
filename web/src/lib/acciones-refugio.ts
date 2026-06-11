@@ -7,7 +7,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { asegurarUsuario } from "./usuarios";
+import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import { campoTexto, limitarPorIp } from "./limites";
 import { generarSlug, subirArchivos } from "./archivos";
 
@@ -93,6 +93,7 @@ export async function misAnimales(): Promise<AnimalDeRefugio[]> {
 }
 
 async function exigirRefugio(): Promise<MiRefugio> {
+  await exigirUsuarioActivo(); // corta si la cuenta está suspendida
   const refugio = await miRefugio();
   if (!refugio) {
     throw new Error("Esta acción es solo para refugios verificados.");
