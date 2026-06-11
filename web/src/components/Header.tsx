@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SignInButton, UserButton } from "@clerk/nextjs";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
 import { tieneRefugio } from "@/lib/acciones-refugio";
+import { contarNoLeidos } from "@/lib/acciones-chat";
 import { supabaseDisponible } from "@/lib/supabase";
 
 // Encabezado principal con navegación. Mobile-first: los links secundarios
@@ -18,8 +19,10 @@ export default async function Header() {
   // Resolvemos la sesión en el servidor (Clerk puede no estar configurado)
   const usuario = clerkDisponible() ? await usuarioActual() : null;
   // Link "Mi refugio" solo para usuarios con refugio verificado/estrella
-  const conRefugio =
-    usuario && supabaseDisponible() ? await tieneRefugio(usuario.id) : false;
+  const [conRefugio, noLeidos] =
+    usuario && supabaseDisponible()
+      ? await Promise.all([tieneRefugio(usuario.id), contarNoLeidos(usuario.id)])
+      : [false, 0];
   return (
     <header className="sticky top-0 z-50 bg-blanco-calido/90 backdrop-blur border-b-2 border-crema-2">
       <div className="mx-auto max-w-6xl px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -43,6 +46,19 @@ export default async function Header() {
               {l.texto}
             </Link>
           ))}
+          {usuario && supabaseDisponible() && (
+            <Link
+              href="/mensajes"
+              className="relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-tinta-suave hover:bg-crema-2 hover:text-tinta transition-colors"
+            >
+              Mensajes
+              {noLeidos > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-terracota px-1 text-[11px] font-bold text-blanco-calido">
+                  {noLeidos > 9 ? "9+" : noLeidos}
+                </span>
+              )}
+            </Link>
+          )}
           {conRefugio && (
             <Link
               href="/mi-refugio"

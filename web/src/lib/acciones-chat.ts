@@ -103,11 +103,88 @@ export async function enviarMensaje(animalId: string, contenido: string) {
         <h1 style="color:#2e2118;font-size:24px">🐾 AdoptAR</h1>
         <h2 style="color:#d95d28">${escaparHtml(yo.nombre)} te escribió por ${escaparHtml(animal.nombre)}</h2>
         <p style="color:#5c4a3a;font-size:16px;line-height:1.6;background:#fffdf8;border-radius:8px;padding:16px">${escaparHtml(texto)}</p>
-        <p style="color:#5c4a3a;font-size:14px">Respondé desde el chat de la publicación:</p>
-        <a href="${urlBase}/animales/${animal.slug}" style="color:#d95d28;font-weight:bold">Ver la conversación →</a>
+        <p style="color:#5c4a3a;font-size:14px">Respondé desde tu bandeja de mensajes:</p>
+        <a href="${urlBase}/mensajes" style="color:#d95d28;font-weight:bold">Ver la conversación →</a>
       </div>`,
     });
   }
+}
+
+export interface Conversacion {
+  animalId: string;
+  animalNombre: string;
+  animalSlug: string;
+  /** Nombre del interlocutor (el otro participante) */
+  interlocutor: string;
+  interlocutorId: string | null;
+  ultimoMensaje: string;
+  ultimaFecha: string;
+  noLeidos: number;
+}
+
+/** Conversaciones del usuario actual, agrupadas por animal + interlocutor */
+export async function obtenerConversaciones(): Promise<Conversacion[]> {
+  const yo = await asegurarUsuario();
+  if (!yo) return [];
+  const sb = clienteServidor();
+
+  const { data, error } = await sb
+    .from("mensajes")
+    .select(
+      "id,contenido,creado_el,leido,sender_id,receiver_id,animal_id,animales(nombre,slug),usuarios!mensajes_sender_id_fkey(nombre)"
+    )
+    .or(`sender_id.eq.${yo.id},receiver_id.eq.${yo.id}`)
+    .order("creado_el", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(error.message);
+
+  const mapa = new Map<string, Conversacion>();
+  for (const m of data ?? []) {
+    const esMio = m.sender_id === yo.id;
+    const otroId = esMio ? m.receiver_id : m.sender_id;
+    const clave = `${m.animal_id}|${otroId ?? "?"}`;
+    const animal = Array.isArray(m.animales) ? m.animales[0] : m.animales;
+    const autor = Array.isArray(m.usuarios) ? m.usuarios[0] : m.usuarios;
+
+    let conv = mapa.get(clave);
+    if (!conv) {
+      conv = {
+        animalId: m.animal_id,
+        animalNombre: (animal as { nombre?: string } | null)?.nombre ?? "Animal",
+        animalSlug: (animal as { slug?: string } | null)?.slug ?? "",
+        interlocutor: esMio
+          ? "Interesado/a" // el nombre real aparece apenas responde
+          : ((autor as { nombre?: string } | null)?.nombre ?? "Usuario"),
+        interlocutorId: otroId,
+        ultimoMensaje: m.contenido,
+        ultimaFecha: m.creado_el,
+        noLeidos: 0,
+      };
+      mapa.set(clave, conv);
+    } else if (!esMio && conv.interlocutor === "Interesado/a") {
+      conv.interlocutor = (autor as { nombre?: string } | null)?.nombre ?? "Usuario";
+    }
+    if (!esMio && !m.leido) conv.noLeidos += 1;
+  }
+  return [...mapa.values()];
+}
+
+/** Total de mensajes sin leer (para el badge del Header). Solo lee, sin upsert. */
+export async function contarNoLeidos(clerkId: string): Promise<number> {
+  const sb = clienteServidor();
+  const { data: usuario } = await sb
+    .from("usuarios")
+    .select("id")
+    .eq("clerk_id", clerkId)
+    .maybeSingle();
+  if (!usuario) return 0;
+  const usuarioId = usuario.id;
+  const { count } = await sb
+    .from("mensajes")
+    .select("id", { count: "exact", head: true })
+    .eq("receiver_id", usuarioId)
+    .eq("leido", false);
+  return count ?? 0;
 }
 
 /** Mensajes de un animal visibles para el usuario actual (participante o admin) */
@@ -123,6 +200,14 @@ export async function obtenerMensajes(animalId: string): Promise<MensajeChat[]> 
     .eq("animal_id", animalId)
     .order("creado_el");
   if (error) throw new Error(error.message);
+
+  // Abrir la conversación marca como leídos los mensajes dirigidos a mí
+  await sb
+    .from("mensajes")
+    .update({ leido: true })
+    .eq("animal_id", animalId)
+    .eq("receiver_id", yo.id)
+    .eq("leido", false);
 
   return (data ?? [])
     // Solo participantes (o admin) pueden leer la conversación
