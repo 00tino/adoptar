@@ -21,7 +21,9 @@ const nunito = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://adoptaar.com"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_URL_BASE ?? "http://localhost:3000"
+  ),
   title: {
     default: "AdoptAR — Adopción de animales en Argentina",
     template: "%s | AdoptAR",
