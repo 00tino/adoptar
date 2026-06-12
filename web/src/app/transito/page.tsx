@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { obtenerAnimales } from "@/lib/datos";
+import { FOTOS } from "@/lib/fotos";
 import CardAnimal from "@/components/CardAnimal";
 
 export const metadata: Metadata = {
@@ -14,7 +16,8 @@ export default async function PaginaTransito() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="rounded-3xl bg-terracota text-blanco-calido p-8 sm:p-12">
+      <div className="overflow-hidden rounded-3xl bg-terracota text-blanco-calido lg:grid lg:grid-cols-[1fr_minmax(0,380px)]">
+        <div className="p-8 sm:p-12">
         <h1 className="font-display text-4xl sm:text-5xl font-black">¿Qué es el tránsito? 💛</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed">
           Un hogar de tránsito es un hogar temporal: recibís a un animal
@@ -31,6 +34,16 @@ export default async function PaginaTransito() {
             Quiero ser hogar de tránsito
           </a>
         </div>
+        </div>
+        <Image
+          src={FOTOS.transito.src}
+          alt={FOTOS.transito.alt}
+          width={760}
+          height={560}
+          priority
+          sizes="(min-width: 1024px) 380px, 100vw"
+          className="h-56 w-full object-cover lg:h-full"
+        />
       </div>
 
       <section className="mt-12">

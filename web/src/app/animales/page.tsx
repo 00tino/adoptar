@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
+import { FOTOS } from "@/lib/fotos";
 import {
   ANIMALES_POR_PAGINA,
   obtenerAnimalesPaginados,
@@ -106,8 +108,15 @@ export default async function PaginaAnimales({
       {/* Resultados */}
       {animales.length === 0 ? (
         <div className="mt-12 text-center py-16 rounded-2xl bg-crema-2/60">
-          <p className="text-5xl">🐾</p>
-          <p className="mt-3 font-display text-2xl font-bold">No encontramos animales con esos filtros</p>
+          <Image
+            src={FOTOS.vacio.src}
+            alt={FOTOS.vacio.alt}
+            width={200}
+            height={200}
+            sizes="160px"
+            className="mx-auto aspect-square w-40 rounded-3xl object-cover"
+          />
+          <p className="mt-4 font-display text-2xl font-bold">No encontramos animales con esos filtros</p>
           <Link href="/animales" className="mt-2 inline-block text-terracota font-bold hover:underline">
             Ver todos los animales →
           </Link>

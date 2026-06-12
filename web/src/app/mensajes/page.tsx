@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { SignInButton } from "@clerk/nextjs";
+import { FOTOS } from "@/lib/fotos";
 import { obtenerConversaciones } from "@/lib/acciones-chat";
 import { miRefugio } from "@/lib/acciones-refugio";
 import {
@@ -83,8 +85,15 @@ export default async function PaginaMensajes() {
 
       {conversaciones.length === 0 ? (
         <div className="mt-10 rounded-2xl bg-blanco-calido border-2 border-crema-2 p-10 text-center">
-          <p className="text-5xl">🐾</p>
-          <p className="mt-3 text-tinta-suave">
+          <Image
+            src={FOTOS.vacio.src}
+            alt={FOTOS.vacio.alt}
+            width={200}
+            height={200}
+            sizes="160px"
+            className="mx-auto aspect-square w-40 rounded-3xl object-cover"
+          />
+          <p className="mt-4 text-tinta-suave">
             Todavía no tenés conversaciones. Encontrá un animal en el{" "}
             <Link href="/animales" className="font-bold text-terracota underline">
               catálogo

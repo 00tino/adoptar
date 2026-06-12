@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { obtenerAnimalesDeRefugio, obtenerRefugios } from "@/lib/datos";
+import { FOTOS } from "@/lib/fotos";
 
 export const metadata: Metadata = {
   title: "Refugios de animales verificados en Argentina",
@@ -32,14 +34,25 @@ export default async function PaginaRefugios() {
           <Link
             key={r.id}
             href={`/refugios/${r.slug}`}
-            className="rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6 hover:shadow-lg hover:-translate-y-1 transition-all"
+            className="overflow-hidden rounded-2xl bg-blanco-calido border-2 border-crema-2 hover:shadow-lg hover:-translate-y-1 transition-all"
           >
+            {/* Foto del refugio, o placeholder lindo si no subió ninguna */}
+            <Image
+              src={r.fotos[0] ?? FOTOS.refugio.src}
+              alt={r.fotos[0] ? `Foto de ${r.nombre}` : FOTOS.refugio.alt}
+              width={600}
+              height={340}
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              className="h-40 w-full object-cover"
+            />
+            <div className="p-6">
             <h2 className="font-display text-2xl font-bold">🏠 {r.nombre}</h2>
             <p className="text-sm text-tinta-suave">{r.ciudad}, {r.provincia}</p>
             <p className="mt-3 text-sm line-clamp-3">{r.descripcion}</p>
             <p className="mt-4 text-sm font-bold text-salvia-oscuro">
               {r.cantidad} {r.cantidad === 1 ? "animal disponible" : "animales disponibles"}
             </p>
+            </div>
           </Link>
         ))}
       </div>

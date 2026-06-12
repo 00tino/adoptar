@@ -1,5 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { obtenerAnimales, obtenerCampanasActivas, obtenerRefugios } from "@/lib/datos";
+import { FOTOS } from "@/lib/fotos";
 import CardAnimal from "@/components/CardAnimal";
 
 // HOME: hero emocional + buscador + animales destacados + refugios + donaciones.
@@ -12,15 +14,10 @@ export default async function Home() {
 
   return (
     <div>
-      {/* HERO */}
+      {/* HERO con collage de fotos */}
       <section className="relative overflow-hidden bg-salvia-oscuro text-crema">
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-10 text-[10rem] leading-none select-none"
-        >
-          🐾 🐾 🐾 🐾 🐾 🐾 🐾 🐾 🐾 🐾 🐾 🐾
-        </div>
-        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:py-24">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 sm:py-16 lg:grid-cols-[1fr_minmax(0,420px)] lg:py-20">
+          <div>
           <h1 className="font-display text-4xl sm:text-6xl font-black max-w-2xl leading-tight">
             Hay un amigo esperándote en algún rincón de Argentina.
           </h1>
@@ -62,6 +59,25 @@ export default async function Home() {
             <Link href="/animales" className="rounded-full bg-sol text-tinta px-5 py-2 hover:brightness-105">Quiero adoptar</Link>
             <Link href="/publicar-transito" className="rounded-full border-2 border-crema px-5 py-2 hover:bg-crema hover:text-tinta transition-colors">Publicá un animal en tránsito</Link>
             <Link href="/registrar-refugio" className="rounded-full border-2 border-crema px-5 py-2 hover:bg-crema hover:text-tinta transition-colors">Creá tu refugio</Link>
+          </div>
+          </div>
+
+          {/* Collage de fotos (stock por ahora; rutas en lib/fotos.ts) */}
+          <div className="grid grid-cols-2 gap-3" aria-hidden>
+            {FOTOS.hero.map((foto, i) => (
+              <Image
+                key={foto.src}
+                src={foto.src}
+                alt={foto.alt}
+                width={420}
+                height={420}
+                priority={i < 2}
+                sizes="(min-width: 1024px) 210px, 45vw"
+                className={`aspect-square w-full rounded-3xl object-cover border-4 border-crema/20 ${
+                  i % 2 === 1 ? "translate-y-4" : ""
+                }`}
+              />
+            ))}
           </div>
         </div>
       </section>

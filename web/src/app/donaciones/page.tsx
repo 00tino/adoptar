@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
+import { FOTOS } from "@/lib/fotos";
 import { obtenerCampanasActivas, obtenerRefugioPorId } from "@/lib/datos";
 import {
   campanasActivasPorCausa,
@@ -42,11 +44,23 @@ export default async function PaginaDonaciones({
           El pago no se completó. Podés intentarlo de nuevo cuando quieras.
         </div>
       )}
-      <h1 className="font-display text-4xl font-black">Donaciones 💛</h1>
-      <p className="mt-2 text-tinta-suave max-w-2xl">
-        Cada campaña fue revisada y aprobada por el equipo de AdoptAR. Podés
-        donar con nombre o de forma anónima. El 100% de lo donado va a la causa.
-      </p>
+      <div className="flex items-center gap-6">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-4xl font-black">Donaciones 💛</h1>
+          <p className="mt-2 text-tinta-suave max-w-2xl">
+            Cada campaña fue revisada y aprobada por el equipo de AdoptAR. Podés
+            donar con nombre o de forma anónima. El 100% de lo donado va a la causa.
+          </p>
+        </div>
+        <Image
+          src={FOTOS.donaciones.src}
+          alt={FOTOS.donaciones.alt}
+          width={260}
+          height={260}
+          sizes="(min-width: 640px) 160px, 112px"
+          className="aspect-square w-28 shrink-0 rounded-3xl object-cover sm:w-40"
+        />
+      </div>
 
       {/* Donación mensual */}
       <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-salvia-oscuro p-6 text-crema">
