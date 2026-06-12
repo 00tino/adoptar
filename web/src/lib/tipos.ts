@@ -77,6 +77,8 @@ export interface Campana {
   titulo: string;
   descripcion: string;
   tipo: "refugio" | "plataforma";
+  /** Categoría fija de causa (ver lib/causas.ts) */
+  causa: string;
   refugioId: string | null;
   metaMonto: number | null;
   recaudado: number;

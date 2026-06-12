@@ -26,10 +26,16 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
-    await sb
-      .from("donaciones")
-      .update({ estado: "acreditada" })
-      .eq("id", pago.external_reference);
+    const ref = pago.external_reference;
+    if (ref.startsWith("grupo:")) {
+      // Checkout multi-causa: acredita todas las filas del grupo
+      await sb
+        .from("donaciones")
+        .update({ estado: "acreditada" })
+        .eq("grupo_id", ref.slice("grupo:".length));
+    } else {
+      await sb.from("donaciones").update({ estado: "acreditada" }).eq("id", ref);
+    }
   }
 
   return NextResponse.json({ ok: true });

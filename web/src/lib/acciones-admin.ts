@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { esAdmin } from "./auth";
 import { emailRefugioAprobado, emailRefugioRechazado } from "./emails";
 import { crearNotificacion } from "./notificaciones";
+import { esCausa } from "./causas";
 
 function clienteServidor() {
   return createClient(
@@ -215,6 +216,42 @@ export async function decidirAnimal(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/animales");
   revalidatePath("/");
+}
+
+/** Total donado (acreditado) por causa, para el desglose del admin */
+export async function donacionesPorCausa(): Promise<
+  { causa: string; total: number; cantidad: number }[]
+> {
+  await exigirAdmin();
+  const sb = clienteServidor();
+  const { data } = await sb
+    .from("donaciones")
+    .select("causa,monto")
+    .eq("estado", "acreditada");
+  const acumulado = new Map<string, { total: number; cantidad: number }>();
+  for (const d of data ?? []) {
+    const causa = (d as { causa?: string }).causa ?? "sin causa";
+    const reg = acumulado.get(causa) ?? { total: 0, cantidad: 0 };
+    reg.total += Number(d.monto);
+    reg.cantidad += 1;
+    acumulado.set(causa, reg);
+  }
+  return [...acumulado.entries()]
+    .map(([causa, r]) => ({ causa, ...r }))
+    .sort((a, b) => b.total - a.total);
+}
+
+/** El admin corrige la causa de una campaña mal etiquetada */
+export async function cambiarCausaCampana(formData: FormData) {
+  await exigirAdmin();
+  const id = String(formData.get("id"));
+  const causa = String(formData.get("causa"));
+  if (!esCausa(causa)) throw new Error("Causa inválida.");
+  const sb = clienteServidor();
+  const { error } = await sb.from("campanas").update({ causa }).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin");
+  revalidatePath("/donaciones");
 }
 
 export async function decidirCampana(formData: FormData) {

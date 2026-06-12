@@ -8,6 +8,11 @@ alter table refugios add column if not exists historia text not null default '';
 alter table campanas add column if not exists causa text not null default 'plataforma'
   check (causa in ('cirugias','refugios','rescates','castraciones','alimento','plataforma'));
 
+-- 2b. Desglose por causa en cada donación + agrupador de checkouts multi-causa
+alter table donaciones add column if not exists causa text;
+alter table donaciones add column if not exists grupo_id uuid;
+create index if not exists idx_donaciones_grupo on donaciones (grupo_id);
+
 -- 3. Donación mensual: suscripciones de MercadoPago (preapproval)
 create table if not exists suscripciones (
   id uuid primary key default gen_random_uuid(),

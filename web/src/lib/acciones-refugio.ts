@@ -11,6 +11,7 @@ import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import { campoTexto, limitarPorIp } from "./limites";
 import { generarSlug, subirArchivos } from "./archivos";
 import { resolverEmbedVideo, validarUrlRed } from "./embeds";
+import { esCausa } from "./causas";
 
 function clienteServidor() {
   return createClient(
@@ -313,6 +314,70 @@ export async function actualizarPerfilRefugio(formData: FormData) {
   revalidatePath(`/refugios/${refugio.slug}`);
   revalidatePath("/refugios");
   redirect("/mi-refugio/perfil?guardado=1");
+}
+
+// ---------- Campañas de donación del refugio ----------
+
+export interface CampanaDeRefugio {
+  id: string;
+  titulo: string;
+  causa: string;
+  estado: string;
+  metaMonto: number | null;
+  creadoEl: string;
+}
+
+/** Todas las campañas del refugio del usuario, incluso pendientes y cerradas */
+export async function misCampanas(): Promise<CampanaDeRefugio[]> {
+  const refugio = await miRefugio();
+  if (!refugio) return [];
+  const sb = clienteServidor();
+  const { data } = await sb
+    .from("campanas")
+    .select("*")
+    .eq("refugio_id", refugio.id)
+    .order("creado_el", { ascending: false });
+  return (data ?? []).map((f) => ({
+    id: f.id,
+    titulo: f.titulo,
+    causa: f.causa ?? "plataforma",
+    estado: f.estado,
+    metaMonto: f.meta_monto ? Number(f.meta_monto) : null,
+    creadoEl: f.creado_el,
+  }));
+}
+
+/** Crea una campaña de donación etiquetada con su causa (entra a la cola del admin) */
+export async function crearCampanaRefugio(formData: FormData) {
+  await limitarPorIp("crear-campana", 10, 60);
+  const refugio = await exigirRefugio();
+  const sb = clienteServidor();
+
+  const titulo = campoTexto(formData.get("titulo"), 120);
+  if (!titulo) throw new Error("El título es obligatorio.");
+  const descripcion = campoTexto(formData.get("descripcion"), 2000);
+  const causa = String(formData.get("causa"));
+  if (!esCausa(causa) || causa === "plataforma") {
+    throw new Error("Elegí una causa válida para la campaña.");
+  }
+  const metaCruda = Math.round(Number(formData.get("meta_monto")));
+  const metaMonto =
+    Number.isFinite(metaCruda) && metaCruda >= 1000 && metaCruda <= 100_000_000
+      ? metaCruda
+      : null;
+
+  const { error } = await sb.from("campanas").insert({
+    refugio_id: refugio.id,
+    titulo,
+    descripcion,
+    causa,
+    meta_monto: metaMonto,
+    tipo: "refugio",
+    estado: "pendiente",
+  });
+  if (error) throw new Error(`No pudimos crear la campaña: ${error.message}`);
+
+  redirect("/mi-refugio/campanas?creada=1");
 }
 
 /** Da de baja una publicación: deja de verse en el sitio (estado "rechazado") */

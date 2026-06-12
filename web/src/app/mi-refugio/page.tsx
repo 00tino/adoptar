@@ -8,6 +8,7 @@ import {
   darDeBajaAnimal,
 } from "@/lib/acciones-refugio";
 import FotoAnimal from "@/components/FotoAnimal";
+import Pestanas from "./Pestanas";
 
 export const metadata: Metadata = {
   title: "Mi refugio",
@@ -56,18 +57,7 @@ export default async function PaginaMiRefugio({
         </Link>
       </div>
 
-      {/* Pestañas del panel */}
-      <nav className="mt-6 flex gap-2 border-b-2 border-crema-2">
-        <span className="rounded-t-xl bg-crema-2 px-5 py-3 font-bold text-tinta">
-          Mis animales
-        </span>
-        <Link
-          href="/mi-refugio/perfil"
-          className="rounded-t-xl px-5 py-3 font-bold text-tinta-suave hover:bg-crema-2 transition-colors"
-        >
-          Mi perfil
-        </Link>
-      </nav>
+      <Pestanas activa="/mi-refugio" />
 
       {(publicado || editado) && (
         <p className="mt-6 rounded-2xl bg-salvia/20 border-2 border-salvia px-5 py-3 font-bold text-salvia-oscuro">

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { obtenerCampanasActivas, obtenerRefugioPorId } from "@/lib/datos";
 import {
+  campanasActivasPorCausa,
   donarConMercadoPago,
   mercadoPagoDisponible,
 } from "@/lib/acciones-donaciones";
+import FormDonarCausas from "@/components/FormDonarCausas";
 
 export const metadata: Metadata = {
   title: "Donaciones a refugios de animales",
@@ -19,6 +21,7 @@ export default async function PaginaDonaciones({
   const { resultado } = await searchParams;
   const mpActivo = await mercadoPagoDisponible();
   const campanas = await obtenerCampanasActivas();
+  const conteoPorCausa = mpActivo ? await campanasActivasPorCausa() : {};
   const conRefugio = await Promise.all(
     campanas.map(async (c) => ({
       ...c,
@@ -44,7 +47,23 @@ export default async function PaginaDonaciones({
         donar con nombre o de forma anónima. El 100% de lo donado va a la causa.
       </p>
 
-      <div className="mt-8 space-y-6">
+      {/* Donación por causa: elegí una o varias y un solo checkout */}
+      {mpActivo && (
+        <section className="mt-10">
+          <h2 className="font-display text-3xl font-black">Doná por causa 🎯</h2>
+          <p className="mt-2 text-tinta-suave max-w-2xl">
+            Elegí una o varias causas. Lo donado a cada causa se reparte entre
+            sus campañas activas; si una causa no tiene campañas activas, tu
+            aporte sostiene la plataforma.
+          </p>
+          <FormDonarCausas conteoPorCausa={conteoPorCausa} />
+        </section>
+      )}
+
+      <h2 className="mt-12 font-display text-3xl font-black">
+        O elegí una campaña puntual
+      </h2>
+      <div className="mt-6 space-y-6">
         {conRefugio.map((c) => (
           <div key={c.id} className="rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6 sm:p-8">
             <div className="flex flex-wrap items-center gap-3">

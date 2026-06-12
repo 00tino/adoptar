@@ -94,6 +94,10 @@ create table donaciones (
   donor_email text,
   monto numeric not null check (monto > 0),
   metodo text not null check (metodo in ('mercadopago','transferencia')),
+  -- Causa efectiva a la que fue la plata (desglose de donaciones multi-causa)
+  causa text,
+  -- Agrupa las filas de un mismo checkout multi-causa (external_reference "grupo:<uuid>")
+  grupo_id uuid,
   anonima boolean not null default false,
   estado text not null default 'pendiente' check (estado in ('pendiente','acreditada')),
   creado_el timestamptz not null default now()

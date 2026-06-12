@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { actualizarPerfilRefugio, miRefugio } from "@/lib/acciones-refugio";
+import Pestanas from "../Pestanas";
 
 export const metadata: Metadata = {
   title: "Mi perfil de refugio",
@@ -27,18 +28,7 @@ export default async function PaginaPerfilRefugio({
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="font-display text-4xl font-black">{refugio.nombre}</h1>
 
-      {/* Pestañas del panel */}
-      <nav className="mt-6 flex gap-2 border-b-2 border-crema-2">
-        <Link
-          href="/mi-refugio"
-          className="rounded-t-xl px-5 py-3 font-bold text-tinta-suave hover:bg-crema-2 transition-colors"
-        >
-          Mis animales
-        </Link>
-        <span className="rounded-t-xl bg-crema-2 px-5 py-3 font-bold text-tinta">
-          Mi perfil
-        </span>
-      </nav>
+      <Pestanas activa="/mi-refugio/perfil" />
 
       {guardado && (
         <p className="mt-6 rounded-2xl bg-salvia/20 border-2 border-salvia px-5 py-3 font-bold text-salvia-oscuro">

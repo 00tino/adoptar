@@ -5,13 +5,16 @@ import { supabaseDisponible } from "@/lib/supabase";
 import {
   alternarSuspension,
   buscarUsuarios,
+  cambiarCausaCampana,
   decidirAnimal,
   decidirCampana,
   decidirRefugio,
+  donacionesPorCausa,
   obtenerEstadisticas,
   obtenerEvolucionMensual,
   obtenerPendientes,
 } from "@/lib/acciones-admin";
+import { CAUSAS, nombreCausa } from "@/lib/causas";
 
 export const metadata: Metadata = {
   title: "Panel de administración",
@@ -39,11 +42,12 @@ export default async function PaginaAdmin({
   if (!(await esAdmin())) notFound();
 
   const { q = "" } = await searchParams;
-  const [stats, pendientes, usuarios, evolucion] = await Promise.all([
+  const [stats, pendientes, usuarios, evolucion, porCausa] = await Promise.all([
     obtenerEstadisticas(),
     obtenerPendientes(),
     buscarUsuarios(q),
     obtenerEvolucionMensual(),
+    donacionesPorCausa(),
   ]);
   const maxMes = Math.max(1, ...evolucion.map((m) => m.publicados));
 
@@ -169,6 +173,31 @@ export default async function PaginaAdmin({
                     Meta: ${Number(c.meta_monto).toLocaleString("es-AR")}
                   </p>
                 )}
+                {/* Causa etiquetada por el refugio; el admin puede corregirla */}
+                <form action={cambiarCausaCampana} className="mt-2 flex flex-wrap items-center gap-2">
+                  <input type="hidden" name="id" value={c.id} />
+                  <label htmlFor={`causa-${c.id}`} className="text-sm font-bold">
+                    Causa:
+                  </label>
+                  <select
+                    id={`causa-${c.id}`}
+                    name="causa"
+                    defaultValue={c.causa ?? "plataforma"}
+                    className="rounded-xl border-2 border-crema-2 bg-blanco-calido px-3 py-1.5 text-sm"
+                  >
+                    {CAUSAS.map((causa) => (
+                      <option key={causa.id} value={causa.id}>
+                        {causa.emoji} {causa.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="submit"
+                    className="rounded-full border-2 border-crema-2 px-4 py-1.5 text-sm font-bold hover:border-tinta transition-colors"
+                  >
+                    Corregir
+                  </button>
+                </form>
               </div>
               <form action={decidirCampana} className="flex gap-2 shrink-0">
                 <input type="hidden" name="id" value={c.id} />
@@ -179,6 +208,33 @@ export default async function PaginaAdmin({
           </div>
         ))}
       </section>
+
+      {/* Donaciones acreditadas por causa */}
+      {porCausa.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-display text-2xl font-black">Donaciones por causa</h2>
+          <div className="mt-4 overflow-x-auto rounded-2xl border-2 border-crema-2 bg-blanco-calido">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-crema-2 text-left">
+                  <th className="px-4 py-3">Causa</th>
+                  <th className="px-4 py-3">Donaciones</th>
+                  <th className="px-4 py-3">Total acreditado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {porCausa.map((fila) => (
+                  <tr key={fila.causa} className="border-b border-crema-2 last:border-0">
+                    <td className="px-4 py-3 font-bold">{nombreCausa(fila.causa)}</td>
+                    <td className="px-4 py-3">{fila.cantidad}</td>
+                    <td className="px-4 py-3">${fila.total.toLocaleString("es-AR")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {/* Evolución mensual */}
       <section className="mt-12">

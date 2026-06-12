@@ -231,6 +231,7 @@ const campanas: Campana[] = [
     descripcion:
       "Tobías fue atropellado y necesita una cirugía de cadera para volver a caminar. Todo lo recaudado va directo a la clínica veterinaria.",
     tipo: "refugio",
+    causa: "cirugias",
     refugioId: "r1",
     metaMonto: 850000,
     recaudado: 312000,
@@ -242,6 +243,7 @@ const campanas: Campana[] = [
     descripcion:
       "AdoptAR es gratuita para refugios y adoptantes. Tu aporte cubre el dominio y los servicios que mantienen la plataforma en línea.",
     tipo: "plataforma",
+    causa: "plataforma",
     refugioId: null,
     metaMonto: null,
     recaudado: 47500,
@@ -307,6 +309,7 @@ function filaACampana(f: any): Campana {
     titulo: f.titulo,
     descripcion: f.descripcion,
     tipo: f.tipo,
+    causa: f.causa ?? "plataforma",
     refugioId: f.refugio_id,
     metaMonto: f.meta_monto ? Number(f.meta_monto) : null,
     recaudado: Number(f.recaudado ?? 0),
