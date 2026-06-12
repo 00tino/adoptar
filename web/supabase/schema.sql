@@ -98,6 +98,8 @@ create table donaciones (
   causa text,
   -- Agrupa las filas de un mismo checkout multi-causa (external_reference "grupo:<uuid>")
   grupo_id uuid,
+  -- ID del pago de MP que generó la fila (dedupe de webhooks de suscripciones)
+  mp_pago_id text,
   anonima boolean not null default false,
   estado text not null default 'pendiente' check (estado in ('pendiente','acreditada')),
   creado_el timestamptz not null default now()

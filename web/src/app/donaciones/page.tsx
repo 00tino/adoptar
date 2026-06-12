@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { obtenerCampanasActivas, obtenerRefugioPorId } from "@/lib/datos";
 import {
   campanasActivasPorCausa,
@@ -46,6 +47,25 @@ export default async function PaginaDonaciones({
         Cada campaña fue revisada y aprobada por el equipo de AdoptAR. Podés
         donar con nombre o de forma anónima. El 100% de lo donado va a la causa.
       </p>
+
+      {/* Donación mensual */}
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-salvia-oscuro p-6 text-crema">
+        <div>
+          <h2 className="font-display text-2xl font-bold">
+            ¿Y si ayudás todos los meses? 💙
+          </h2>
+          <p className="mt-1 text-sm text-crema-2">
+            La donación mensual es la ayuda más valiosa: les da previsibilidad a
+            los refugios.
+          </p>
+        </div>
+        <Link
+          href="/donaciones/mensual"
+          className="rounded-full bg-sol px-6 py-3 font-bold text-tinta hover:brightness-105"
+        >
+          Quiero ser donante mensual →
+        </Link>
+      </div>
 
       {/* Donación por causa: elegí una o varias y un solo checkout */}
       {mpActivo && (

@@ -11,6 +11,10 @@ alter table campanas add column if not exists causa text not null default 'plata
 -- 2b. Desglose por causa en cada donación + agrupador de checkouts multi-causa
 alter table donaciones add column if not exists causa text;
 alter table donaciones add column if not exists grupo_id uuid;
+-- ID del pago de MP que generó la fila (dedupe de webhooks de suscripciones)
+alter table donaciones add column if not exists mp_pago_id text;
+create unique index if not exists idx_donaciones_mp_pago
+  on donaciones (mp_pago_id, campana_id) where mp_pago_id is not null;
 create index if not exists idx_donaciones_grupo on donaciones (grupo_id);
 
 -- 3. Donación mensual: suscripciones de MercadoPago (preapproval)
