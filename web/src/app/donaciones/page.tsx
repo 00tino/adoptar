@@ -168,7 +168,7 @@ export default async function PaginaDonaciones({
                   Donar por transferencia 🏦
                 </summary>
                 <p className="mt-3 text-sm bg-crema-2/60 rounded-xl p-4">
-                  Alias: <strong>ADOPTAR.AYUDA</strong> — Mandanos el comprobante a{" "}
+                  Alias: <strong>adoptar.ayuda</strong> — Mandanos el comprobante a{" "}
                   <a href="mailto:donaciones@adoptaar.com" className="font-bold underline">donaciones@adoptaar.com</a>{" "}
                   indicando la campaña, y lo acreditamos en la barra de progreso.
                 </p>
