@@ -10,6 +10,7 @@ import {
 import type { Notificacion } from "@/lib/notificaciones";
 import { supabaseDisponible } from "@/lib/supabase";
 import MenuMovil from "./MenuMovil";
+import LinkNav from "./LinkNav";
 
 // Encabezado principal. En desktop la navegación va inline; en mobile
 // se colapsa en un menú hamburguesa (MenuMovil) con todos los links,
@@ -90,18 +91,20 @@ export default async function Header() {
           className="hidden md:flex items-center gap-1"
         >
           {links.map((l) => (
-            <Link
+            <LinkNav
               key={l.href}
               href={l.href}
-              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-tinta-suave hover:bg-crema-2 hover:text-tinta transition-colors"
+              clase="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-tinta-suave hover:bg-crema-2 hover:text-tinta transition-colors"
+              claseActiva="bg-crema-2 text-tinta"
             >
               {l.texto}
-            </Link>
+            </LinkNav>
           ))}
           {conSesion && (
-            <Link
+            <LinkNav
               href="/mensajes"
-              className="relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-tinta-suave hover:bg-crema-2 hover:text-tinta transition-colors"
+              clase="relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-tinta-suave hover:bg-crema-2 hover:text-tinta transition-colors"
+              claseActiva="bg-crema-2 text-tinta"
             >
               Mensajes
               {noLeidos > 0 && (
@@ -109,15 +112,16 @@ export default async function Header() {
                   {noLeidos > 9 ? "9+" : noLeidos}
                 </span>
               )}
-            </Link>
+            </LinkNav>
           )}
           {conRefugio && (
-            <Link
+            <LinkNav
               href="/mi-refugio"
-              className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-salvia-oscuro hover:bg-crema-2 transition-colors"
+              clase="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-salvia-oscuro hover:bg-crema-2 transition-colors"
+              claseActiva="bg-crema-2"
             >
               Mi refugio
-            </Link>
+            </LinkNav>
           )}
           <Link
             href="/publicar-transito"
@@ -163,18 +167,20 @@ export default async function Header() {
         <MenuMovil>
           <nav aria-label="Navegación principal" className="flex flex-col gap-1 pt-2">
             {links.map((l) => (
-              <Link
+              <LinkNav
                 key={l.href}
                 href={l.href}
-                className="rounded-xl px-4 py-3 text-base font-bold text-tinta hover:bg-crema-2 transition-colors"
+                clase="rounded-xl px-4 py-3 text-base font-bold text-tinta hover:bg-crema-2 transition-colors"
+                claseActiva="bg-crema-2"
               >
                 {l.texto}
-              </Link>
+              </LinkNav>
             ))}
             {conSesion && (
-              <Link
+              <LinkNav
                 href="/mensajes"
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-bold text-tinta hover:bg-crema-2 transition-colors"
+                clase="flex items-center justify-between rounded-xl px-4 py-3 text-base font-bold text-tinta hover:bg-crema-2 transition-colors"
+                claseActiva="bg-crema-2"
               >
                 Mensajes
                 {noLeidos > 0 && (
@@ -182,15 +188,16 @@ export default async function Header() {
                     {noLeidos > 9 ? "9+" : noLeidos}
                   </span>
                 )}
-              </Link>
+              </LinkNav>
             )}
             {conRefugio && (
-              <Link
+              <LinkNav
                 href="/mi-refugio"
-                className="rounded-xl px-4 py-3 text-base font-bold text-salvia-oscuro hover:bg-crema-2 transition-colors"
+                clase="rounded-xl px-4 py-3 text-base font-bold text-salvia-oscuro hover:bg-crema-2 transition-colors"
+                claseActiva="bg-crema-2"
               >
                 Mi refugio
-              </Link>
+              </LinkNav>
             )}
             <Link
               href="/publicar-transito"

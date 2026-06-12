@@ -52,7 +52,8 @@ export default function FormDonarCausas({
               </span>
               {sinCampanas && (
                 <span className="mt-2 block text-xs font-bold text-sol">
-                  Sin campañas activas: tu aporte va a Plataforma
+                  Sin campañas activas por ahora: tu aporte queda en una caja
+                  para las próximas campañas
                 </span>
               )}
             </label>

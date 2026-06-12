@@ -87,8 +87,8 @@ export default async function PaginaDonaciones({
           <h2 className="font-display text-3xl font-black">Doná por causa 🎯</h2>
           <p className="mt-2 text-tinta-suave max-w-2xl">
             Elegí una o varias causas. Lo donado a cada causa se reparte entre
-            sus campañas activas; si una causa no tiene campañas activas, tu
-            aporte sostiene la plataforma.
+            sus campañas activas; si una causa todavía no tiene campañas, tu
+            aporte queda en una caja para las próximas campañas de ese tipo.
           </p>
           <FormDonarCausas conteoPorCausa={conteoPorCausa} />
         </section>

@@ -182,9 +182,9 @@ export default async function PaginaRefugio({
 
       {/* VIDEO */}
       {embed && (
-        <section className="mt-12">
+        <section className="mt-12 text-center">
           <h2 className="font-display text-3xl font-black">Conocenos en video 🎬</h2>
-          <div className="mt-4 max-w-3xl">
+          <div className="mx-auto mt-4 max-w-3xl">
             {embed.tipo === "archivo" ? (
               <video
                 src={embed.src}
@@ -200,7 +200,7 @@ export default async function PaginaRefugio({
                 allowFullScreen
                 sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
                 className={`w-full rounded-2xl border-2 border-crema-2 ${
-                  embed.tipo === "instagram" ? "aspect-[4/5] max-w-md" : "aspect-video"
+                  embed.tipo === "instagram" ? "mx-auto aspect-[4/5] max-w-md" : "aspect-video"
                 }`}
               />
             )}
