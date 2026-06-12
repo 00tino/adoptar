@@ -37,6 +37,10 @@ export default async function PaginaAnimales({
     obtenerProvincias(),
   ]);
   const totalPaginas = Math.max(1, Math.ceil(total / ANIMALES_POR_PAGINA));
+  // Cuántos filtros activos hay (sin contar la pestaña tipo): abre el panel en mobile
+  const cantidadFiltros = Object.entries(filtros).filter(
+    ([k, v]) => v && k !== "tipo"
+  ).length;
 
   // Link de paginación que conserva todos los filtros activos
   const urlPagina = (n: number) => {
@@ -57,7 +61,7 @@ export default async function PaginaAnimales({
       </p>
 
       {/* Pestañas adopción / tránsito */}
-      <div className="mt-6 flex gap-2">
+      <div className="mt-6 flex gap-2 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         {[
           { href: "/animales", texto: "Todos", activo: !filtros.tipo },
           { href: "/animales?tipo=adopcion", texto: "En adopción", activo: filtros.tipo === "adopcion" },
@@ -66,7 +70,7 @@ export default async function PaginaAnimales({
           <Link
             key={t.href}
             href={t.href}
-            className={`rounded-full px-5 py-2 text-sm font-bold border-2 transition-colors ${
+            className={`whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold border-2 transition-colors ${
               t.activo
                 ? "bg-tinta text-crema border-tinta"
                 : "border-crema-2 bg-blanco-calido hover:border-tinta"
@@ -77,88 +81,27 @@ export default async function PaginaAnimales({
         ))}
       </div>
 
-      {/* Filtros */}
-      <form className="mt-4 flex flex-wrap gap-3" method="get">
-        {filtros.tipo && <input type="hidden" name="tipo" value={filtros.tipo} />}
-        <select
-          name="especie"
-          aria-label="Especie"
-          defaultValue={filtros.especie ?? ""}
-          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
-        >
-          <option value="">Todas las especies</option>
-          <option value="perro">Perros</option>
-          <option value="gato">Gatos</option>
-          <option value="otro">Otros</option>
-        </select>
-        <select
-          name="provincia"
-          aria-label="Provincia"
-          defaultValue={filtros.provincia ?? ""}
-          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
-        >
-          <option value="">Todas las provincias</option>
-          {provincias.map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
-        <select
-          name="tamano"
-          aria-label="Tamaño"
-          defaultValue={filtros.tamano ?? ""}
-          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
-        >
-          <option value="">Cualquier tamaño</option>
-          <option value="chico">Chico</option>
-          <option value="mediano">Mediano</option>
-          <option value="grande">Grande</option>
-        </select>
-        <select
-          name="edad"
-          aria-label="Edad"
-          defaultValue={filtros.edad ?? ""}
-          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
-        >
-          <option value="">Cualquier edad</option>
-          <option value="cachorro">Cachorros (menos de 1 año)</option>
-          <option value="adulto">Adultos (1 a 7 años)</option>
-          <option value="mayor">Mayores (7+ años)</option>
-        </select>
-        <select
-          name="sexo"
-          aria-label="Sexo"
-          defaultValue={filtros.sexo ?? ""}
-          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
-        >
-          <option value="">Cualquier sexo</option>
-          <option value="hembra">Hembras</option>
-          <option value="macho">Machos</option>
-        </select>
-        <select
-          name="castrado"
-          aria-label="Castrado o esterilizado"
-          defaultValue={filtros.castrado ?? ""}
-          className="rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm font-bold"
-        >
-          <option value="">Castrado: indistinto</option>
-          <option value="si">Castrado/esterilizado</option>
-          <option value="no">Sin castrar</option>
-        </select>
-        <input
-          type="text"
-          name="q"
-          defaultValue={filtros.q ?? ""}
-          placeholder="Buscar por nombre o zona…"
-          aria-label="Búsqueda libre"
-          className="flex-1 min-w-40 rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 py-2 text-sm"
-        />
-        <button
-          type="submit"
-          className="rounded-xl bg-salvia text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-salvia-oscuro transition-colors"
-        >
-          Filtrar
-        </button>
-      </form>
+      {/* Filtros: inline en desktop, panel desplegable en mobile */}
+      <details
+        className="group mt-4 sm:hidden"
+        open={cantidadFiltros > 0}
+      >
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-xl border-2 border-crema-2 bg-blanco-calido px-4 py-2.5 text-sm font-bold">
+          <span>
+            Filtros 🔍
+            {cantidadFiltros > 0 && (
+              <span className="ml-2 rounded-full bg-salvia px-2 py-0.5 text-xs text-blanco-calido">
+                {cantidadFiltros}
+              </span>
+            )}
+          </span>
+          <span aria-hidden className="transition-transform group-open:rotate-180">▾</span>
+        </summary>
+        <FormFiltros filtros={filtros} provincias={provincias} columna />
+      </details>
+      <div className="hidden sm:block">
+        <FormFiltros filtros={filtros} provincias={provincias} />
+      </div>
 
       {/* Resultados */}
       {animales.length === 0 ? (
@@ -219,5 +162,81 @@ export default async function PaginaAnimales({
         </nav>
       )}
     </div>
+  );
+}
+
+// Formulario de filtros. En desktop va en fila (flex-wrap); en mobile
+// (columna=true) apila los campos a lo ancho para usarlo con el pulgar.
+function FormFiltros({
+  filtros,
+  provincias,
+  columna = false,
+}: {
+  filtros: Record<string, string | undefined>;
+  provincias: string[];
+  columna?: boolean;
+}) {
+  const claseCampo = `rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 text-sm font-bold ${
+    columna ? "w-full py-3" : "py-2"
+  }`;
+  return (
+    <form
+      method="get"
+      className={columna ? "mt-3 flex flex-col gap-3" : "mt-4 flex flex-wrap gap-3"}
+    >
+      {filtros.tipo && <input type="hidden" name="tipo" value={filtros.tipo} />}
+      <select name="especie" aria-label="Especie" defaultValue={filtros.especie ?? ""} className={claseCampo}>
+        <option value="">Todas las especies</option>
+        <option value="perro">Perros</option>
+        <option value="gato">Gatos</option>
+        <option value="otro">Otros</option>
+      </select>
+      <select name="provincia" aria-label="Provincia" defaultValue={filtros.provincia ?? ""} className={claseCampo}>
+        <option value="">Todas las provincias</option>
+        {provincias.map((p) => (
+          <option key={p} value={p}>{p}</option>
+        ))}
+      </select>
+      <select name="tamano" aria-label="Tamaño" defaultValue={filtros.tamano ?? ""} className={claseCampo}>
+        <option value="">Cualquier tamaño</option>
+        <option value="chico">Chico</option>
+        <option value="mediano">Mediano</option>
+        <option value="grande">Grande</option>
+      </select>
+      <select name="edad" aria-label="Edad" defaultValue={filtros.edad ?? ""} className={claseCampo}>
+        <option value="">Cualquier edad</option>
+        <option value="cachorro">Cachorros (menos de 1 año)</option>
+        <option value="adulto">Adultos (1 a 7 años)</option>
+        <option value="mayor">Mayores (7+ años)</option>
+      </select>
+      <select name="sexo" aria-label="Sexo" defaultValue={filtros.sexo ?? ""} className={claseCampo}>
+        <option value="">Cualquier sexo</option>
+        <option value="hembra">Hembras</option>
+        <option value="macho">Machos</option>
+      </select>
+      <select name="castrado" aria-label="Castrado o esterilizado" defaultValue={filtros.castrado ?? ""} className={claseCampo}>
+        <option value="">Castrado: indistinto</option>
+        <option value="si">Castrado/esterilizado</option>
+        <option value="no">Sin castrar</option>
+      </select>
+      <input
+        type="text"
+        name="q"
+        defaultValue={filtros.q ?? ""}
+        placeholder="Buscar por nombre o zona…"
+        aria-label="Búsqueda libre"
+        className={`rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 text-sm ${
+          columna ? "w-full py-3" : "flex-1 min-w-40 py-2"
+        }`}
+      />
+      <button
+        type="submit"
+        className={`rounded-xl bg-salvia text-blanco-calido px-5 text-sm font-bold hover:bg-salvia-oscuro transition-colors ${
+          columna ? "w-full py-3" : "py-2"
+        }`}
+      >
+        Filtrar
+      </button>
+    </form>
   );
 }

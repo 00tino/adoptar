@@ -7,10 +7,13 @@ import {
   marcarNotificacionesLeidas,
   obtenerNoLeidas,
 } from "@/lib/notificaciones";
+import type { Notificacion } from "@/lib/notificaciones";
 import { supabaseDisponible } from "@/lib/supabase";
+import MenuMovil from "./MenuMovil";
 
-// Encabezado principal con navegación. Mobile-first: los links secundarios
-// se muestran en una segunda fila scrolleable en pantallas chicas.
+// Encabezado principal. En desktop la navegación va inline; en mobile
+// se colapsa en un menú hamburguesa (MenuMovil) con todos los links,
+// dejando siempre visibles el logo y el botón de sesión.
 const links = [
   { href: "/animales", texto: "Animales" },
   { href: "/transito", texto: "Tránsito" },
@@ -18,6 +21,44 @@ const links = [
   { href: "/mapa", texto: "Mapa" },
   { href: "/donaciones", texto: "Donar" },
 ];
+
+/** Listado de notificaciones con botón "marcar leídas" (se usa en desktop y mobile) */
+function ListaNotificaciones({ notificaciones }: { notificaciones: Notificacion[] }) {
+  if (notificaciones.length === 0) {
+    return (
+      <p className="py-3 text-center text-sm text-tinta-suave">
+        No tenés notificaciones nuevas 🐾
+      </p>
+    );
+  }
+  return (
+    <>
+      <ul className="max-h-72 space-y-2 overflow-y-auto">
+        {notificaciones.map((n) => (
+          <li key={n.id} className="rounded-xl bg-crema-2/50 px-3 py-2 text-sm">
+            {n.contenido}
+            <span className="mt-0.5 block text-xs text-tinta-suave">
+              {new Date(n.creadaEl).toLocaleDateString("es-AR", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <form action={marcarNotificacionesLeidas} className="mt-2">
+        <button
+          type="submit"
+          className="w-full rounded-full border-2 border-crema-2 px-3 py-2 text-xs font-bold text-tinta-suave hover:border-tinta hover:text-tinta transition-colors"
+        >
+          Marcar todas como leídas
+        </button>
+      </form>
+    </>
+  );
+}
 
 export default async function Header() {
   // Resolvemos la sesión en el servidor (Clerk puede no estar configurado)
@@ -31,19 +72,22 @@ export default async function Header() {
           obtenerNoLeidas(usuario.id),
         ])
       : [false, 0, []];
+  const conSesion = Boolean(usuario && supabaseDisponible());
+
   return (
     <header className="sticky top-0 z-50 bg-blanco-calido/90 backdrop-blur border-b-2 border-crema-2">
-      <div className="mx-auto max-w-6xl px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2">
-        <Link href="/" className="flex items-baseline gap-1 shrink-0">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <Link href="/" className="flex items-baseline gap-1 shrink-0 mr-auto">
           <span className="font-display text-2xl font-bold text-tinta">
             Adopt<span className="text-terracota">AR</span>
           </span>
           <span aria-hidden className="text-xl">🐾</span>
         </Link>
 
+        {/* Navegación de escritorio */}
         <nav
           aria-label="Navegación principal"
-          className="flex gap-1 overflow-x-auto -mx-1 px-1 order-last w-full sm:order-none sm:w-auto sm:ml-auto"
+          className="hidden md:flex items-center gap-1"
         >
           {links.map((l) => (
             <Link
@@ -54,7 +98,7 @@ export default async function Header() {
               {l.texto}
             </Link>
           ))}
-          {usuario && supabaseDisponible() && (
+          {conSesion && (
             <Link
               href="/mensajes"
               className="relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-tinta-suave hover:bg-crema-2 hover:text-tinta transition-colors"
@@ -81,7 +125,7 @@ export default async function Header() {
           >
             Publicar
           </Link>
-          {usuario && supabaseDisponible() && (
+          {conSesion && (
             <details className="relative">
               <summary
                 aria-label={`Notificaciones (${notificaciones.length} sin leer)`}
@@ -95,56 +139,82 @@ export default async function Header() {
                 )}
               </summary>
               <div className="absolute right-0 z-50 mt-2 w-72 rounded-2xl border-2 border-crema-2 bg-blanco-calido p-3 shadow-lg">
-                {notificaciones.length === 0 ? (
-                  <p className="py-3 text-center text-sm text-tinta-suave">
-                    No tenés notificaciones nuevas 🐾
-                  </p>
-                ) : (
-                  <>
-                    <ul className="max-h-72 space-y-2 overflow-y-auto">
-                      {notificaciones.map((n) => (
-                        <li
-                          key={n.id}
-                          className="rounded-xl bg-crema-2/50 px-3 py-2 text-sm"
-                        >
-                          {n.contenido}
-                          <span className="mt-0.5 block text-xs text-tinta-suave">
-                            {new Date(n.creadaEl).toLocaleDateString("es-AR", {
-                              day: "numeric",
-                              month: "short",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    <form action={marcarNotificacionesLeidas} className="mt-2">
-                      <button
-                        type="submit"
-                        className="w-full rounded-full border-2 border-crema-2 px-3 py-1.5 text-xs font-bold text-tinta-suave hover:border-tinta hover:text-tinta transition-colors"
-                      >
-                        Marcar todas como leídas
-                      </button>
-                    </form>
-                  </>
-                )}
+                <ListaNotificaciones notificaciones={notificaciones} />
               </div>
             </details>
           )}
-          {clerkDisponible() &&
-            (usuario ? (
-              <span className="flex items-center px-1">
-                <UserButton />
-              </span>
-            ) : (
-              <SignInButton mode="modal">
-                <button className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold border-2 border-tinta text-tinta hover:bg-tinta hover:text-crema transition-colors">
-                  Ingresar
-                </button>
-              </SignInButton>
-            ))}
         </nav>
+
+        {/* Sesión: siempre visible, también en mobile */}
+        {clerkDisponible() &&
+          (usuario ? (
+            <span className="flex items-center px-1">
+              <UserButton />
+            </span>
+          ) : (
+            <SignInButton mode="modal">
+              <button className="whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-bold border-2 border-tinta text-tinta hover:bg-tinta hover:text-crema transition-colors">
+                Ingresar
+              </button>
+            </SignInButton>
+          ))}
+
+        {/* Menú hamburguesa (solo mobile) */}
+        <MenuMovil>
+          <nav aria-label="Navegación principal" className="flex flex-col gap-1 pt-2">
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="rounded-xl px-4 py-3 text-base font-bold text-tinta hover:bg-crema-2 transition-colors"
+              >
+                {l.texto}
+              </Link>
+            ))}
+            {conSesion && (
+              <Link
+                href="/mensajes"
+                className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-bold text-tinta hover:bg-crema-2 transition-colors"
+              >
+                Mensajes
+                {noLeidos > 0 && (
+                  <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-terracota px-1.5 text-xs font-bold text-blanco-calido">
+                    {noLeidos > 9 ? "9+" : noLeidos}
+                  </span>
+                )}
+              </Link>
+            )}
+            {conRefugio && (
+              <Link
+                href="/mi-refugio"
+                className="rounded-xl px-4 py-3 text-base font-bold text-salvia-oscuro hover:bg-crema-2 transition-colors"
+              >
+                Mi refugio
+              </Link>
+            )}
+            <Link
+              href="/publicar-transito"
+              className="mt-2 rounded-xl bg-terracota px-4 py-3 text-center text-base font-bold text-blanco-calido hover:bg-terracota-oscuro transition-colors"
+            >
+              Publicar
+            </Link>
+            {conSesion && (
+              <details className="mt-2 rounded-xl border-2 border-crema-2">
+                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-base font-bold text-tinta">
+                  <span>🔔 Notificaciones</span>
+                  {notificaciones.length > 0 && (
+                    <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-terracota px-1.5 text-xs font-bold text-blanco-calido">
+                      {notificaciones.length}
+                    </span>
+                  )}
+                </summary>
+                <div className="border-t-2 border-crema-2 p-3">
+                  <ListaNotificaciones notificaciones={notificaciones} />
+                </div>
+              </details>
+            )}
+          </nav>
+        </MenuMovil>
       </div>
     </header>
   );
