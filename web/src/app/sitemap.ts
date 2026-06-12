@@ -3,7 +3,7 @@ import { obtenerAnimales, obtenerRefugios } from "@/lib/datos";
 
 // Sitemap automático: incluye páginas fijas + cada animal y refugio.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = "https://adoptaar.com";
+  const base = "https://adoptar.dpdns.org";
   const [animales, refugios] = await Promise.all([
     obtenerAnimales(),
     obtenerRefugios(),

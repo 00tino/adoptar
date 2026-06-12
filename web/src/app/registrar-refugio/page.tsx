@@ -104,7 +104,7 @@ export default async function PaginaRegistrarRefugio({
             </button>
             <p className="text-xs text-tinta-suave text-center">
               El envío se habilita al conectar la base de datos. Mientras tanto,
-              escribinos a <a className="underline font-bold" href="mailto:hola@adoptaar.com">hola@adoptaar.com</a>.
+              escribinos a <a className="underline font-bold" href="mailto:adoptar.argentina.ayuda@gmail.com">adoptar.argentina.ayuda@gmail.com</a>.
             </p>
           </>
         )}

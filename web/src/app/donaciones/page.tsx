@@ -183,8 +183,8 @@ export default async function PaginaDonaciones({
                     Al transferir, poné el nombre de la campaña en la
                     descripción/motivo (ej: «{c.titulo}»). Si tu banco no te
                     deja, mandanos el comprobante a{" "}
-                    <a href="mailto:donaciones@adoptaar.com" className="font-bold underline">
-                      donaciones@adoptaar.com
+                    <a href="mailto:adoptar.argentina.ayuda@gmail.com" className="font-bold underline">
+                      adoptar.argentina.ayuda@gmail.com
                     </a>{" "}
                     indicando la campaña, y lo acreditamos en la barra de
                     progreso.

@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin", "/publicar-transito"],
     },
-    sitemap: "https://adoptaar.com/sitemap.xml",
+    sitemap: "https://adoptar.dpdns.org/sitemap.xml",
   };
 }
