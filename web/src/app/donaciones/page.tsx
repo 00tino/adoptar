@@ -167,11 +167,26 @@ export default async function PaginaDonaciones({
                 <summary className="rounded-full border-2 border-salvia text-salvia-oscuro px-6 py-3 font-bold text-sm cursor-pointer hover:bg-salvia hover:text-blanco-calido transition-colors inline-block">
                   Donar por transferencia 🏦
                 </summary>
-                <p className="mt-3 text-sm bg-crema-2/60 rounded-xl p-4">
-                  Alias: <strong>adoptar.ayuda</strong> — Mandanos el comprobante a{" "}
-                  <a href="mailto:donaciones@adoptaar.com" className="font-bold underline">donaciones@adoptaar.com</a>{" "}
-                  indicando la campaña, y lo acreditamos en la barra de progreso.
-                </p>
+                <div className="mt-3 space-y-2 text-sm bg-crema-2/60 rounded-xl p-4">
+                  <p>
+                    Alias: <strong>adoptar.ayuda</strong>
+                  </p>
+                  <p>
+                    🔒 Esta cuenta se usa <strong>única y exclusivamente</strong> para
+                    AdoptAR: todo lo que entra va a las campañas y al
+                    mantenimiento de la página, nada más.
+                  </p>
+                  <p>
+                    Al transferir, poné el nombre de la campaña en la
+                    descripción/motivo (ej: «{c.titulo}»). Si tu banco no te
+                    deja, mandanos el comprobante a{" "}
+                    <a href="mailto:donaciones@adoptaar.com" className="font-bold underline">
+                      donaciones@adoptaar.com
+                    </a>{" "}
+                    indicando la campaña, y lo acreditamos en la barra de
+                    progreso.
+                  </p>
+                </div>
               </details>
             </div>
           </div>
