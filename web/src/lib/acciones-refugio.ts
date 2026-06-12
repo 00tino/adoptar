@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import { campoTexto, limitarPorIp } from "./limites";
 import { generarSlug, subirArchivos } from "./archivos";
+import { resolverEmbedVideo, validarUrlRed } from "./embeds";
 
 function clienteServidor() {
   return createClient(
@@ -27,6 +28,11 @@ export interface MiRefugio {
   provincia: string;
   lat: number | null;
   lng: number | null;
+  descripcion: string;
+  historia: string;
+  fotos: string[];
+  video_url: string | null;
+  redes: { instagram?: string; facebook?: string };
 }
 
 /** Versión liviana para el Header: ¿el usuario logueado tiene refugio aprobado?
@@ -52,13 +58,29 @@ export async function miRefugio(): Promise<MiRefugio | null> {
   const yo = await asegurarUsuario();
   if (!yo) return null;
   const sb = clienteServidor();
+  // select("*"): tolera columnas nuevas que todavía no migraron en la base
   const { data } = await sb
     .from("refugios")
-    .select("id,slug,nombre,estado,ciudad,provincia,lat,lng")
+    .select("*")
     .eq("usuario_id", yo.id)
     .in("estado", ["verificado", "estrella"])
     .maybeSingle();
-  return (data as MiRefugio | null) ?? null;
+  if (!data) return null;
+  return {
+    id: data.id,
+    slug: data.slug,
+    nombre: data.nombre,
+    estado: data.estado,
+    ciudad: data.ciudad,
+    provincia: data.provincia,
+    lat: data.lat,
+    lng: data.lng,
+    descripcion: data.descripcion ?? "",
+    historia: data.historia ?? "",
+    fotos: Array.isArray(data.fotos) ? data.fotos : [],
+    video_url: data.video_url ?? null,
+    redes: data.redes && typeof data.redes === "object" ? data.redes : {},
+  };
 }
 
 export interface AnimalDeRefugio {
@@ -231,6 +253,66 @@ export async function cambiarEstadoAnimal(formData: FormData) {
 
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
+}
+
+/** Edita el perfil público del refugio: historia, fotos, video y redes.
+ *  No pasa por el admin (el refugio ya está verificado). */
+export async function actualizarPerfilRefugio(formData: FormData) {
+  await limitarPorIp("perfil-refugio", 20, 60);
+  const refugio = await exigirRefugio();
+  const sb = clienteServidor();
+
+  const descripcion = campoTexto(formData.get("descripcion"), 500);
+  const historia = campoTexto(formData.get("historia"), 8000);
+
+  // Redes: solo URLs de instagram.com / facebook.com (o vacío para borrar)
+  const redes: { instagram?: string; facebook?: string } = {};
+  const instagramCrudo = campoTexto(formData.get("instagram"), 200);
+  const facebookCrudo = campoTexto(formData.get("facebook"), 200);
+  if (instagramCrudo) {
+    const url = validarUrlRed(instagramCrudo, "instagram.com");
+    if (!url) throw new Error("El Instagram tiene que ser un link de instagram.com.");
+    redes.instagram = url;
+  }
+  if (facebookCrudo) {
+    const url = validarUrlRed(facebookCrudo, "facebook.com");
+    if (!url) throw new Error("El Facebook tiene que ser un link de facebook.com.");
+    redes.facebook = url;
+  }
+
+  // Video: archivo subido (prioridad) o link de YouTube/Instagram
+  const archivoVideo = formData.get("video_archivo") as File | null;
+  const linkVideo = campoTexto(formData.get("video_url"), 300);
+  let videoUrl: string | null = refugio.video_url;
+  if (archivoVideo && archivoVideo.size > 0) {
+    videoUrl = (await subirArchivos(sb, [archivoVideo], "videos"))[0];
+  } else if (linkVideo) {
+    if (!resolverEmbedVideo(linkVideo)) {
+      throw new Error("El video tiene que ser un link de YouTube o Instagram.");
+    }
+    videoUrl = linkVideo;
+  } else if (formData.get("quitar_video") === "on") {
+    videoUrl = null;
+  }
+
+  // Fotos: las marcadas se quitan, las nuevas se agregan al final (máx 12)
+  const quitar = new Set(formData.getAll("fotos_quitar").map(String));
+  let fotos = refugio.fotos.filter((f) => !quitar.has(f));
+  const fotosNuevas = (formData.getAll("fotos") as File[]).filter((f) => f.size > 0);
+  if (fotosNuevas.length > 0) {
+    const urls = await subirArchivos(sb, fotosNuevas.slice(0, 8), "refugios");
+    fotos = [...fotos, ...urls].slice(0, 12);
+  }
+
+  const { error } = await sb
+    .from("refugios")
+    .update({ descripcion, historia, redes, video_url: videoUrl, fotos })
+    .eq("id", refugio.id);
+  if (error) throw new Error(`No pudimos guardar el perfil: ${error.message}`);
+
+  revalidatePath(`/refugios/${refugio.slug}`);
+  revalidatePath("/refugios");
+  redirect("/mi-refugio/perfil?guardado=1");
 }
 
 /** Da de baja una publicación: deja de verse en el sitio (estado "rechazado") */

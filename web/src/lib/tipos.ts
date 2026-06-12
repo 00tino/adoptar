@@ -22,6 +22,8 @@ export interface Refugio {
   slug: string;
   nombre: string;
   descripcion: string;
+  /** Historia larga que el refugio escribe desde "Mi perfil" */
+  historia: string;
   ciudad: string;
   provincia: string;
   lat: number;
@@ -29,6 +31,12 @@ export interface Refugio {
   telefono: string;
   email: string;
   whatsapp: string;
+  /** URLs públicas de fotos del refugio en Supabase Storage */
+  fotos: string[];
+  /** Video de presentación: link de YouTube/Instagram o archivo subido */
+  videoUrl: string | null;
+  /** Redes sociales validadas (solo instagram.com / facebook.com) */
+  redes: { instagram?: string; facebook?: string };
   estado: EstadoRefugio;
   creadoEl: string; // fecha ISO
 }

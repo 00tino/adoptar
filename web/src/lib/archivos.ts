@@ -20,6 +20,7 @@ export function generarSlug(partes: string[]): string {
 // el bucket es público y un SVG puede ejecutar scripts en el navegador.
 const REGLAS_ARCHIVOS: Record<string, { tipos: string[]; maxMB: number }> = {
   animales: { tipos: ["image/jpeg", "image/png", "image/webp"], maxMB: 8 },
+  refugios: { tipos: ["image/jpeg", "image/png", "image/webp"], maxMB: 8 },
   videos: { tipos: ["video/mp4", "video/webm", "video/quicktime"], maxMB: 60 },
 };
 

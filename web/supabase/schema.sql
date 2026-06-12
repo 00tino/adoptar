@@ -28,9 +28,12 @@ create table refugios (
   telefono text,
   email text,
   whatsapp text,
+  -- redes: {"instagram": "https://instagram.com/...", "facebook": "https://facebook.com/..."}
   redes jsonb not null default '{}',
   video_url text,
   fotos jsonb not null default '[]',
+  -- Historia larga del refugio (la cuenta el propio refugio desde "Mi perfil")
+  historia text not null default '',
   estado text not null default 'pendiente' check (estado in ('pendiente','verificado','estrella','suspendido')),
   creado_el timestamptz not null default now()
 );
@@ -77,6 +80,9 @@ create table campanas (
   descripcion text not null default '',
   meta_monto numeric,
   tipo text not null check (tipo in ('refugio','plataforma')),
+  -- Causa fija para donar por categoría (tarea "donaciones por causa")
+  causa text not null default 'plataforma'
+    check (causa in ('cirugias','refugios','rescates','castraciones','alimento','plataforma')),
   estado text not null default 'pendiente' check (estado in ('pendiente','activa','cerrada')),
   creado_el timestamptz not null default now()
 );
@@ -137,6 +143,20 @@ create table notificaciones (
   creado_el timestamptz not null default now()
 );
 
+-- ============ SUSCRIPCIONES (donación mensual con MP preapproval) ============
+create table suscripciones (
+  id uuid primary key default gen_random_uuid(),
+  usuario_id uuid not null references usuarios(id) on delete cascade,
+  preapproval_id text unique,
+  monto numeric not null check (monto > 0),
+  -- ["cirugias", "alimento"] o ["general"] = donde más se necesite
+  causas jsonb not null default '["general"]',
+  estado text not null default 'pendiente'
+    check (estado in ('pendiente','activa','pausada','cancelada')),
+  creado_el timestamptz not null default now(),
+  actualizado_el timestamptz not null default now()
+);
+
 -- ============ ROW LEVEL SECURITY ============
 alter table usuarios enable row level security;
 alter table refugios enable row level security;
@@ -146,6 +166,7 @@ alter table donaciones enable row level security;
 alter table ratings enable row level security;
 alter table mensajes enable row level security;
 alter table notificaciones enable row level security;
+alter table suscripciones enable row level security;
 
 -- Lectura pública SOLO de contenido aprobado
 create policy "animales visibles" on animales
