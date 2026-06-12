@@ -168,8 +168,11 @@ export default async function PaginaDonaciones({
                   Donar por transferencia 🏦
                 </summary>
                 <div className="mt-3 space-y-2 text-sm bg-crema-2/60 rounded-xl p-4">
-                  <p>
-                    Alias: <strong>adoptar.ayuda</strong>
+                  <p className="text-base">
+                    Alias:{" "}
+                    <strong className="block font-display text-2xl text-salvia-oscuro sm:inline sm:text-3xl">
+                      adoptar.ayuda
+                    </strong>
                   </p>
                   <p>
                     🔒 Esta cuenta se usa <strong>única y exclusivamente</strong> para
