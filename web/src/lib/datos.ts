@@ -517,3 +517,32 @@ export async function obtenerProvincias(): Promise<string[]> {
   }
   return [...new Set(animales.map((a) => a.provincia))].sort();
 }
+
+/** Desglose público de donaciones acreditadas por causa, para la sección
+ *  "¿Cómo usamos tu donación?" de /donaciones. Usa la service role porque
+ *  la tabla donaciones es privada, pero solo devuelve números agregados. */
+export async function desglosePorCausa(): Promise<
+  { causa: string; total: number; cantidad: number }[]
+> {
+  if (!supabaseDisponible() || !process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
+  const { createClient } = await import("@supabase/supabase-js");
+  const sb = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+  const { data } = await sb
+    .from("donaciones")
+    .select("causa,monto")
+    .eq("estado", "acreditada");
+  const acumulado = new Map<string, { total: number; cantidad: number }>();
+  for (const d of data ?? []) {
+    const causa = (d as { causa?: string }).causa ?? "plataforma";
+    const reg = acumulado.get(causa) ?? { total: 0, cantidad: 0 };
+    reg.total += Number(d.monto);
+    reg.cantidad += 1;
+    acumulado.set(causa, reg);
+  }
+  return [...acumulado.entries()]
+    .map(([causa, r]) => ({ causa, ...r }))
+    .sort((a, b) => b.total - a.total);
+}

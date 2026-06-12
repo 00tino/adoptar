@@ -9,15 +9,18 @@ export default function LinkNav({
   href,
   clase,
   claseActiva,
+  exacta = false,
   children,
 }: {
   href: string;
   clase: string;
   claseActiva: string;
+  /** Solo activo en la ruta exacta (ej: "Inicio" del admin, que es prefijo de todas) */
+  exacta?: boolean;
   children: React.ReactNode;
 }) {
   const ruta = usePathname();
-  const activa = ruta === href || ruta.startsWith(`${href}/`);
+  const activa = ruta === href || (!exacta && ruta.startsWith(`${href}/`));
   return (
     <Link href={href} aria-current={activa ? "page" : undefined} className={`${clase} ${activa ? claseActiva : ""}`}>
       {children}

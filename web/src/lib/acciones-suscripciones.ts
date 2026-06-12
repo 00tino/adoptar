@@ -245,7 +245,6 @@ export async function registrarCobroSuscripcion(
     porCausa.set(causa, [...(porCausa.get(causa) ?? []), c.id]);
   }
   const plataforma = porCausa.get("plataforma") ?? [];
-  if ((activas ?? []).length === 0) return; // sin campañas no hay destino
 
   const reparto = (monto: number, partes: number) => {
     const base = Math.floor(monto / partes);
@@ -260,6 +259,20 @@ export async function registrarCobroSuscripcion(
       causa !== "general" && porCausa.get(causa)?.length
         ? { ids: porCausa.get(causa)!, causa }
         : { ids: plataforma.length ? plataforma : (activas ?? []).map((c) => c.id), causa: "plataforma" };
+    // Sin ninguna campaña activa, el cobro queda "en caja" para su causa
+    if (destinos.ids.length === 0) {
+      filas.push({
+        campana_id: null,
+        donor_nombre: donorNombre,
+        monto: porCausaElegida[i],
+        metodo: "mercadopago",
+        anonima: !donorNombre,
+        estado: "acreditada",
+        causa: causa === "general" ? "plataforma" : causa,
+        mp_pago_id: pagoId,
+      });
+      return;
+    }
     reparto(porCausaElegida[i], destinos.ids.length).forEach((monto, j) => {
       if (monto === 0) return;
       filas.push({

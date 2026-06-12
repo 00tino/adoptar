@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { esES } from "@clerk/localizations";
@@ -37,6 +38,11 @@ export const metadata: Metadata = {
   },
 };
 
+// Color de la barra del navegador (mismo crema del fondo del sitio)
+export const viewport: Viewport = {
+  themeColor: "#faf4ea",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -51,6 +57,8 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        {/* Métricas anónimas de Vercel (plan free, sin cookies) */}
+        <Analytics />
       </body>
     </html>
   );

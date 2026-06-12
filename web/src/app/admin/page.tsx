@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { clerkDisponible, esAdmin } from "@/lib/auth";
-import { supabaseDisponible } from "@/lib/supabase";
+import { esAdmin } from "@/lib/auth";
 import {
   alternarSuspension,
   buscarUsuarios,
@@ -29,16 +28,6 @@ export default async function PaginaAdmin({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  if (!supabaseDisponible() || !clerkDisponible()) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <h1 className="font-display text-3xl font-black">Panel no disponible</h1>
-        <p className="mt-2 text-tinta-suave">
-          Faltan configurar Supabase y Clerk en .env.local.
-        </p>
-      </div>
-    );
-  }
   if (!(await esAdmin())) notFound();
 
   const { q = "" } = await searchParams;
@@ -66,9 +55,7 @@ export default async function PaginaAdmin({
     pendientes.campanas.length;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="font-display text-4xl font-black">Panel de administración</h1>
-
+    <div>
       {/* Estadísticas */}
       <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-4">
         {tarjetas.map((s) => (

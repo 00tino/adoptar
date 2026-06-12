@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { FOTOS } from "@/lib/fotos";
-import { obtenerCampanasActivas, obtenerRefugioPorId } from "@/lib/datos";
+import { desglosePorCausa, obtenerCampanasActivas, obtenerRefugioPorId } from "@/lib/datos";
+import { nombreCausa } from "@/lib/causas";
 import {
   campanasActivasPorCausa,
   donarConMercadoPago,
@@ -25,6 +26,8 @@ export default async function PaginaDonaciones({
   const mpActivo = await mercadoPagoDisponible();
   const campanas = await obtenerCampanasActivas();
   const conteoPorCausa = mpActivo ? await campanasActivasPorCausa() : {};
+  const desglose = await desglosePorCausa();
+  const totalDonado = desglose.reduce((suma, d) => suma + d.total, 0);
   const conRefugio = await Promise.all(
     campanas.map(async (c) => ({
       ...c,
@@ -91,6 +94,35 @@ export default async function PaginaDonaciones({
             aporte queda en una caja para las próximas campañas de ese tipo.
           </p>
           <FormDonarCausas conteoPorCausa={conteoPorCausa} />
+        </section>
+      )}
+
+      {/* Transparencia: a dónde fue lo donado hasta ahora (datos reales) */}
+      {totalDonado > 0 && (
+        <section className="mt-10 rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6">
+          <h2 className="font-display text-2xl font-black">¿Cómo usamos tu donación?</h2>
+          <p className="mt-1 text-sm text-tinta-suave">
+            Así se repartió todo lo donado y acreditado hasta hoy. El 100% va a
+            las campañas; AdoptAR no cobra comisión.
+          </p>
+          <ul className="mt-4 space-y-2">
+            {desglose.map((d) => (
+              <li key={d.causa}>
+                <div className="flex items-center justify-between text-sm font-bold">
+                  <span>{nombreCausa(d.causa)}</span>
+                  <span className="text-salvia-oscuro">
+                    ${d.total.toLocaleString("es-AR")} ({d.cantidad})
+                  </span>
+                </div>
+                <div className="mt-1 h-2 rounded-full bg-crema-2 overflow-hidden">
+                  <div
+                    className="h-full bg-salvia"
+                    style={{ width: `${(d.total / totalDonado) * 100}%` }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

@@ -178,32 +178,38 @@ export async function donarPorCausas(formData: FormData) {
     const causa = c.causa ?? "plataforma";
     porCausa.set(causa, [...(porCausa.get(causa) ?? []), c.id]);
   }
-  const campanasPlataforma = porCausa.get("plataforma") ?? [];
 
-  // Una fila de donación por campaña destino, agrupadas por grupo_id
+  // Una fila de donación por campaña destino, agrupadas por grupo_id.
+  // Si la causa no tiene campañas activas, la fila queda "en caja"
+  // (campana_id null) hasta que el admin la reasigne a una campaña nueva.
   const grupoId = randomUUID();
   const filas: Record<string, unknown>[] = [];
   for (const causa of causasElegidas) {
-    // Sin campañas activas para esa causa, cae en "Plataforma" (la UI lo avisa)
-    const destinos = porCausa.get(causa)?.length
-      ? { ids: porCausa.get(causa)!, causa }
-      : { ids: campanasPlataforma, causa: "plataforma" };
-    if (destinos.ids.length === 0) {
-      throw new Error(
-        "No hay campañas activas para recibir la donación. Probá más tarde."
-      );
+    const destinos = porCausa.get(causa) ?? [];
+    if (destinos.length === 0) {
+      filas.push({
+        campana_id: null,
+        donor_nombre: donorNombre,
+        monto: montosPorCausa.get(causa)!,
+        metodo: "mercadopago",
+        anonima: !donorNombre,
+        estado: "pendiente",
+        causa,
+        grupo_id: grupoId,
+      });
+      continue;
     }
-    repartirEntero(montosPorCausa.get(causa)!, destinos.ids.length).forEach(
+    repartirEntero(montosPorCausa.get(causa)!, destinos.length).forEach(
       (monto, i) => {
         if (monto === 0) return;
         filas.push({
-          campana_id: destinos.ids[i],
+          campana_id: destinos[i],
           donor_nombre: donorNombre,
           monto,
           metodo: "mercadopago",
           anonima: !donorNombre,
           estado: "pendiente",
-          causa: destinos.causa,
+          causa,
           grupo_id: grupoId,
         });
       }

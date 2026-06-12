@@ -24,6 +24,10 @@ export default function Footer() {
           <p className="font-bold text-sol uppercase tracking-wide text-xs">Sumate</p>
           <Link className="block hover:text-sol" href="/publicar-transito">Publicar un animal en tránsito</Link>
           <Link className="block hover:text-sol" href="/registrar-refugio">Registrar mi refugio</Link>
+          <p className="pt-3 font-bold text-sol uppercase tracking-wide text-xs">AdoptAR</p>
+          <Link className="block hover:text-sol" href="/quienes-somos">Quiénes somos</Link>
+          <Link className="block hover:text-sol" href="/terminos">Términos y condiciones</Link>
+          <Link className="block hover:text-sol" href="/privacidad">Privacidad</Link>
         </nav>
       </div>
       <div className="border-t border-crema/10 py-4 text-center text-xs text-crema-2/60">

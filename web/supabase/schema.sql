@@ -89,7 +89,9 @@ create table campanas (
 
 create table donaciones (
   id uuid primary key default gen_random_uuid(),
-  campana_id uuid not null references campanas(id) on delete cascade,
+  -- campana_id null = donación "en caja": fue a una causa sin campañas
+  -- activas y espera que el admin la reasigne cuando haya una campaña.
+  campana_id uuid references campanas(id) on delete cascade,
   donor_nombre text,
   donor_email text,
   monto numeric not null check (monto > 0),
@@ -102,7 +104,9 @@ create table donaciones (
   mp_pago_id text,
   anonima boolean not null default false,
   estado text not null default 'pendiente' check (estado in ('pendiente','acreditada')),
-  creado_el timestamptz not null default now()
+  creado_el timestamptz not null default now(),
+  -- Una donación sin campaña tiene que tener causa (es la "caja" de esa causa)
+  check (campana_id is not null or causa is not null)
 );
 
 -- Vista pública: campañas activas/cerradas con el total acreditado.

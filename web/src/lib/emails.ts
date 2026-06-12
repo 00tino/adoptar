@@ -44,6 +44,47 @@ function plantilla(titulo: string, cuerpo: string): string {
   </div>`;
 }
 
+/** Agradecimiento al donante cuando su pago queda acreditado */
+export async function emailGraciasDonante(
+  para: string,
+  nombreCrudo: string,
+  monto: number
+) {
+  const nombre = escaparHtml(nombreCrudo);
+  await enviarEmail({
+    para,
+    asunto: "¡Gracias por tu donación! 💛",
+    html: plantilla(
+      `¡Gracias, ${nombre}!`,
+      `Tu donación de $${monto.toLocaleString("es-AR")} ya está acreditada. ` +
+        "Gracias a aportes como el tuyo los refugios pueden seguir rescatando, " +
+        "curando y alimentando animales. Podés ver las campañas activas en " +
+        '<a href="https://adoptar.dpdns.org/donaciones" style="color:#d95d28">adoptar.dpdns.org/donaciones</a>.'
+    ),
+  });
+}
+
+/** Aviso al refugio cuando una de sus campañas recibe una donación acreditada */
+export async function emailDonacionRecibida(
+  para: string,
+  nombreRefugioCrudo: string,
+  tituloCampanaCrudo: string,
+  monto: number
+) {
+  const nombreRefugio = escaparHtml(nombreRefugioCrudo);
+  const tituloCampana = escaparHtml(tituloCampanaCrudo);
+  await enviarEmail({
+    para,
+    asunto: `Tu campaña "${tituloCampana}" recibió una donación 🎉`,
+    html: plantilla(
+      `¡Buenas noticias, ${nombreRefugio}!`,
+      `Tu campaña <strong>${tituloCampana}</strong> recibió una donación de ` +
+        `$${monto.toLocaleString("es-AR")} que ya está acreditada. ` +
+        "Podés seguir lo recaudado desde tu panel en AdoptAR."
+    ),
+  });
+}
+
 export async function emailRefugioAprobado(para: string, nombreCrudo: string) {
   const nombre = escaparHtml(nombreCrudo);
   await enviarEmail({
