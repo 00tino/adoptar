@@ -30,13 +30,42 @@ export async function asegurarUsuario(): Promise<{
     [user.firstName, user.lastName].filter(Boolean).join(" ") || email.split("@")[0];
 
   const sb = clienteServidor();
+  const seleccion = "id,email,nombre,suspendido";
+
+  // 1. Caso normal: la cuenta ya está vinculada por clerk_id.
+  const { data: porClerk } = await sb
+    .from("usuarios")
+    .select(seleccion)
+    .eq("clerk_id", user.id)
+    .maybeSingle();
+  if (porClerk) return porClerk;
+
+  // 2. No está por clerk_id, pero puede existir una fila con el mismo email
+  //    (datos demo o una sincronización vieja sin clerk_id). La reclamamos
+  //    vinculándola a esta cuenta, así no chocamos con el unique de email.
+  //    (No se puede usar upsert onConflict clerk_id: cuando el email ya existe
+  //    en otra fila, intenta insertar y viola usuarios_email_key.)
+  const { data: porEmail } = await sb
+    .from("usuarios")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+  if (porEmail) {
+    const { data, error } = await sb
+      .from("usuarios")
+      .update({ clerk_id: user.id, nombre })
+      .eq("id", porEmail.id)
+      .select(seleccion)
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  // 3. Usuario nuevo: alta normal.
   const { data, error } = await sb
     .from("usuarios")
-    .upsert(
-      { clerk_id: user.id, email, nombre },
-      { onConflict: "clerk_id" }
-    )
-    .select("id,email,nombre,suspendido")
+    .insert({ clerk_id: user.id, email, nombre })
+    .select(seleccion)
     .single();
   if (error) throw new Error(error.message);
   return data;
