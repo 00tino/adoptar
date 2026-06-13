@@ -6,6 +6,7 @@ import { cancelarSuscripcion, miSuscripcion } from "@/lib/acciones-suscripciones
 import { mercadoPagoDisponible } from "@/lib/acciones-donaciones";
 import { nombreCausa } from "@/lib/causas";
 import FormSuscripcion from "@/components/FormSuscripcion";
+import BotonEnvio from "@/components/BotonEnvio";
 
 export const metadata: Metadata = {
   title: "Donación mensual",
@@ -99,12 +100,12 @@ export default async function PaginaDonacionMensual({
           </div>
 
           <form action={cancelarSuscripcion} className="mt-10">
-            <button
-              type="submit"
+            <BotonEnvio
+              textoEnviando="Cancelando…"
               className="rounded-full border-2 border-terracota px-6 py-2.5 text-sm font-bold text-terracota transition-colors hover:bg-terracota hover:text-blanco-calido"
             >
               Cancelar mi donación mensual
-            </button>
+            </BotonEnvio>
           </form>
         </section>
       ) : (
@@ -124,12 +125,12 @@ export default async function PaginaDonacionMensual({
                 acá abajo, o descartarla.
               </p>
               <form action={cancelarSuscripcion} className="mt-4">
-                <button
-                  type="submit"
+                <BotonEnvio
+                  textoEnviando="Descartando…"
                   className="rounded-full border-2 border-terracota px-5 py-2 text-sm font-bold text-terracota transition-colors hover:bg-terracota hover:text-blanco-calido"
                 >
                   Descartar y empezar de cero
-                </button>
+                </BotonEnvio>
               </form>
             </div>
           )}

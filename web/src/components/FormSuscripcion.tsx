@@ -6,6 +6,7 @@ import {
   cambiarSuscripcion,
   crearSuscripcion,
 } from "@/lib/acciones-suscripciones";
+import BotonEnvio from "@/components/BotonEnvio";
 
 const NIVELES = [2000, 5000, 10000];
 
@@ -120,13 +121,13 @@ export default function FormSuscripcion({
         })}
       </div>
 
-      <button
-        type="submit"
-        disabled={causas.length === 0}
-        className="mt-8 w-full rounded-full bg-terracota px-6 py-3 font-bold text-blanco-calido transition-colors hover:bg-terracota-oscuro disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+      <BotonEnvio
+        deshabilitado={causas.length === 0}
+        textoEnviando={editar ? "Guardando…" : "Redirigiendo a Mercado Pago…"}
+        className="mt-8 w-full rounded-full bg-terracota px-6 py-3 font-bold text-blanco-calido transition-colors hover:bg-terracota-oscuro sm:w-auto"
       >
         {editar ? "Guardar cambios" : "Empezar mi donación mensual 💙"}
-      </button>
+      </BotonEnvio>
       {!editar && (
         <p className="mt-3 text-xs text-tinta-suave">
           Te lleva al checkout seguro de Mercado Pago para autorizar el débito.

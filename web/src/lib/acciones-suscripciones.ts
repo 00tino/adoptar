@@ -169,12 +169,16 @@ export async function cambiarSuscripcion(formData: FormData) {
   redirect("/donaciones/mensual?resultado=cambiada");
 }
 
-/** Cancela la suscripción en MP y en nuestra base */
+/** Cancela la suscripción en MP y en nuestra base.
+ *  Idempotente: si ya no hay suscripción activa (doble click), no es un error,
+ *  simplemente redirige al estado "cancelada". No lleva rate limit por IP para
+ *  que un usuario nunca quede trabado sin poder descartar su suscripción. */
 export async function cancelarSuscripcion() {
-  await limitarPorIp("suscripcion", 10, 60);
   await exigirUsuarioActivo();
   const sus = await miSuscripcion();
-  if (!sus) throw new Error("No tenés una donación mensual activa.");
+  if (!sus) {
+    redirect("/donaciones/mensual?resultado=cancelada");
+  }
 
   if (sus.preapprovalId) {
     // Best-effort: si el preapproval estaba pendiente/incompleto y MP rechaza
