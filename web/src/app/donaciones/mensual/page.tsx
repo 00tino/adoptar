@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 };
 
 const etiquetaEstado: Record<string, string> = {
-  pendiente: "⏳ Esperando que la autorices en Mercado Pago",
   activa: "💚 Activa",
   pausada: "⏸️ Pausada en Mercado Pago",
 };
@@ -72,7 +71,7 @@ export default async function PaginaDonacionMensual({
             </button>
           </SignInButton>
         </div>
-      ) : suscripcion ? (
+      ) : suscripcion && suscripcion.estado !== "pendiente" ? (
         <section className="mt-8">
           <div className="rounded-2xl border-2 border-salvia bg-salvia/10 p-6">
             <h2 className="font-display text-2xl font-bold">Mi donación mensual</h2>
@@ -110,7 +109,34 @@ export default async function PaginaDonacionMensual({
         </section>
       ) : (
         <div className="mt-8">
-          <FormSuscripcion />
+          {/* Suscripción "pendiente": se creó pero nunca se autorizó en MP,
+              así que NO hubo ningún cobro. La aclaramos y dejamos retomar o descartar. */}
+          {suscripcion?.estado === "pendiente" && (
+            <div className="mb-8 rounded-2xl border-2 border-sol/60 bg-sol/10 p-6">
+              <h2 className="font-display text-xl font-bold">
+                ⏳ Tenés una donación mensual a medias
+              </h2>
+              <p className="mt-1 text-sm text-tinta-suave">
+                La empezaste por{" "}
+                <strong>${suscripcion.monto.toLocaleString("es-AR")} por mes</strong>{" "}
+                pero no llegaste a autorizarla en Mercado Pago, así que{" "}
+                <strong>no se hizo ningún cobro</strong>. Podés volver a intentarlo
+                acá abajo, o descartarla.
+              </p>
+              <form action={cancelarSuscripcion} className="mt-4">
+                <button
+                  type="submit"
+                  className="rounded-full border-2 border-terracota px-5 py-2 text-sm font-bold text-terracota transition-colors hover:bg-terracota hover:text-blanco-calido"
+                >
+                  Descartar y empezar de cero
+                </button>
+              </form>
+            </div>
+          )}
+          <FormSuscripcion
+            montoInicial={suscripcion?.monto}
+            causasIniciales={suscripcion?.causas}
+          />
         </div>
       )}
     </div>

@@ -94,6 +94,14 @@ export async function crearSuscripcion(formData: FormData) {
     throw new Error("Ya tenés una donación mensual activa. Podés cambiarla desde acá.");
   }
 
+  // Limpiamos intentos pendientes abandonados (creados pero nunca autorizados,
+  // sin ningún cobro): así no se acumulan ni confunden el estado de "Mi donación".
+  await sb
+    .from("suscripciones")
+    .update({ estado: "cancelada", actualizado_el: new Date().toISOString() })
+    .eq("usuario_id", yo.id)
+    .eq("estado", "pendiente");
+
   // Fila propia primero, para tener el id como external_reference
   const { data: fila, error } = await sb
     .from("suscripciones")
@@ -169,10 +177,17 @@ export async function cancelarSuscripcion() {
   if (!sus) throw new Error("No tenés una donación mensual activa.");
 
   if (sus.preapprovalId) {
-    await new PreApproval(clienteMp()).update({
-      id: sus.preapprovalId,
-      body: { status: "cancelled" },
-    });
+    // Best-effort: si el preapproval estaba pendiente/incompleto y MP rechaza
+    // la cancelación, igual marcamos la fila local como cancelada para que el
+    // usuario nunca quede trabado con una suscripción que no autorizó.
+    try {
+      await new PreApproval(clienteMp()).update({
+        id: sus.preapprovalId,
+        body: { status: "cancelled" },
+      });
+    } catch (e) {
+      console.error("No se pudo cancelar el preapproval en MP:", e);
+    }
   }
   const sb = clienteServidor();
   await sb
