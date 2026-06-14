@@ -110,11 +110,15 @@ export async function crearSuscripcion(formData: FormData) {
     .single();
   if (error) throw new Error(`No pudimos crear la suscripción: ${error.message}`);
 
+  // En producción el pagador es el usuario logueado. Solo para probar en el
+  // sandbox de MP se define MP_TEST_PAYER_EMAIL con el email de un usuario de
+  // prueba (MP exige que pagador y cobrador sean ambos de prueba o ambos reales).
+  const emailPagador = process.env.MP_TEST_PAYER_EMAIL || yo.email;
   const preapproval = await new PreApproval(clienteMp()).create({
     body: {
       reason: "Donación mensual a AdoptAR 🐾",
       external_reference: `sus:${fila.id}`,
-      payer_email: yo.email,
+      payer_email: emailPagador,
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
