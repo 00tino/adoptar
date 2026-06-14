@@ -4,7 +4,14 @@ import { edadLegible } from "@/lib/tipos";
 import FotoAnimal from "./FotoAnimal";
 
 // Tarjeta de animal para grillas (home, catálogo, perfil de refugio).
-export default function CardAnimal({ animal }: { animal: Animal }) {
+// `distanciaKm` (opcional) se muestra cuando el catálogo está en modo "cerca mío".
+export default function CardAnimal({
+  animal,
+  distanciaKm,
+}: {
+  animal: Animal;
+  distanciaKm?: number;
+}) {
   const esTransito = animal.tipo === "transito";
   return (
     <Link
@@ -29,6 +36,11 @@ export default function CardAnimal({ animal }: { animal: Animal }) {
         {animal.estado === "en_proceso" && (
           <span className="absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-bold bg-sol text-tinta">
             En proceso
+          </span>
+        )}
+        {distanciaKm != null && (
+          <span className="absolute bottom-3 right-3 rounded-full px-3 py-1 text-xs font-bold bg-tinta text-crema">
+            📍 a {distanciaKm < 1 ? "menos de 1" : Math.round(distanciaKm)} km
           </span>
         )}
       </div>

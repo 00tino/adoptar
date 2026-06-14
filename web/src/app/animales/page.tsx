@@ -5,9 +5,11 @@ import { FOTOS } from "@/lib/fotos";
 import {
   ANIMALES_POR_PAGINA,
   obtenerAnimalesPaginados,
+  obtenerAnimalesCercanos,
   obtenerProvincias,
 } from "@/lib/datos";
 import CardAnimal from "@/components/CardAnimal";
+import BotonCercania from "@/components/BotonCercania";
 
 export const metadata: Metadata = {
   title: "Animales en adopción y tránsito en Argentina",
@@ -30,15 +32,32 @@ export default async function PaginaAnimales({
     castrado?: string;
     q?: string;
     pagina?: string;
+    lat?: string;
+    lng?: string;
+    radio?: string;
   }>;
 }) {
-  const { pagina: paginaCruda, ...filtros } = await searchParams;
+  const { pagina: paginaCruda, lat: latCruda, lng: lngCruda, radio: radioCruda, ...filtros } =
+    await searchParams;
   const pagina = Math.max(1, Number(paginaCruda) || 1);
-  const [{ animales, total }, provincias] = await Promise.all([
-    obtenerAnimalesPaginados(filtros, pagina),
+
+  // Modo "cerca mío": activo cuando hay lat/lng válidas en la URL.
+  const lat = Number(latCruda);
+  const lng = Number(lngCruda);
+  const cercania =
+    Number.isFinite(lat) && Number.isFinite(lng) && latCruda != null && lngCruda != null;
+  const radio = Number(radioCruda) || 0;
+
+  const [cercanos, { animales, total }, provincias] = await Promise.all([
+    cercania ? obtenerAnimalesCercanos(filtros, lat, lng, radio) : Promise.resolve([]),
+    cercania ? Promise.resolve({ animales: [], total: 0 }) : obtenerAnimalesPaginados(filtros, pagina),
     obtenerProvincias(),
   ]);
-  const totalPaginas = Math.max(1, Math.ceil(total / ANIMALES_POR_PAGINA));
+  const cercaniaParams = cercania
+    ? { lat: latCruda!, lng: lngCruda!, radio: String(radio) }
+    : null;
+  const totalMostrado = cercania ? cercanos.length : total;
+  const totalPaginas = cercania ? 1 : Math.max(1, Math.ceil(total / ANIMALES_POR_PAGINA));
   // Cuántos filtros activos hay (sin contar la pestaña tipo): abre el panel en mobile
   const cantidadFiltros = Object.entries(filtros).filter(
     ([k, v]) => v && k !== "tipo"
@@ -58,8 +77,12 @@ export default async function PaginaAnimales({
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="font-display text-4xl font-black">Animales que buscan hogar</h1>
       <p className="mt-2 text-tinta-suave">
-        {total} {total === 1 ? "animal encontrado" : "animales encontrados"}
-        {totalPaginas > 1 && ` · página ${pagina} de ${totalPaginas}`}
+        {totalMostrado} {totalMostrado === 1 ? "animal encontrado" : "animales encontrados"}
+        {cercania
+          ? radio > 0
+            ? ` · a menos de ${radio} km tuyo`
+            : " · ordenados por cercanía"
+          : totalPaginas > 1 && ` · página ${pagina} de ${totalPaginas}`}
       </p>
 
       {/* Pestañas adopción / tránsito */}
@@ -99,14 +122,34 @@ export default async function PaginaAnimales({
           </span>
           <span aria-hidden className="transition-transform group-open:rotate-180">▾</span>
         </summary>
-        <FormFiltros filtros={filtros} provincias={provincias} columna />
+        <FormFiltros filtros={filtros} provincias={provincias} cercania={cercaniaParams} columna />
       </details>
       <div className="hidden sm:block">
-        <FormFiltros filtros={filtros} provincias={provincias} />
+        <FormFiltros filtros={filtros} provincias={provincias} cercania={cercaniaParams} />
       </div>
 
+      {/* Sector "cerca mío" */}
+      <BotonCercania activo={cercania} />
+
       {/* Resultados */}
-      {animales.length === 0 ? (
+      {cercania ? (
+        cercanos.length === 0 ? (
+          <div className="mt-12 text-center py-16 rounded-2xl bg-crema-2/60">
+            <p className="font-display text-2xl font-bold">
+              No hay animales {radio > 0 ? `a menos de ${radio} km tuyo` : "con ubicación cargada"}
+            </p>
+            <p className="mt-2 text-tinta-suave">
+              Probá con un radio mayor o quitá el filtro de cercanía.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {cercanos.map(({ animal, distanciaKm }) => (
+              <CardAnimal key={animal.id} animal={animal} distanciaKm={distanciaKm} />
+            ))}
+          </div>
+        )
+      ) : animales.length === 0 ? (
         <div className="mt-12 text-center py-16 rounded-2xl bg-crema-2/60">
           <Image
             src={FOTOS.vacio.src}
@@ -179,10 +222,12 @@ export default async function PaginaAnimales({
 function FormFiltros({
   filtros,
   provincias,
+  cercania,
   columna = false,
 }: {
   filtros: Record<string, string | undefined>;
   provincias: string[];
+  cercania: { lat: string; lng: string; radio: string } | null;
   columna?: boolean;
 }) {
   const claseCampo = `rounded-xl bg-blanco-calido border-2 border-crema-2 px-4 text-sm font-bold ${
@@ -194,6 +239,13 @@ function FormFiltros({
       className={columna ? "mt-3 flex flex-col gap-3" : "mt-4 flex flex-wrap gap-3"}
     >
       {filtros.tipo && <input type="hidden" name="tipo" value={filtros.tipo} />}
+      {cercania && (
+        <>
+          <input type="hidden" name="lat" value={cercania.lat} />
+          <input type="hidden" name="lng" value={cercania.lng} />
+          <input type="hidden" name="radio" value={cercania.radio} />
+        </>
+      )}
       <select name="especie" aria-label="Especie" defaultValue={filtros.especie ?? ""} className={claseCampo}>
         <option value="">Todas las especies</option>
         <option value="perro">Perros</option>

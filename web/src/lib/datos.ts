@@ -7,6 +7,7 @@
 
 import type { Animal, Campana, Refugio } from "./tipos";
 import { crearClienteSupabase, supabaseDisponible } from "./supabase";
+import { distanciaKm } from "./geo";
 
 const refugios: Refugio[] = [
   {
@@ -435,6 +436,36 @@ export async function obtenerAnimalesPaginados(
     animales: todos.slice(desde, desde + ANIMALES_POR_PAGINA),
     total: todos.length,
   };
+}
+
+/** Animal con su distancia al usuario (modo "cerca mío" del catálogo). */
+export interface AnimalConDistancia {
+  animal: Animal;
+  distanciaKm: number;
+}
+
+/**
+ * Catálogo ordenado por cercanía a (lat,lng). Trae todos los animales que
+ * cumplen los filtros, descarta los que no tienen coordenada, calcula la
+ * distancia con Haversine y devuelve los que están dentro de `radioKm`
+ * (radioKm = 0 → sin límite, solo ordena). Sin paginado: la lista por cercanía
+ * suele ser corta y se recorre de más cerca a más lejos.
+ */
+export async function obtenerAnimalesCercanos(
+  filtros: FiltrosAnimales,
+  lat: number,
+  lng: number,
+  radioKm: number
+): Promise<AnimalConDistancia[]> {
+  const todos = await obtenerAnimales(filtros);
+  return todos
+    .filter((a) => a.latAprox !== 0 || a.lngAprox !== 0) // sin coordenada => fuera
+    .map((animal) => ({
+      animal,
+      distanciaKm: distanciaKm(lat, lng, animal.latAprox, animal.lngAprox),
+    }))
+    .filter((x) => radioKm <= 0 || x.distanciaKm <= radioKm)
+    .sort((a, b) => a.distanciaKm - b.distanciaKm);
 }
 
 export async function obtenerAnimalPorSlug(slug: string): Promise<Animal | null> {
