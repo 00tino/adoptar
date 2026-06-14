@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { SignInButton } from "@clerk/nextjs";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
 import { supabaseDisponible } from "@/lib/supabase";
-import { cancelarSuscripcion, miSuscripcion } from "@/lib/acciones-suscripciones";
+import {
+  cancelarSuscripcion,
+  miSuscripcion,
+  sincronizarPreapproval,
+} from "@/lib/acciones-suscripciones";
 import { mercadoPagoDisponible } from "@/lib/acciones-donaciones";
 import { nombreCausa } from "@/lib/causas";
 import FormSuscripcion from "@/components/FormSuscripcion";
@@ -28,7 +32,16 @@ export default async function PaginaDonacionMensual({
   const listo =
     clerkDisponible() && supabaseDisponible() && (await mercadoPagoDisponible());
   const usuario = listo ? await usuarioActual() : null;
-  const suscripcion = usuario ? await miSuscripcion() : null;
+  let suscripcion = usuario ? await miSuscripcion() : null;
+
+  // Si la suscripción quedó "pendiente" pero ya tiene preapproval en MP,
+  // sincronizamos su estado real al vuelo (al volver del checkout). Así no
+  // dependemos de que llegue el webhook para mostrarla activa: MP no siempre
+  // notifica la autorización del preapproval, solo los cobros mensuales.
+  if (suscripcion?.estado === "pendiente" && suscripcion.preapprovalId) {
+    await sincronizarPreapproval(suscripcion.preapprovalId);
+    suscripcion = await miSuscripcion();
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
