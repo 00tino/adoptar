@@ -50,3 +50,7 @@ create table if not exists postulaciones (
 );
 alter table postulaciones enable row level security;
 create index if not exists idx_postulaciones_animal on postulaciones (animal_id);
+
+-- ============ HISTORIA DEL ANIMAL ============
+-- "Mi historia": cómo lo encontraron / rescataron, contada por quien publica.
+alter table animales add column if not exists historia text not null default '';

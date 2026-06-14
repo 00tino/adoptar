@@ -54,6 +54,8 @@ export interface Animal {
   castrado: boolean;
   vacunas: string[];
   descripcion: string;
+  /** "Mi historia": cómo lo rescataron / encontraron (vacío si no la cargaron) */
+  historia?: string;
   ciudad: string;
   provincia: string;
   /** Coordenadas aproximadas (desplazadas para particulares) */

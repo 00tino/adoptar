@@ -70,6 +70,7 @@ export async function publicarTransito(formData: FormData) {
     raza: campoTexto(formData.get("raza"), 80) || null,
     sexo: String(formData.get("sexo")) === "hembra" ? "hembra" : "macho",
     descripcion: campoTexto(formData.get("descripcion"), 3000),
+    historia: campoTexto(formData.get("historia"), 3000),
     ciudad,
     provincia,
     tipo: "transito",

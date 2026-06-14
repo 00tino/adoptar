@@ -25,7 +25,7 @@ export default async function PaginaEditarAnimal({
   // Solo animales del propio refugio
   const { data } = await sb
     .from("animales")
-    .select("id,nombre,especie,sexo,tamano,raza,edad_meses,castrado,vacunas,descripcion")
+    .select("id,nombre,especie,sexo,tamano,raza,edad_meses,castrado,vacunas,descripcion,historia")
     .eq("id", id)
     .eq("refugio_id", refugio.id)
     .maybeSingle();
@@ -47,6 +47,7 @@ export default async function PaginaEditarAnimal({
           castrado: data.castrado,
           vacunas: Array.isArray(data.vacunas) ? data.vacunas : [],
           descripcion: data.descripcion,
+          historia: data.historia ?? "",
         }}
       />
     </div>

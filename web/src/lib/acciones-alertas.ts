@@ -43,18 +43,19 @@ export async function misAlertas(): Promise<AlertaTransito[]> {
   }));
 }
 
-const RADIOS_VALIDOS = [5, 10, 25, 50];
-
 /** Crea (o reemplaza) la alerta del usuario. Mantenemos una sola alerta activa. */
 export async function guardarAlerta(formData: FormData) {
   const yo = await exigirUsuarioActivo();
   const lat = Number(formData.get("lat"));
   const lng = Number(formData.get("lng"));
-  const radioKm = Number(formData.get("radio_km"));
+  const radioKm = Math.round(Number(formData.get("radio_km")));
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
     throw new Error("Elegí una ubicación válida en el mapa.");
   }
-  if (!RADIOS_VALIDOS.includes(radioKm)) throw new Error("Radio inválido.");
+  // Radio libre entre 1 y 500 km (coincide con el check de la tabla)
+  if (!Number.isFinite(radioKm) || radioKm < 1 || radioKm > 500) {
+    throw new Error("El radio tiene que estar entre 1 y 500 km.");
+  }
 
   const sb = clienteServidor();
   // Una sola alerta por usuario: borramos las anteriores y dejamos esta.

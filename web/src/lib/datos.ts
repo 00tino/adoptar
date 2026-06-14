@@ -268,6 +268,7 @@ export function filaAAnimal(f: any): Animal {
     castrado: f.castrado,
     vacunas: f.vacunas ?? [],
     descripcion: f.descripcion,
+    historia: f.historia ?? "",
     ciudad: f.ciudad,
     provincia: f.provincia,
     latAprox: f.lat_aprox ?? 0,

@@ -63,6 +63,8 @@ create table animales (
   lng_aprox double precision,
   ciudad text not null,
   provincia text not null,
+  -- "Mi historia": cómo lo encontraron / rescataron (la cuenta quien publica)
+  historia text not null default '',
   tipo text not null check (tipo in ('adopcion','transito')),
   estado text not null default 'pendiente' check (estado in ('pendiente','disponible','en_proceso','adoptado','rechazado')),
   creado_el timestamptz not null default now(),

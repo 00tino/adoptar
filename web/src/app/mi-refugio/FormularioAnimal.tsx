@@ -9,6 +9,7 @@ export interface AnimalParaEditar {
   castrado: boolean;
   vacunas: string[];
   descripcion: string;
+  historia?: string;
 }
 
 // Formulario compartido por "publicar animal" y "editar animal" del refugio.
@@ -93,7 +94,20 @@ export default function FormularioAnimal({
           rows={4}
           defaultValue={animal?.descripcion}
           className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido"
-          placeholder="Su historia, su carácter, con quién se lleva bien…"
+          placeholder="Su carácter, con quién se lleva bien, qué necesita…"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-bold" htmlFor="historia">
+          Su historia (opcional)
+        </label>
+        <textarea
+          id="historia"
+          name="historia"
+          rows={3}
+          defaultValue={animal?.historia}
+          className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido"
+          placeholder="¿Cómo lo rescataron o encontraron? Su historia ayuda a que se enamoren 💛"
         />
       </div>
       <Campo

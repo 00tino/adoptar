@@ -159,6 +159,7 @@ function datosAnimalDeFormulario(formData: FormData) {
       .map((v) => v.trim())
       .filter(Boolean),
     descripcion: campoTexto(formData.get("descripcion"), 3000),
+    historia: campoTexto(formData.get("historia"), 3000),
   };
 }
 

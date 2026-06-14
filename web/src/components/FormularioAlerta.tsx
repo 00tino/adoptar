@@ -53,7 +53,7 @@ export default function FormularioAlerta({
 
       <div>
         <span className="block text-sm font-bold mb-2">Radio de la alerta</span>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {RADIOS.map((r) => (
             <button
               key={r}
@@ -68,6 +68,22 @@ export default function FormularioAlerta({
               {r} km
             </button>
           ))}
+          <label className="flex items-center gap-1.5 rounded-full border-2 border-crema-2 bg-blanco-calido px-3 py-1.5">
+            <span className="text-sm font-bold text-tinta-suave">u otro:</span>
+            <input
+              type="number"
+              min={1}
+              max={500}
+              value={radio}
+              aria-label="Radio personalizado en kilómetros"
+              onChange={(e) => {
+                const v = Math.min(500, Math.max(1, Math.round(Number(e.target.value) || 0)));
+                setRadio(v);
+              }}
+              className="w-16 rounded-lg border-2 border-crema-2 bg-crema/40 px-2 py-1 text-sm font-bold text-center"
+            />
+            <span className="text-sm font-bold text-tinta-suave">km</span>
+          </label>
         </div>
       </div>
 

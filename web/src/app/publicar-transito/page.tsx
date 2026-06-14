@@ -73,7 +73,19 @@ export default async function PaginaPublicarTransito({
             required
             rows={4}
             className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido"
-            placeholder="Contanos su historia, su carácter, qué necesita…"
+            placeholder="Contanos su carácter, con qué se lleva bien, qué necesita…"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-bold" htmlFor="historia">
+            Su historia (opcional)
+          </label>
+          <textarea
+            id="historia"
+            name="historia"
+            rows={3}
+            className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido"
+            placeholder="¿Cómo lo encontraste o rescataste? Contá su historia para emocionar a quien lo lea 💛"
           />
         </div>
         <Campo etiqueta="Fotos (mínimo 2, máximo 6)" nombre="fotos" tipo="file" multiple />

@@ -152,6 +152,17 @@ export default async function PaginaAnimal({
               />
             </div>
           )}
+
+          {animal.historia && (
+            <section className="mt-4 rounded-2xl bg-blanco-calido border-2 border-crema-2 p-5">
+              <h2 className="font-display text-2xl font-bold">
+                La historia de {animal.nombre} 💛
+              </h2>
+              <p className="mt-2 leading-relaxed whitespace-pre-line text-tinta">
+                {animal.historia}
+              </p>
+            </section>
+          )}
         </div>
 
         {/* Datos */}
