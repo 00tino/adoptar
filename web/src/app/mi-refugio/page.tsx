@@ -6,6 +6,8 @@ import {
   misAnimales,
   cambiarEstadoAnimal,
   darDeBajaAnimal,
+  postulacionesDeRefugio,
+  cambiarEstadoPostulacion,
 } from "@/lib/acciones-refugio";
 import FotoAnimal from "@/components/FotoAnimal";
 import Pestanas from "./Pestanas";
@@ -34,7 +36,10 @@ export default async function PaginaMiRefugio({
   if (!refugio) redirect("/registrar-refugio");
 
   const { publicado, editado } = await searchParams;
-  const animales = await misAnimales();
+  const [animales, postulaciones] = await Promise.all([
+    misAnimales(),
+    postulacionesDeRefugio(),
+  ]);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
@@ -161,6 +166,89 @@ export default async function PaginaMiRefugio({
           </ul>
         )}
       </section>
+
+      <Postulaciones postulaciones={postulaciones} />
     </div>
+  );
+}
+
+const etiquetaPostulacion: Record<string, { texto: string; clase: string }> = {
+  postulado: { texto: "Nueva", clase: "bg-sol text-tinta" },
+  en_proceso: { texto: "En proceso", clase: "bg-salvia text-blanco-calido" },
+  aceptada: { texto: "Aceptada 🎉", clase: "bg-salvia-oscuro text-blanco-calido" },
+  rechazada: { texto: "Rechazada", clase: "bg-crema-2 text-tinta-suave" },
+};
+
+function Postulaciones({
+  postulaciones,
+}: {
+  postulaciones: Awaited<ReturnType<typeof postulacionesDeRefugio>>;
+}) {
+  return (
+    <section className="mt-12">
+      <h2 className="font-display text-2xl font-bold">
+        Postulaciones de adopción ({postulaciones.length})
+      </h2>
+      {postulaciones.length === 0 ? (
+        <p className="mt-4 text-tinta-suave">
+          Todavía no recibiste postulaciones. Cuando alguien se postule por uno
+          de tus animales, va a aparecer acá.
+        </p>
+      ) : (
+        <ul className="mt-4 space-y-4">
+          {postulaciones.map((p) => {
+            const etiqueta = etiquetaPostulacion[p.estado] ?? etiquetaPostulacion.postulado;
+            return (
+              <li
+                key={p.id}
+                className="rounded-2xl bg-blanco-calido border-2 border-crema-2 p-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-bold">
+                    {p.nombre}{" "}
+                    <span className="font-normal text-tinta-suave">
+                      → quiere adoptar a{" "}
+                      <Link href={`/animales/${p.animalSlug}`} className="font-bold hover:text-terracota">
+                        {p.animalNombre}
+                      </Link>
+                    </span>
+                  </p>
+                  <span className={`rounded-full px-3 py-0.5 text-xs font-bold ${etiqueta.clase}`}>
+                    {etiqueta.texto}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-tinta-suave">
+                  📧 <a href={`mailto:${p.email}`} className="underline">{p.email}</a>
+                  {p.telefono && <> · 📞 {p.telefono}</>}
+                  {p.vivienda && <> · 🏠 {p.vivienda}</>}
+                </p>
+                {p.mensaje && <p className="mt-2 text-sm whitespace-pre-line">{p.mensaje}</p>}
+                <form action={cambiarEstadoPostulacion} className="mt-3 flex flex-wrap items-center gap-2">
+                  <input type="hidden" name="id" value={p.id} />
+                  <label className="sr-only" htmlFor={`post-${p.id}`}>Estado de la postulación</label>
+                  <select
+                    id={`post-${p.id}`}
+                    name="estado"
+                    defaultValue={p.estado}
+                    className="rounded-xl border-2 border-crema-2 bg-blanco-calido px-3 py-1.5 text-sm"
+                  >
+                    <option value="postulado">Nueva</option>
+                    <option value="en_proceso">En proceso</option>
+                    <option value="aceptada">Aceptada</option>
+                    <option value="rechazada">Rechazada</option>
+                  </select>
+                  <button
+                    type="submit"
+                    className="rounded-full border-2 border-salvia px-4 py-1.5 text-sm font-bold text-salvia-oscuro hover:bg-salvia hover:text-blanco-calido transition-colors"
+                  >
+                    Actualizar
+                  </button>
+                </form>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }

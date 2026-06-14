@@ -256,6 +256,77 @@ export async function cambiarEstadoAnimal(formData: FormData) {
   revalidatePath("/mi-refugio");
 }
 
+export interface PostulacionRefugio {
+  id: string;
+  animalNombre: string;
+  animalSlug: string;
+  nombre: string;
+  email: string;
+  telefono: string | null;
+  vivienda: string | null;
+  mensaje: string;
+  estado: "postulado" | "en_proceso" | "aceptada" | "rechazada";
+  creadoEl: string;
+}
+
+/** Postulaciones de adopción recibidas por los animales del refugio. */
+export async function postulacionesDeRefugio(): Promise<PostulacionRefugio[]> {
+  const refugio = await miRefugio();
+  if (!refugio) return [];
+  const sb = clienteServidor();
+  // Animales del refugio → sus postulaciones
+  const { data: animales } = await sb
+    .from("animales")
+    .select("id")
+    .eq("refugio_id", refugio.id);
+  const ids = (animales ?? []).map((a) => a.id);
+  if (ids.length === 0) return [];
+  const { data } = await sb
+    .from("postulaciones")
+    .select("id,nombre,email,telefono,vivienda,mensaje,estado,creado_el,animales(nombre,slug)")
+    .in("animal_id", ids)
+    .order("creado_el", { ascending: false });
+  return (data ?? []).map((p) => {
+    const animal = Array.isArray(p.animales) ? p.animales[0] : p.animales;
+    return {
+      id: p.id,
+      animalNombre: (animal as { nombre?: string } | null)?.nombre ?? "—",
+      animalSlug: (animal as { slug?: string } | null)?.slug ?? "",
+      nombre: p.nombre,
+      email: p.email,
+      telefono: p.telefono,
+      vivienda: p.vivienda,
+      mensaje: p.mensaje,
+      estado: p.estado,
+      creadoEl: p.creado_el,
+    };
+  });
+}
+
+/** El refugio mueve el estado de una postulación (verifica ownership). */
+export async function cambiarEstadoPostulacion(formData: FormData) {
+  const refugio = await exigirRefugio();
+  const sb = clienteServidor();
+  const id = String(formData.get("id"));
+  const estado = String(formData.get("estado"));
+  if (!["postulado", "en_proceso", "aceptada", "rechazada"].includes(estado)) {
+    throw new Error("Estado inválido.");
+  }
+  // Ownership: la postulación debe ser de un animal de este refugio
+  const { data: post } = await sb
+    .from("postulaciones")
+    .select("animal_id,animales(refugio_id)")
+    .eq("id", id)
+    .maybeSingle();
+  const animal = Array.isArray(post?.animales) ? post?.animales[0] : post?.animales;
+  if (!post || (animal as { refugio_id?: string } | null)?.refugio_id !== refugio.id) {
+    throw new Error("Esa postulación no es de tu refugio.");
+  }
+  const { error } = await sb.from("postulaciones").update({ estado }).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/mi-refugio");
+}
+
 /** Edita el perfil público del refugio: historia, fotos, video y redes.
  *  No pasa por el admin (el refugio ya está verificado). */
 export async function actualizarPerfilRefugio(formData: FormData) {

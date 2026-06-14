@@ -11,7 +11,10 @@ import GaleriaAnimal from "@/components/GaleriaAnimal";
 import MiniMapa from "@/components/MiniMapa";
 import CardAnimal from "@/components/CardAnimal";
 import ChatAnimal from "@/components/ChatAnimal";
+import BotonFavorito from "@/components/BotonFavorito";
+import FormularioAdopcion from "@/components/FormularioAdopcion";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
+import { idsFavoritos } from "@/lib/acciones-favoritos";
 import { supabaseDisponible } from "@/lib/supabase";
 
 // PERFIL DE ANIMAL: datos completos + contacto + SEO con Schema.org.
@@ -36,10 +39,13 @@ export async function generateMetadata({
 
 export default async function PaginaAnimal({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ postulado?: string }>;
 }) {
   const { slug } = await params;
+  const { postulado } = await searchParams;
   const animal = await obtenerAnimalPorSlug(slug);
   if (!animal) notFound();
 
@@ -80,6 +86,11 @@ export default async function PaginaAnimal({
   const email = refugio?.email ?? null;
   const telefono = refugio?.telefono ?? null;
 
+  // Estado de sesión + favorito (para el corazón y el formulario de adopción)
+  const usuario = await usuarioActual();
+  const logueado = !!usuario;
+  const esFavorito = logueado ? (await idsFavoritos()).has(animal.id) : false;
+
   // Schema.org para que Google entienda que es un animal en adopción
   const schema = {
     "@context": "https://schema.org",
@@ -110,6 +121,16 @@ export default async function PaginaAnimal({
       <nav aria-label="Migas de pan" className="text-sm text-tinta-suave">
         <Link href="/animales" className="hover:underline">← Volver al catálogo</Link>
       </nav>
+
+      {postulado && (
+        <div className="mt-4 rounded-2xl border-2 border-salvia bg-salvia/10 px-5 py-4 text-salvia-oscuro">
+          <p className="font-bold">¡Postulación enviada! 🐾</p>
+          <p className="text-sm">
+            Quien publica a {animal.nombre} recibió tus datos y se va a contactar
+            con vos. ¡Gracias por querer darle un hogar!
+          </p>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1.2fr_1fr]">
         {/* Galería: fotos reales de Supabase Storage (o placeholder) + video */}
@@ -151,6 +172,12 @@ export default async function PaginaAnimal({
                   ? "En proceso de adopción"
                   : "Disponible"}
             </span>
+            <BotonFavorito
+              animalId={animal.id}
+              inicial={esFavorito}
+              logueado={logueado}
+              variante="detalle"
+            />
           </div>
 
           <p className="mt-2 text-tinta-suave font-bold">
@@ -215,11 +242,22 @@ export default async function PaginaAnimal({
             </div>
           </div>
 
+          {/* Postulación de adopción (animal disponible / en proceso) */}
+          {supabaseDisponible() && !adoptado && (
+            <FormularioAdopcion
+              animalId={animal.id}
+              slug={animal.slug}
+              nombreAnimal={animal.nombre}
+              emailInicial={usuario?.emailAddresses?.[0]?.emailAddress}
+              nombreInicial={[usuario?.firstName, usuario?.lastName].filter(Boolean).join(" ") || undefined}
+            />
+          )}
+
           {/* Chat interno: solo con sesión iniciada y Supabase configurado */}
           {supabaseDisponible() && clerkDisponible() && (
             <div className="mt-6">
               <h2 className="font-display text-2xl font-bold">Chat con quien lo publica 💬</h2>
-              {(await usuarioActual()) ? (
+              {usuario ? (
                 <ChatAnimal animalId={animal.id} />
               ) : (
                 <p className="mt-2 text-sm text-tinta-suave">

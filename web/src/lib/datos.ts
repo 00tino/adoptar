@@ -255,7 +255,7 @@ const campanas: Campana[] = [
 // ---------- Mapeo de filas de Supabase (snake_case) a nuestros tipos ----------
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function filaAAnimal(f: any): Animal {
+export function filaAAnimal(f: any): Animal {
   return {
     id: f.id,
     slug: f.slug,

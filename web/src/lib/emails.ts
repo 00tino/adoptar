@@ -125,6 +125,40 @@ export async function emailAlertaTransito(
   });
 }
 
+/** Avisa al refugio/particular que alguien se postuló para adoptar un animal */
+export async function emailNuevaPostulacion(
+  para: string,
+  datos: {
+    animal: string;
+    nombre: string;
+    email: string;
+    telefono: string | null;
+    vivienda: string | null;
+    mensaje: string;
+  }
+) {
+  const animal = escaparHtml(datos.animal);
+  const nombre = escaparHtml(datos.nombre);
+  const correo = escaparHtml(datos.email);
+  const telefono = datos.telefono ? escaparHtml(datos.telefono) : "—";
+  const vivienda = datos.vivienda ? escaparHtml(datos.vivienda) : "—";
+  const mensaje = escaparHtml(datos.mensaje).slice(0, 1500) || "—";
+  await enviarEmail({
+    para,
+    asunto: `Nueva postulación para adoptar a ${animal} 🐾`,
+    html: plantilla(
+      `Alguien quiere adoptar a ${animal}`,
+      `<strong>${nombre}</strong> se postuló para adoptar a ${animal}.<br><br>` +
+        `📧 Email: ${correo}<br>` +
+        `📞 Teléfono: ${telefono}<br>` +
+        `🏠 Vivienda: ${vivienda}<br><br>` +
+        `<em>Mensaje:</em><br>${mensaje}<br><br>` +
+        `Podés gestionar las postulaciones desde tu panel en ` +
+        `<a href="https://adoptar.dpdns.org/mi-refugio" style="color:#d95d28">Mi refugio</a>.`
+    ),
+  });
+}
+
 export async function emailRefugioAprobado(para: string, nombreCrudo: string) {
   const nombre = escaparHtml(nombreCrudo);
   await enviarEmail({

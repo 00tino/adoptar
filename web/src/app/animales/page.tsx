@@ -10,6 +10,8 @@ import {
 } from "@/lib/datos";
 import CardAnimal from "@/components/CardAnimal";
 import BotonCercania from "@/components/BotonCercania";
+import { usuarioActual } from "@/lib/auth";
+import { idsFavoritos } from "@/lib/acciones-favoritos";
 
 export const metadata: Metadata = {
   title: "Animales en adopción y tránsito en Argentina",
@@ -53,6 +55,9 @@ export default async function PaginaAnimales({
     cercania ? Promise.resolve({ animales: [], total: 0 }) : obtenerAnimalesPaginados(filtros, pagina),
     obtenerProvincias(),
   ]);
+  const logueado = !!(await usuarioActual());
+  const favs = logueado ? await idsFavoritos() : new Set<string>();
+
   const cercaniaParams = cercania
     ? { lat: latCruda!, lng: lngCruda!, radio: String(radio) }
     : null;
@@ -145,7 +150,13 @@ export default async function PaginaAnimales({
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {cercanos.map(({ animal, distanciaKm }) => (
-              <CardAnimal key={animal.id} animal={animal} distanciaKm={distanciaKm} />
+              <CardAnimal
+                key={animal.id}
+                animal={animal}
+                distanciaKm={distanciaKm}
+                logueado={logueado}
+                favorito={favs.has(animal.id)}
+              />
             ))}
           </div>
         )
@@ -167,7 +178,12 @@ export default async function PaginaAnimales({
       ) : (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {animales.map((a) => (
-            <CardAnimal key={a.id} animal={a} />
+            <CardAnimal
+              key={a.id}
+              animal={a}
+              logueado={logueado}
+              favorito={favs.has(a.id)}
+            />
           ))}
         </div>
       )}

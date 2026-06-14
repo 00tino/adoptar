@@ -207,6 +207,34 @@ alter table alertas_transito enable row level security;
 create index idx_alertas_transito_activa on alertas_transito (activa);
 create index idx_alertas_transito_usuario on alertas_transito (usuario_id);
 
+-- ============ FAVORITOS (Fase 8) ============
+create table favoritos (
+  id uuid primary key default gen_random_uuid(),
+  usuario_id uuid not null references usuarios(id) on delete cascade,
+  animal_id uuid not null references animales(id) on delete cascade,
+  creado_el timestamptz not null default now(),
+  unique (usuario_id, animal_id)
+);
+alter table favoritos enable row level security;
+create index idx_favoritos_usuario on favoritos (usuario_id);
+
+-- ============ POSTULACIONES DE ADOPCIÓN (Fase 8) ============
+create table postulaciones (
+  id uuid primary key default gen_random_uuid(),
+  animal_id uuid not null references animales(id) on delete cascade,
+  usuario_id uuid references usuarios(id) on delete set null,
+  nombre text not null,
+  email text not null,
+  telefono text,
+  vivienda text,
+  mensaje text not null default '',
+  estado text not null default 'postulado'
+    check (estado in ('postulado','en_proceso','aceptada','rechazada')),
+  creado_el timestamptz not null default now()
+);
+alter table postulaciones enable row level security;
+create index idx_postulaciones_animal on postulaciones (animal_id);
+
 -- ============ STORAGE ============
 -- Crear también un bucket PÚBLICO llamado "media" desde el panel de Supabase:
 -- Storage → New bucket → nombre "media" → marcar "Public bucket".

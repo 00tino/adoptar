@@ -114,6 +114,15 @@ export default async function Header() {
               )}
             </LinkNav>
           )}
+          {conSesion && (
+            <LinkNav
+              href="/favoritos"
+              clase="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-tinta-suave hover:bg-crema-2 hover:text-tinta transition-colors"
+              claseActiva="bg-crema-2 text-tinta"
+            >
+              Favoritos ❤️
+            </LinkNav>
+          )}
           {conRefugio && (
             <LinkNav
               href="/mi-refugio"
@@ -188,6 +197,15 @@ export default async function Header() {
                     {noLeidos > 9 ? "9+" : noLeidos}
                   </span>
                 )}
+              </LinkNav>
+            )}
+            {conSesion && (
+              <LinkNav
+                href="/favoritos"
+                clase="rounded-xl px-4 py-3 text-base font-bold text-tinta hover:bg-crema-2 transition-colors"
+                claseActiva="bg-crema-2"
+              >
+                Favoritos ❤️
               </LinkNav>
             )}
             {conRefugio && (
