@@ -13,6 +13,7 @@ import { campoTexto, limitarPorIp } from "./limites";
 import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import { esCausa } from "./causas";
 import { emailGraciasDonante } from "./emails";
+import { repartir } from "./reparto";
 
 function clienteServidor() {
   return createClient(
@@ -274,14 +275,8 @@ export async function registrarCobroSuscripcion(
   }
   const plataforma = porCausa.get("plataforma") ?? [];
 
-  const reparto = (monto: number, partes: number) => {
-    const base = Math.floor(monto / partes);
-    const resto = monto - base * partes;
-    return Array.from({ length: partes }, (_, i) => base + (i < resto ? 1 : 0));
-  };
-
   const filas: Record<string, unknown>[] = [];
-  const porCausaElegida = reparto(Math.round(total), causas.length);
+  const porCausaElegida = repartir(Math.round(total), causas.length);
   causas.forEach((causa, i) => {
     const destinos =
       causa !== "general" && porCausa.get(causa)?.length
@@ -301,7 +296,7 @@ export async function registrarCobroSuscripcion(
       });
       return;
     }
-    reparto(porCausaElegida[i], destinos.ids.length).forEach((monto, j) => {
+    repartir(porCausaElegida[i], destinos.ids.length).forEach((monto, j) => {
       if (monto === 0) return;
       filas.push({
         campana_id: destinos.ids[j],
