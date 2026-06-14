@@ -22,7 +22,12 @@ function gmailTransport() {
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
-      auth: { user: GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+      // Google muestra la app password con espacios ("abcd efgh ijkl mnop");
+      // los sacamos para que la auth no falle con 535 si se pegó tal cual.
+      auth: {
+        user: GMAIL_USER,
+        pass: (process.env.GMAIL_APP_PASSWORD || "").replace(/\s/g, ""),
+      },
     });
   }
   return transporterGmail;
