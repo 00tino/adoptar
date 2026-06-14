@@ -5,6 +5,29 @@
 import { Resend } from "resend";
 
 const REMITENTE = "AdoptAR <hola@adoptar.dpdns.org>";
+// Casilla real de contacto: como reply-to da una señal de legitimidad a Gmail
+// y permite que la gente conteste a un humano.
+const RESPONDER_A = "adoptar.argentina.ayuda@gmail.com";
+
+/** Convierte el HTML de un email a texto plano legible (parte text/plain).
+ *  Una versión de texto reduce mucho el riesgo de que Gmail lo marque spam. */
+function htmlAPlano(html: string): string {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<a [^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)")
+    .replace(/<\/(p|div|h1|h2|h3|li|br)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, "\n\n")
+    .split("\n")
+    .map((l) => l.trim())
+    .join("\n")
+    .trim();
+}
 
 /** Escapa texto que viene de usuarios antes de meterlo en HTML de emails */
 export function escaparHtml(texto: string): string {
@@ -18,6 +41,7 @@ export async function enviarEmail(opciones: {
   para: string;
   asunto: string;
   html: string;
+  texto?: string;
 }) {
   if (!process.env.RESEND_API_KEY) return; // Resend no configurado todavía
   try {
@@ -25,8 +49,17 @@ export async function enviarEmail(opciones: {
     await resend.emails.send({
       from: REMITENTE,
       to: opciones.para,
+      replyTo: RESPONDER_A,
       subject: opciones.asunto,
       html: opciones.html,
+      // Parte de texto plano: clave para que Gmail no lo marque "unsolicited".
+      text: opciones.texto ?? htmlAPlano(opciones.html),
+      headers: {
+        // Gmail (reglas de remitentes 2024) espera List-Unsubscribe en correos
+        // automáticos. Da de baja con un solo clic y mejora la entregabilidad.
+        "List-Unsubscribe": `<mailto:${RESPONDER_A}?subject=baja>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
     });
   } catch (e) {
     // Un email fallido no debe romper la acción del admin
