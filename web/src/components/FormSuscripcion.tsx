@@ -73,7 +73,7 @@ export default function FormSuscripcion({
         <label
           className={`cursor-pointer rounded-2xl border-2 p-4 transition-colors sm:col-span-3 ${
             general
-              ? "border-terracota bg-terracota/10"
+              ? "border-terracota bg-terracota-oscuro/10"
               : "border-crema-2 bg-blanco-calido hover:border-tinta-suave"
           }`}
         >
@@ -100,7 +100,7 @@ export default function FormSuscripcion({
               key={c.id}
               className={`cursor-pointer rounded-2xl border-2 p-4 transition-colors ${
                 activa
-                  ? "border-terracota bg-terracota/10"
+                  ? "border-terracota bg-terracota-oscuro/10"
                   : general
                     ? "border-crema-2 bg-blanco-calido opacity-50"
                     : "border-crema-2 bg-blanco-calido hover:border-tinta-suave"
@@ -124,7 +124,7 @@ export default function FormSuscripcion({
       <BotonEnvio
         deshabilitado={causas.length === 0}
         textoEnviando={editar ? "Guardando…" : "Redirigiendo a Mercado Pago…"}
-        className="mt-8 w-full rounded-full bg-terracota px-6 py-3 font-bold text-blanco-calido transition-colors hover:bg-terracota-oscuro sm:w-auto"
+        className="mt-8 w-full rounded-full bg-terracota-oscuro px-6 py-3 font-bold text-blanco-calido transition-colors hover:bg-terracota-mas-oscuro sm:w-auto"
       >
         {editar ? "Guardar cambios" : "Empezar mi donación mensual 💙"}
       </BotonEnvio>

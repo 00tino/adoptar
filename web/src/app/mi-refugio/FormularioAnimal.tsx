@@ -125,7 +125,7 @@ export default function FormularioAnimal({
 
       <button
         type="submit"
-        className="w-full rounded-xl bg-terracota text-blanco-calido py-3 font-bold hover:bg-terracota-oscuro transition-colors"
+        className="w-full rounded-xl bg-terracota-oscuro text-blanco-calido py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
       >
         {editando ? "Guardar cambios" : "Publicar 🐾"}
       </button>

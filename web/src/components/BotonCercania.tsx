@@ -88,7 +88,7 @@ export default function BotonCercania({ activo }: { activo: boolean }) {
           </button>
         )}
       </div>
-      {error && <p className="mt-2 text-sm text-terracota">{error}</p>}
+      {error && <p className="mt-2 text-sm text-terracota-oscuro">{error}</p>}
       {!error && (
         <p className="mt-2 text-xs text-tinta-suave">
           Usamos tu ubicación solo en tu navegador para ordenar los animales por

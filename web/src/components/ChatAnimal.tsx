@@ -90,7 +90,7 @@ export default function ChatAnimal({ animalId }: { animalId: string }) {
         <button
           type="submit"
           disabled={enviando || !texto.trim()}
-          className="rounded-xl bg-terracota text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-oscuro transition-colors disabled:opacity-50"
+          className="rounded-xl bg-terracota-oscuro text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-mas-oscuro transition-colors disabled:opacity-50"
         >
           {enviando ? "…" : "Enviar"}
         </button>

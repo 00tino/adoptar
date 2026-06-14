@@ -80,7 +80,7 @@ export default async function Header() {
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
         <Link href="/" className="flex items-baseline gap-1 shrink-0 mr-auto">
           <span className="font-display text-2xl font-bold text-tinta">
-            Adopt<span className="text-terracota">AR</span>
+            Adopt<span className="text-terracota-oscuro">AR</span>
           </span>
           <span aria-hidden className="text-xl">🐾</span>
         </Link>
@@ -108,7 +108,7 @@ export default async function Header() {
             >
               Mensajes
               {noLeidos > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-terracota px-1 text-[11px] font-bold text-blanco-calido">
+                <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-terracota-oscuro px-1 text-[11px] font-bold text-blanco-calido">
                   {noLeidos > 9 ? "9+" : noLeidos}
                 </span>
               )}
@@ -134,7 +134,7 @@ export default async function Header() {
           )}
           <Link
             href="/publicar-transito"
-            className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold bg-terracota text-blanco-calido hover:bg-terracota-oscuro transition-colors"
+            className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold bg-terracota-oscuro text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors"
           >
             Publicar
           </Link>
@@ -146,7 +146,7 @@ export default async function Header() {
               >
                 🔔
                 {notificaciones.length > 0 && (
-                  <span className="absolute top-0 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-terracota px-1 text-[10px] font-bold text-blanco-calido">
+                  <span className="absolute top-0 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-terracota-oscuro px-1 text-[10px] font-bold text-blanco-calido">
                     {notificaciones.length}
                   </span>
                 )}
@@ -193,7 +193,7 @@ export default async function Header() {
               >
                 Mensajes
                 {noLeidos > 0 && (
-                  <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-terracota px-1.5 text-xs font-bold text-blanco-calido">
+                  <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-terracota-oscuro px-1.5 text-xs font-bold text-blanco-calido">
                     {noLeidos > 9 ? "9+" : noLeidos}
                   </span>
                 )}
@@ -219,7 +219,7 @@ export default async function Header() {
             )}
             <Link
               href="/publicar-transito"
-              className="mt-2 rounded-xl bg-terracota px-4 py-3 text-center text-base font-bold text-blanco-calido hover:bg-terracota-oscuro transition-colors"
+              className="mt-2 rounded-xl bg-terracota-oscuro px-4 py-3 text-center text-base font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors"
             >
               Publicar
             </Link>
@@ -228,7 +228,7 @@ export default async function Header() {
                 <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-base font-bold text-tinta">
                   <span>🔔 Notificaciones</span>
                   {notificaciones.length > 0 && (
-                    <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-terracota px-1.5 text-xs font-bold text-blanco-calido">
+                    <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-terracota-oscuro px-1.5 text-xs font-bold text-blanco-calido">
                       {notificaciones.length}
                     </span>
                   )}

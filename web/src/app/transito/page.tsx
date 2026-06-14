@@ -16,7 +16,7 @@ export default async function PaginaTransito() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="overflow-hidden rounded-3xl bg-terracota text-blanco-calido lg:grid lg:grid-cols-[1fr_minmax(0,380px)]">
+      <div className="overflow-hidden rounded-3xl bg-terracota-oscuro text-blanco-calido lg:grid lg:grid-cols-[1fr_minmax(0,380px)]">
         <div className="p-8 sm:p-12">
         <h1 className="font-display text-4xl sm:text-5xl font-black">¿Qué es el tránsito? 💛</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed">
@@ -30,7 +30,7 @@ export default async function PaginaTransito() {
           <Link href="/publicar-transito" className="rounded-full bg-sol text-tinta px-6 py-3 hover:brightness-105">
             Tengo un animal que necesita tránsito
           </Link>
-          <Link href="/transito/alertas" className="rounded-full border-2 border-blanco-calido px-6 py-3 hover:bg-blanco-calido hover:text-terracota transition-colors">
+          <Link href="/transito/alertas" className="rounded-full border-2 border-blanco-calido px-6 py-3 hover:bg-blanco-calido hover:text-terracota-oscuro transition-colors">
             Avisarme de animales cerca mío 💛
           </Link>
         </div>

@@ -26,7 +26,7 @@ export default function PaginaQuienesSomos() {
           gratuita. Por eso el 100% de lo que se dona va a las campañas de los
           refugios o al mantenimiento básico de la plataforma (dominio y
           servicios), siempre con el desglose visible en la página de{" "}
-          <Link href="/donaciones" className="font-bold text-terracota hover:underline">
+          <Link href="/donaciones" className="font-bold text-terracota-oscuro hover:underline">
             donaciones
           </Link>.
         </p>
@@ -57,7 +57,7 @@ export default function PaginaQuienesSomos() {
           escribinos a{" "}
           <a
             href="mailto:adoptar.argentina.ayuda@gmail.com"
-            className="font-bold text-terracota hover:underline"
+            className="font-bold text-terracota-oscuro hover:underline"
           >
             adoptar.argentina.ayuda@gmail.com
           </a>

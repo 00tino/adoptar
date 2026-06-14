@@ -49,7 +49,7 @@ export default async function Home() {
             />
             <button
               type="submit"
-              className="rounded-xl bg-terracota px-6 py-3 font-bold hover:bg-terracota-oscuro transition-colors"
+              className="rounded-xl bg-terracota-oscuro px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
             >
               Buscar 🔍
             </button>
@@ -86,7 +86,7 @@ export default async function Home() {
       <section className="mx-auto max-w-6xl px-4 py-14">
         <div className="flex items-end justify-between gap-4">
           <h2 className="font-display text-3xl font-black">Te están esperando</h2>
-          <Link href="/animales" className="text-sm font-bold text-terracota hover:underline shrink-0">
+          <Link href="/animales" className="text-sm font-bold text-terracota-oscuro hover:underline shrink-0">
             Ver todos →
           </Link>
         </div>
@@ -138,7 +138,7 @@ export default async function Home() {
                   </p>
                 </div>
               )}
-              <Link href="/donaciones" className="mt-4 inline-block rounded-full bg-terracota text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-oscuro transition-colors">
+              <Link href="/donaciones" className="mt-4 inline-block rounded-full bg-terracota-oscuro text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-mas-oscuro transition-colors">
                 Donar 💛
               </Link>
             </div>

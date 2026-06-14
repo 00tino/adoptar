@@ -87,7 +87,7 @@ export default async function PaginaCampanasAdmin({
                     {c.metaMonto && ` de $${c.metaMonto.toLocaleString("es-AR")}`}
                   </p>
                 </div>
-                <span className="text-sm font-bold text-terracota">Gestionar ▾</span>
+                <span className="text-sm font-bold text-terracota-oscuro">Gestionar ▾</span>
               </div>
             </summary>
 
@@ -98,11 +98,11 @@ export default async function PaginaCampanasAdmin({
                 {c.estado === "pendiente" && (
                   <>
                     <BotonAccion accion="aprobar" texto="Aprobar ✓" estilo="bg-salvia text-blanco-calido hover:bg-salvia-oscuro" />
-                    <BotonAccion accion="rechazar" texto="Rechazar ✗" estilo="bg-crema-2 text-tinta hover:bg-terracota hover:text-blanco-calido" />
+                    <BotonAccion accion="rechazar" texto="Rechazar ✗" estilo="bg-crema-2 text-tinta hover:bg-terracota-mas-oscuro hover:text-blanco-calido" />
                   </>
                 )}
                 {c.estado === "activa" && (
-                  <BotonAccion accion="cerrar" texto="Cerrar campaña" estilo="bg-crema-2 text-tinta hover:bg-terracota hover:text-blanco-calido" />
+                  <BotonAccion accion="cerrar" texto="Cerrar campaña" estilo="bg-crema-2 text-tinta hover:bg-terracota-mas-oscuro hover:text-blanco-calido" />
                 )}
                 {c.estado === "cerrada" && (
                   <BotonAccion accion="reactivar" texto="Reactivar" estilo="bg-salvia text-blanco-calido hover:bg-salvia-oscuro" />

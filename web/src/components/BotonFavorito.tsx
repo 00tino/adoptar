@@ -67,7 +67,7 @@ export default function BotonFavorito({
       className={`${claseBase} ${
         variante === "detalle"
           ? fav
-            ? "border-terracota bg-terracota/10 text-terracota"
+            ? "border-terracota bg-terracota-oscuro/10 text-terracota-oscuro"
             : "border-crema-2 bg-blanco-calido hover:border-terracota"
           : "bg-blanco-calido/90 hover:bg-blanco-calido"
       } disabled:opacity-60`}

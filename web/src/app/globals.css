@@ -12,7 +12,8 @@
   --color-tinta: #2e2118;
   --color-tinta-suave: #5c4a3a;
   --color-terracota: #d95d28;
-  --color-terracota-oscuro: #b34719;
+  --color-terracota-oscuro: #b34719; /* accesible: ~5:1 con texto blanco y sobre crema (AA) */
+  --color-terracota-mas-oscuro: #8f3814; /* estado hover de botones (~7:1) */
   --color-salvia: #5f7d56;
   --color-salvia-oscuro: #46603f;
   --color-sol: #f2b734;

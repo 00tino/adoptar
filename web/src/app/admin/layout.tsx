@@ -45,7 +45,7 @@ export default async function LayoutAdmin({
         />
         <button
           type="submit"
-          className="rounded-full bg-terracota text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-oscuro transition-colors"
+          className="rounded-full bg-terracota-oscuro text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-mas-oscuro transition-colors"
         >
           Buscar
         </button>
@@ -61,7 +61,7 @@ export default async function LayoutAdmin({
             key={p.href}
             href={p.href}
             exacta={p.exacta}
-            clase="shrink-0 rounded-full border-2 border-crema-2 bg-blanco-calido px-4 py-1.5 text-sm font-bold transition-colors hover:border-terracota hover:text-terracota"
+            clase="shrink-0 rounded-full border-2 border-crema-2 bg-blanco-calido px-4 py-1.5 text-sm font-bold transition-colors hover:border-terracota hover:text-terracota-oscuro"
             claseActiva="!border-tinta !bg-tinta !text-crema hover:!text-crema"
           >
             {p.texto}

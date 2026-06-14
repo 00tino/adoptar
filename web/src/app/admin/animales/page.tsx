@@ -129,13 +129,13 @@ export default async function PaginaAnimalesAdmin({
                 </form>
                 <Link
                   href={`/admin/animales/${a.id}/editar`}
-                  className="rounded-full border-2 border-crema-2 px-3 py-1.5 text-sm font-bold hover:border-terracota hover:text-terracota transition-colors"
+                  className="rounded-full border-2 border-crema-2 px-3 py-1.5 text-sm font-bold hover:border-terracota hover:text-terracota-oscuro transition-colors"
                 >
                   Editar
                 </Link>
                 <Link
                   href={`/animales/${a.slug}`}
-                  className="rounded-full border-2 border-crema-2 px-3 py-1.5 text-sm font-bold hover:border-terracota hover:text-terracota transition-colors"
+                  className="rounded-full border-2 border-crema-2 px-3 py-1.5 text-sm font-bold hover:border-terracota hover:text-terracota-oscuro transition-colors"
                 >
                   Ver ficha →
                 </Link>
@@ -144,7 +144,7 @@ export default async function PaginaAnimalesAdmin({
                   <input type="hidden" name="estado" value="rechazado" />
                   <button
                     type="submit"
-                    className="rounded-full border-2 border-terracota text-terracota px-3 py-1.5 text-sm font-bold hover:bg-terracota hover:text-blanco-calido transition-colors"
+                    className="rounded-full border-2 border-terracota text-terracota-oscuro px-3 py-1.5 text-sm font-bold hover:bg-terracota-mas-oscuro hover:text-blanco-calido transition-colors"
                   >
                     Dar de baja
                   </button>
@@ -213,7 +213,7 @@ function Etiqueta({ estado }: { estado: string }) {
     estado === "disponible" ? "bg-salvia/20 text-salvia-oscuro"
     : estado === "pendiente" ? "bg-sol/30 text-tinta"
     : estado === "adoptado" ? "bg-crema-2 text-tinta-suave"
-    : estado === "rechazado" ? "bg-terracota/15 text-terracota"
+    : estado === "rechazado" ? "bg-terracota-oscuro/15 text-terracota-oscuro"
     : "bg-crema-2 text-tinta";
   return (
     <span className={`ml-1 rounded-full px-2 py-0.5 text-xs font-bold ${color}`}>

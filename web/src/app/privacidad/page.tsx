@@ -64,17 +64,17 @@ export default function PaginaPrivacidad() {
         <p>
           Podés pedirnos ver, corregir o borrar tus datos cuando quieras
           escribiendo a{" "}
-          <a href="mailto:adoptar.argentina.ayuda@gmail.com" className="font-bold text-terracota hover:underline">
+          <a href="mailto:adoptar.argentina.ayuda@gmail.com" className="font-bold text-terracota-oscuro hover:underline">
             adoptar.argentina.ayuda@gmail.com
           </a>
           . Borramos tu cuenta y tus datos personales; las donaciones quedan
           registradas de forma anónima porque son parte de la transparencia de
           la plataforma. Más contexto en{" "}
-          <Link href="/quienes-somos" className="font-bold text-terracota hover:underline">
+          <Link href="/quienes-somos" className="font-bold text-terracota-oscuro hover:underline">
             quiénes somos
           </Link>{" "}
           y en los{" "}
-          <Link href="/terminos" className="font-bold text-terracota hover:underline">
+          <Link href="/terminos" className="font-bold text-terracota-oscuro hover:underline">
             términos y condiciones
           </Link>
           .

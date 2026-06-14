@@ -23,7 +23,7 @@ export default async function PaginaFavoritos() {
         </p>
         <div className="mt-6">
           <SignInButton mode="modal">
-            <button className="rounded-xl bg-terracota text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-oscuro transition-colors">
+            <button className="rounded-xl bg-terracota-oscuro text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors">
               Iniciar sesión
             </button>
           </SignInButton>
@@ -49,7 +49,7 @@ export default async function PaginaFavoritos() {
           </p>
           <Link
             href="/animales"
-            className="mt-4 inline-block text-terracota font-bold hover:underline"
+            className="mt-4 inline-block text-terracota-oscuro font-bold hover:underline"
           >
             Ver animales →
           </Link>

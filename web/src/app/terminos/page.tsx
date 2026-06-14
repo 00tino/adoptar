@@ -63,11 +63,11 @@ export default function PaginaTerminos() {
         <p>
           Podemos actualizar estos términos; si el cambio es importante lo
           vamos a avisar en el sitio. Las dudas van a{" "}
-          <a href="mailto:adoptar.argentina.ayuda@gmail.com" className="font-bold text-terracota hover:underline">
+          <a href="mailto:adoptar.argentina.ayuda@gmail.com" className="font-bold text-terracota-oscuro hover:underline">
             adoptar.argentina.ayuda@gmail.com
           </a>
           . También podés leer nuestra{" "}
-          <Link href="/privacidad" className="font-bold text-terracota hover:underline">
+          <Link href="/privacidad" className="font-bold text-terracota-oscuro hover:underline">
             política de privacidad
           </Link>
           .

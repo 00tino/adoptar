@@ -49,7 +49,7 @@ export default async function PaginaMensajes() {
         <p className="mt-3 text-tinta-suave">Iniciá sesión para ver tus conversaciones.</p>
         <div className="mt-6">
           <SignInButton mode="modal">
-            <button className="rounded-full bg-terracota text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-oscuro transition-colors">
+            <button className="rounded-full bg-terracota-oscuro text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors">
               Ingresar
             </button>
           </SignInButton>
@@ -95,7 +95,7 @@ export default async function PaginaMensajes() {
           />
           <p className="mt-4 text-tinta-suave">
             Todavía no tenés conversaciones. Encontrá un animal en el{" "}
-            <Link href="/animales" className="font-bold text-terracota underline">
+            <Link href="/animales" className="font-bold text-terracota-oscuro underline">
               catálogo
             </Link>{" "}
             y escribile a quien lo publica.
@@ -129,7 +129,7 @@ export default async function PaginaMensajes() {
                 <div className="shrink-0 text-right">
                   <p className="text-xs text-tinta-suave">{fechaLegible(c.ultimaFecha)}</p>
                   {c.noLeidos > 0 && (
-                    <span className="mt-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-terracota px-2 text-xs font-bold text-blanco-calido">
+                    <span className="mt-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-terracota-oscuro px-2 text-xs font-bold text-blanco-calido">
                       {c.noLeidos}
                     </span>
                   )}

@@ -64,7 +64,7 @@ export default async function PaginaSuscripcionesAdmin() {
                       s.estado === "activa"
                         ? "bg-salvia/20 text-salvia-oscuro"
                         : s.estado === "cancelada"
-                        ? "bg-terracota/15 text-terracota"
+                        ? "bg-terracota-oscuro/15 text-terracota-oscuro"
                         : "bg-sol/30 text-tinta"
                     }`}
                   >

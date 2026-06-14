@@ -35,7 +35,7 @@ export default async function PaginaAlertasTransito() {
         </p>
         <div className="mt-6">
           <SignInButton mode="modal">
-            <button className="rounded-xl bg-terracota text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-oscuro transition-colors">
+            <button className="rounded-xl bg-terracota-oscuro text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors">
               Iniciar sesión
             </button>
           </SignInButton>
@@ -49,7 +49,7 @@ export default async function PaginaAlertasTransito() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <Link href="/transito" className="text-sm font-bold text-terracota hover:underline">
+      <Link href="/transito" className="text-sm font-bold text-terracota-oscuro hover:underline">
         ← Volver a tránsito
       </Link>
       <h1 className="mt-3 font-display text-4xl font-black">
@@ -79,7 +79,7 @@ export default async function PaginaAlertasTransito() {
             </form>
             <form action={borrarAlerta}>
               <input type="hidden" name="id" value={actual.id} />
-              <button className="rounded-full border-2 border-crema-2 px-4 py-2 text-sm font-bold text-terracota hover:border-terracota transition-colors">
+              <button className="rounded-full border-2 border-crema-2 px-4 py-2 text-sm font-bold text-terracota-oscuro hover:border-terracota transition-colors">
                 Eliminar
               </button>
             </form>

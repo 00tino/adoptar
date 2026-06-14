@@ -19,7 +19,7 @@ export default function NoEncontrado() {
       </p>
       <Link
         href="/animales"
-        className="mt-6 inline-block rounded-full bg-terracota text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-oscuro transition-colors"
+        className="mt-6 inline-block rounded-full bg-terracota-oscuro text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
       >
         Ver animales en adopción
       </Link>

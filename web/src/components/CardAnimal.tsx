@@ -36,7 +36,7 @@ export default function CardAnimal({
           />
           <span
             className={`absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-bold text-blanco-calido ${
-              esTransito ? "bg-terracota" : "bg-salvia"
+              esTransito ? "bg-terracota-oscuro" : "bg-salvia"
             }`}
           >
             {esTransito ? "💛 En tránsito" : "🏡 En adopción"}

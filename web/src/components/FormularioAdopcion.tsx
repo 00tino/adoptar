@@ -53,7 +53,7 @@ export default function FormularioAdopcion({
             placeholder="Por qué querés adoptarlo/a, si tenés otros animales, experiencia previa…"
           />
         </div>
-        <BotonEnvio className="w-full rounded-xl bg-terracota text-blanco-calido py-3 font-bold hover:bg-terracota-oscuro transition-colors">
+        <BotonEnvio className="w-full rounded-xl bg-terracota-oscuro text-blanco-calido py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors">
           Enviar mi postulación 🐾
         </BotonEnvio>
       </form>

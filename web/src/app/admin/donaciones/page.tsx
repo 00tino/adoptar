@@ -101,7 +101,7 @@ export default async function PaginaDonacionesAdmin({
           <div className="sm:col-span-3">
             <button
               type="submit"
-              className="rounded-full bg-terracota text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-oscuro transition-colors"
+              className="rounded-full bg-terracota-oscuro text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-mas-oscuro transition-colors"
             >
               Registrar donación
             </button>

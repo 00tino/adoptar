@@ -71,7 +71,7 @@ export default async function PaginaAdmin({
         <h2 className="font-display text-2xl font-black">
           Cola de aprobación{" "}
           {totalPendientes > 0 && (
-            <span className="inline-block rounded-full bg-terracota text-blanco-calido text-sm px-3 py-1 align-middle">
+            <span className="inline-block rounded-full bg-terracota-oscuro text-blanco-calido text-sm px-3 py-1 align-middle">
               {totalPendientes} pendiente{totalPendientes !== 1 && "s"}
             </span>
           )}
@@ -95,7 +95,7 @@ export default async function PaginaAdmin({
                 </p>
                 <p className="mt-2 text-sm max-w-xl">{r.descripcion}</p>
                 {r.video_url && (
-                  <a href={r.video_url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-sm font-bold text-terracota hover:underline">
+                  <a href={r.video_url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-sm font-bold text-terracota-oscuro hover:underline">
                     Ver video institucional →
                   </a>
                 )}
@@ -104,7 +104,7 @@ export default async function PaginaAdmin({
                 <input type="hidden" name="id" value={r.id} />
                 <BotonDecision decision="aprobar" texto="Aprobar ✓" estilo="bg-salvia text-blanco-calido hover:bg-salvia-oscuro" />
                 <BotonDecision decision="estrella" texto="Aprobar ⭐" estilo="bg-sol text-tinta hover:brightness-105" titulo="Aprobar como Refugio Estrella (publica sin verificación)" />
-                <BotonDecision decision="rechazar" texto="Rechazar ✗" estilo="bg-crema-2 text-tinta hover:bg-terracota hover:text-blanco-calido" />
+                <BotonDecision decision="rechazar" texto="Rechazar ✗" estilo="bg-crema-2 text-tinta hover:bg-terracota-mas-oscuro hover:text-blanco-calido" />
               </form>
             </div>
           </div>
@@ -115,7 +115,7 @@ export default async function PaginaAdmin({
           <div key={a.id} className="mt-4 rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-terracota">
+                <p className="text-xs font-bold uppercase tracking-wide text-terracota-oscuro">
                   Animal en {a.tipo === "transito" ? "tránsito" : "adopción"}
                   {a.particular_nombre && ` · publica ${a.particular_nombre}`}
                 </p>
@@ -127,12 +127,12 @@ export default async function PaginaAdmin({
                 <div className="mt-1 flex gap-3 text-sm font-bold">
                   {Array.isArray(a.fotos) &&
                     a.fotos.map((f: string, i: number) => (
-                      <a key={i} href={f} target="_blank" rel="noopener noreferrer" className="text-terracota hover:underline">
+                      <a key={i} href={f} target="_blank" rel="noopener noreferrer" className="text-terracota-oscuro hover:underline">
                         Foto {i + 1}
                       </a>
                     ))}
                   {a.video_url && (
-                    <a href={a.video_url} target="_blank" rel="noopener noreferrer" className="text-terracota hover:underline">
+                    <a href={a.video_url} target="_blank" rel="noopener noreferrer" className="text-terracota-oscuro hover:underline">
                       Video →
                     </a>
                   )}
@@ -141,7 +141,7 @@ export default async function PaginaAdmin({
               <form action={decidirAnimal} className="flex gap-2 shrink-0">
                 <input type="hidden" name="id" value={a.id} />
                 <BotonDecision decision="aprobar" texto="Aprobar ✓" estilo="bg-salvia text-blanco-calido hover:bg-salvia-oscuro" />
-                <BotonDecision decision="rechazar" texto="Rechazar ✗" estilo="bg-crema-2 text-tinta hover:bg-terracota hover:text-blanco-calido" />
+                <BotonDecision decision="rechazar" texto="Rechazar ✗" estilo="bg-crema-2 text-tinta hover:bg-terracota-mas-oscuro hover:text-blanco-calido" />
               </form>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default async function PaginaAdmin({
               <form action={decidirCampana} className="flex gap-2 shrink-0">
                 <input type="hidden" name="id" value={c.id} />
                 <BotonDecision decision="aprobar" texto="Aprobar ✓" estilo="bg-salvia text-blanco-calido hover:bg-salvia-oscuro" />
-                <BotonDecision decision="rechazar" texto="Rechazar ✗" estilo="bg-crema-2 text-tinta hover:bg-terracota hover:text-blanco-calido" />
+                <BotonDecision decision="rechazar" texto="Rechazar ✗" estilo="bg-crema-2 text-tinta hover:bg-terracota-mas-oscuro hover:text-blanco-calido" />
               </form>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default async function PaginaAdmin({
               <div key={m.mes} className="flex-1 text-center">
                 <div className="flex items-end justify-center gap-1 h-32">
                   <div
-                    className="w-4 rounded-t bg-terracota/80"
+                    className="w-4 rounded-t bg-terracota-oscuro/80"
                     style={{ height: `${(m.publicados / maxMes) * 100}%` }}
                     title={`${m.publicados} publicados`}
                   />
@@ -252,7 +252,7 @@ export default async function PaginaAdmin({
             ))}
           </div>
           <p className="mt-3 text-xs text-tinta-suave">
-            <span className="font-bold text-terracota">■ Publicados</span> ·{" "}
+            <span className="font-bold text-terracota-oscuro">■ Publicados</span> ·{" "}
             <span className="font-bold text-salvia-oscuro">■ Adoptados</span> (por mes de publicación)
           </p>
         </div>
@@ -292,7 +292,7 @@ export default async function PaginaAdmin({
                 <p className="font-bold">
                   {u.nombre}{" "}
                   {u.suspendido && (
-                    <span className="ml-1 rounded-full bg-terracota px-2 py-0.5 text-xs font-bold text-blanco-calido">
+                    <span className="ml-1 rounded-full bg-terracota-oscuro px-2 py-0.5 text-xs font-bold text-blanco-calido">
                       Suspendido
                     </span>
                   )}
@@ -310,7 +310,7 @@ export default async function PaginaAdmin({
                   className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
                     u.suspendido
                       ? "border-2 border-salvia text-salvia-oscuro hover:bg-salvia hover:text-blanco-calido"
-                      : "border-2 border-terracota text-terracota hover:bg-terracota hover:text-blanco-calido"
+                      : "border-2 border-terracota text-terracota-oscuro hover:bg-terracota-mas-oscuro hover:text-blanco-calido"
                   }`}
                 >
                   {u.suspendido ? "Reactivar" : "Suspender"}
@@ -329,7 +329,7 @@ export default async function PaginaAdmin({
             <a
               key={tabla}
               href={`/admin/exportar/${tabla}`}
-              className="rounded-full border-2 border-crema-2 bg-blanco-calido px-5 py-2 text-sm font-bold capitalize hover:border-terracota hover:text-terracota transition-colors"
+              className="rounded-full border-2 border-crema-2 bg-blanco-calido px-5 py-2 text-sm font-bold capitalize hover:border-terracota hover:text-terracota-oscuro transition-colors"
             >
               ⬇️ {tabla}.csv
             </a>

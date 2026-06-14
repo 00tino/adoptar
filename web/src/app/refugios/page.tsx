@@ -62,7 +62,7 @@ export default async function PaginaRefugios() {
         <p className="mt-2 text-tinta-suave">Sumate a AdoptAR, es gratis para siempre.</p>
         <Link
           href="/registrar-refugio"
-          className="mt-4 inline-block rounded-full bg-terracota text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-oscuro transition-colors"
+          className="mt-4 inline-block rounded-full bg-terracota-oscuro text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
         >
           Registrar mi refugio
         </Link>

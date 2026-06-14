@@ -31,7 +31,7 @@ export default function FormDonarCausas({
               key={c.id}
               className={`cursor-pointer rounded-2xl border-2 p-4 transition-colors ${
                 activa
-                  ? "border-terracota bg-terracota/10"
+                  ? "border-terracota bg-terracota-oscuro/10"
                   : "border-crema-2 bg-blanco-calido hover:border-tinta-suave"
               }`}
             >
@@ -153,7 +153,7 @@ export default function FormDonarCausas({
 
           <button
             type="submit"
-            className="mt-5 w-full rounded-full bg-terracota px-6 py-3 font-bold text-blanco-calido hover:bg-terracota-oscuro transition-colors sm:w-auto"
+            className="mt-5 w-full rounded-full bg-terracota-oscuro px-6 py-3 font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors sm:w-auto"
           >
             Donar con Mercado Pago 💙
           </button>

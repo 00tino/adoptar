@@ -43,7 +43,7 @@ export default async function PaginaDonaciones({
         </div>
       )}
       {resultado === "error" && (
-        <div className="mb-6 rounded-2xl bg-terracota text-blanco-calido p-6 text-center font-bold">
+        <div className="mb-6 rounded-2xl bg-terracota-oscuro text-blanco-calido p-6 text-center font-bold">
           El pago no se completó. Podés intentarlo de nuevo cuando quieras.
         </div>
       )}
@@ -181,7 +181,7 @@ export default async function PaginaDonaciones({
                   />
                   <button
                     type="submit"
-                    className="rounded-full bg-terracota text-blanco-calido px-6 py-2 font-bold text-sm hover:bg-terracota-oscuro transition-colors"
+                    className="rounded-full bg-terracota-oscuro text-blanco-calido px-6 py-2 font-bold text-sm hover:bg-terracota-mas-oscuro transition-colors"
                   >
                     Donar con Mercado Pago 💙
                   </button>
@@ -190,7 +190,7 @@ export default async function PaginaDonaciones({
                 <button
                   disabled
                   title="Falta configurar la credencial de Mercado Pago"
-                  className="rounded-full bg-terracota/50 text-blanco-calido px-6 py-3 font-bold text-sm cursor-not-allowed"
+                  className="rounded-full bg-terracota-oscuro/50 text-blanco-calido px-6 py-3 font-bold text-sm cursor-not-allowed"
                 >
                   Donar con Mercado Pago (próximamente)
                 </button>

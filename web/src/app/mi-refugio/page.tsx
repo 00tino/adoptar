@@ -56,7 +56,7 @@ export default async function PaginaMiRefugio({
         </div>
         <Link
           href="/mi-refugio/publicar"
-          className="rounded-full bg-terracota text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-oscuro transition-colors"
+          className="rounded-full bg-terracota-oscuro text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
         >
           Publicar animal 🐾
         </Link>
@@ -103,7 +103,7 @@ export default async function PaginaMiRefugio({
                   <div className="min-w-0 flex-1">
                     <p className="font-display text-xl font-bold">
                       {aprobado ? (
-                        <Link href={`/animales/${a.slug}`} className="hover:text-terracota">
+                        <Link href={`/animales/${a.slug}`} className="hover:text-terracota-oscuro">
                           {a.nombre}
                         </Link>
                       ) : (
@@ -153,7 +153,7 @@ export default async function PaginaMiRefugio({
                         <input type="hidden" name="id" value={a.id} />
                         <button
                           type="submit"
-                          className="rounded-full border-2 border-terracota px-4 py-1.5 text-sm font-bold text-terracota hover:bg-terracota hover:text-blanco-calido transition-colors"
+                          className="rounded-full border-2 border-terracota px-4 py-1.5 text-sm font-bold text-terracota-oscuro hover:bg-terracota-mas-oscuro hover:text-blanco-calido transition-colors"
                         >
                           Dar de baja
                         </button>
@@ -208,7 +208,7 @@ function Postulaciones({
                     {p.nombre}{" "}
                     <span className="font-normal text-tinta-suave">
                       → quiere adoptar a{" "}
-                      <Link href={`/animales/${p.animalSlug}`} className="font-bold hover:text-terracota">
+                      <Link href={`/animales/${p.animalSlug}`} className="font-bold hover:text-terracota-oscuro">
                         {p.animalNombre}
                       </Link>
                     </span>

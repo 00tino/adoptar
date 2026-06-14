@@ -140,7 +140,7 @@ export default async function PaginaCampanasRefugio({
           </div>
           <button
             type="submit"
-            className="w-full rounded-full bg-terracota px-6 py-3 font-bold text-blanco-calido hover:bg-terracota-oscuro transition-colors sm:w-auto"
+            className="w-full rounded-full bg-terracota-oscuro px-6 py-3 font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors sm:w-auto"
           >
             Enviar campaña
           </button>

@@ -85,7 +85,7 @@ export default async function PaginaRefugiosAdmin({
                     desde {new Date(r.creadoEl).toLocaleDateString("es-AR")}
                   </p>
                 </div>
-                <span className="text-sm font-bold text-terracota">Ver ficha ▾</span>
+                <span className="text-sm font-bold text-terracota-oscuro">Ver ficha ▾</span>
               </div>
             </summary>
 
@@ -95,16 +95,16 @@ export default async function PaginaRefugiosAdmin({
               <p className="text-tinta-suave">
                 📞 {r.telefono ?? "sin teléfono"}
                 {r.redes.instagram && (
-                  <> · <a className="font-bold text-terracota hover:underline" href={r.redes.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></>
+                  <> · <a className="font-bold text-terracota-oscuro hover:underline" href={r.redes.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></>
                 )}
                 {r.redes.facebook && (
-                  <> · <a className="font-bold text-terracota hover:underline" href={r.redes.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></>
+                  <> · <a className="font-bold text-terracota-oscuro hover:underline" href={r.redes.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></>
                 )}
               </p>
               {r.fotos.length > 0 && (
                 <p className="flex gap-3 font-bold">
                   {r.fotos.map((f, i) => (
-                    <a key={i} href={f} target="_blank" rel="noopener noreferrer" className="text-terracota hover:underline">
+                    <a key={i} href={f} target="_blank" rel="noopener noreferrer" className="text-terracota-oscuro hover:underline">
                       Foto {i + 1}
                     </a>
                   ))}
@@ -133,7 +133,7 @@ export default async function PaginaRefugiosAdmin({
                 </form>
                 <Link
                   href={`/refugios/${r.slug}`}
-                  className="rounded-full border-2 border-crema-2 px-3 py-1.5 text-sm font-bold hover:border-terracota hover:text-terracota transition-colors"
+                  className="rounded-full border-2 border-crema-2 px-3 py-1.5 text-sm font-bold hover:border-terracota hover:text-terracota-oscuro transition-colors"
                 >
                   Perfil público →
                 </Link>

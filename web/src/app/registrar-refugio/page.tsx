@@ -89,7 +89,7 @@ export default async function PaginaRegistrarRefugio({
         {activo ? (
           <button
             type="submit"
-            className="w-full rounded-xl bg-terracota text-blanco-calido py-3 font-bold hover:bg-terracota-oscuro transition-colors"
+            className="w-full rounded-xl bg-terracota-oscuro text-blanco-calido py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
           >
             Enviar solicitud 🏠
           </button>
@@ -98,7 +98,7 @@ export default async function PaginaRegistrarRefugio({
             <button
               type="submit"
               disabled
-              className="w-full rounded-xl bg-terracota/50 text-blanco-calido py-3 font-bold cursor-not-allowed"
+              className="w-full rounded-xl bg-terracota-oscuro/50 text-blanco-calido py-3 font-bold cursor-not-allowed"
             >
               Enviar solicitud (próximamente)
             </button>

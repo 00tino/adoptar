@@ -171,7 +171,7 @@ export default async function PaginaAnimales({
             className="mx-auto aspect-square w-40 rounded-3xl object-cover"
           />
           <p className="mt-4 font-display text-2xl font-bold">No encontramos animales con esos filtros</p>
-          <Link href="/animales" className="mt-2 inline-block text-terracota font-bold hover:underline">
+          <Link href="/animales" className="mt-2 inline-block text-terracota-oscuro font-bold hover:underline">
             Ver todos los animales →
           </Link>
         </div>

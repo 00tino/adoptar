@@ -115,7 +115,7 @@ export default async function PaginaDonacionMensual({
           <form action={cancelarSuscripcion} className="mt-10">
             <BotonEnvio
               textoEnviando="Cancelando…"
-              className="rounded-full border-2 border-terracota px-6 py-2.5 text-sm font-bold text-terracota transition-colors hover:bg-terracota hover:text-blanco-calido"
+              className="rounded-full border-2 border-terracota px-6 py-2.5 text-sm font-bold text-terracota-oscuro transition-colors hover:bg-terracota-mas-oscuro hover:text-blanco-calido"
             >
               Cancelar mi donación mensual
             </BotonEnvio>
@@ -140,7 +140,7 @@ export default async function PaginaDonacionMensual({
               <form action={cancelarSuscripcion} className="mt-4">
                 <BotonEnvio
                   textoEnviando="Descartando…"
-                  className="rounded-full border-2 border-terracota px-5 py-2 text-sm font-bold text-terracota transition-colors hover:bg-terracota hover:text-blanco-calido"
+                  className="rounded-full border-2 border-terracota px-5 py-2 text-sm font-bold text-terracota-oscuro transition-colors hover:bg-terracota-mas-oscuro hover:text-blanco-calido"
                 >
                   Descartar y empezar de cero
                 </BotonEnvio>
