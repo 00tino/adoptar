@@ -170,9 +170,9 @@ export default async function PaginaRefugio({
 
       {/* HISTORIA */}
       {refugio.historia && (
-        <section className="mt-12">
+        <section className="mt-12 text-center">
           <h2 className="font-display text-3xl font-black">Nuestra historia</h2>
-          <div className="mt-4 max-w-3xl space-y-4 leading-relaxed text-tinta">
+          <div className="mx-auto mt-4 max-w-3xl space-y-4 leading-relaxed text-tinta text-center">
             {refugio.historia.split(/\n{2,}/).map((parrafo, i) => (
               <p key={i} className="whitespace-pre-line">{parrafo}</p>
             ))}

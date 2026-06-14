@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 import { campoTexto, limitarPorIp } from "./limites";
 import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import { esCausa } from "./causas";
+import { emailGraciasDonante } from "./emails";
 
 function clienteServidor() {
   return createClient(
@@ -122,6 +123,9 @@ export async function crearSuscripcion(formData: FormData) {
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
+        // start_date "ahora" hace que el primer cobro se genere al autorizar,
+        // no recién el mes siguiente. Los siguientes caen cada mes desde acá.
+        start_date: new Date().toISOString(),
         transaction_amount: monto,
         currency_id: "ARS",
       },
@@ -249,7 +253,7 @@ export async function registrarCobroSuscripcion(
 
   const { data: sus } = await sb
     .from("suscripciones")
-    .select("causas,usuario_id,usuarios(nombre)")
+    .select("causas,usuario_id,usuarios(nombre,email)")
     .eq("id", suscripcionId)
     .maybeSingle();
   if (!sus) return;
@@ -257,6 +261,7 @@ export async function registrarCobroSuscripcion(
   const usuario = Array.isArray(sus.usuarios) ? sus.usuarios[0] : sus.usuarios;
   const donorNombre =
     campoTexto((usuario as { nombre?: string } | null)?.nombre, 80) || null;
+  const donorEmail = (usuario as { email?: string } | null)?.email ?? null;
 
   const { data: activas } = await sb
     .from("campanas")
@@ -311,5 +316,11 @@ export async function registrarCobroSuscripcion(
     });
   });
 
-  if (filas.length > 0) await sb.from("donaciones").insert(filas);
+  if (filas.length > 0) {
+    await sb.from("donaciones").insert(filas);
+    // Recibo/agradecimiento al donante por el débito mensual (no corta si falla)
+    if (donorEmail) {
+      await emailGraciasDonante(donorEmail, donorNombre ?? "amiga/o", Math.round(total));
+    }
+  }
 }

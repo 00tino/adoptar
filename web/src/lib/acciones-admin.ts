@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { esAdmin } from "./auth";
 import { emailRefugioAprobado, emailRefugioRechazado } from "./emails";
 import { crearNotificacion } from "./notificaciones";
+import { notificarAlertasTransito } from "./acciones-alertas";
 import { esCausa } from "./causas";
 
 function clienteServidor() {
@@ -200,9 +201,28 @@ export async function decidirAnimal(formData: FormData) {
     .from("animales")
     .update({ estado })
     .eq("id", id)
-    .select("nombre,particular_id,refugios(usuario_id)")
+    .select(
+      "nombre,particular_id,tipo,especie,ciudad,provincia,descripcion,fotos,slug,lat_aprox,lng_aprox,refugios(usuario_id)"
+    )
     .single();
   if (error) throw new Error(error.message);
+
+  // Al aprobar un animal en tránsito avisamos a quienes tienen una alerta de
+  // cercanía que lo cubra (los emails fallidos no cortan la aprobación).
+  if (estado === "disponible" && data?.tipo === "transito") {
+    await notificarAlertasTransito({
+      nombre: data.nombre,
+      especie: data.especie,
+      ciudad: data.ciudad,
+      provincia: data.provincia,
+      descripcion: data.descripcion,
+      fotos: data.fotos,
+      slug: data.slug,
+      lat_aprox: data.lat_aprox,
+      lng_aprox: data.lng_aprox,
+      tipo: data.tipo,
+    });
+  }
 
   // Notificación in-app a quien lo publicó (particular o refugio)
   const refugio = Array.isArray(data?.refugios) ? data.refugios[0] : data?.refugios;

@@ -30,9 +30,9 @@ export default async function PaginaTransito() {
           <Link href="/publicar-transito" className="rounded-full bg-sol text-tinta px-6 py-3 hover:brightness-105">
             Tengo un animal que necesita tránsito
           </Link>
-          <a href="mailto:adoptar.argentina.ayuda@gmail.com?subject=Quiero ser hogar de tránsito" className="rounded-full border-2 border-blanco-calido px-6 py-3 hover:bg-blanco-calido hover:text-terracota transition-colors">
-            Quiero ser hogar de tránsito
-          </a>
+          <Link href="/transito/alertas" className="rounded-full border-2 border-blanco-calido px-6 py-3 hover:bg-blanco-calido hover:text-terracota transition-colors">
+            Avisarme de animales cerca mío 💛
+          </Link>
         </div>
         </div>
         <Image

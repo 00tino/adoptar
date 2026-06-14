@@ -11,6 +11,7 @@ import { clerkDisponible, usuarioActual } from "./auth";
 import { exigirUsuarioActivo } from "./usuarios";
 import { campoTexto, limitarPorIp } from "./limites";
 import { generarSlug, subirArchivos } from "./archivos";
+import { desplazar, geocodificarZona } from "./geo";
 
 // Cliente con service role: solo vive en el servidor y saltea RLS
 // (necesario para insertar filas "pendientes" que el público no puede leer).
@@ -54,8 +55,16 @@ export async function publicarTransito(formData: FormData) {
   const urlsFotos = await subirArchivos(sb, fotos.slice(0, 6), "animales");
   const [urlVideo] = await subirArchivos(sb, [video], "videos");
 
+  // Geocodificamos la zona y guardamos SOLO la coordenada desplazada (~500 m),
+  // suficiente para las alertas de tránsito por cercanía y sin exponer la
+  // ubicación exacta del particular.
+  const coord = await geocodificarZona(zona);
+  const aprox = coord ? desplazar(coord.lat, coord.lng) : null;
+
   const { error } = await sb.from("animales").insert({
     slug: generarSlug(["transito", especie, nombre, ciudad]),
+    lat_aprox: aprox?.lat ?? null,
+    lng_aprox: aprox?.lng ?? null,
     nombre,
     especie,
     raza: campoTexto(formData.get("raza"), 80) || null,

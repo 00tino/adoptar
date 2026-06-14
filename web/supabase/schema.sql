@@ -190,6 +190,23 @@ create policy "campanas visibles" on campanas
 -- se hace desde el servidor con la service role key, que saltea RLS.
 -- Cuando integremos Clerk con Supabase, se agregan políticas por usuario.
 
+-- ============ ALERTAS DE TRÁNSITO (Fase 8) ============
+-- Un usuario dispuesto a hacer tránsito define una zona (lat/lng) y un radio;
+-- cuando se publica un animal en tránsito dentro de ese radio le llega un email.
+create table alertas_transito (
+  id uuid primary key default gen_random_uuid(),
+  usuario_id uuid not null references usuarios(id) on delete cascade,
+  lat double precision not null,
+  lng double precision not null,
+  radio_km int not null default 25 check (radio_km between 1 and 500),
+  activa boolean not null default true,
+  creado_el timestamptz not null default now()
+);
+alter table alertas_transito enable row level security;
+-- Sin políticas públicas: todo el acceso es server-side con service role.
+create index idx_alertas_transito_activa on alertas_transito (activa);
+create index idx_alertas_transito_usuario on alertas_transito (usuario_id);
+
 -- ============ STORAGE ============
 -- Crear también un bucket PÚBLICO llamado "media" desde el panel de Supabase:
 -- Storage → New bucket → nombre "media" → marcar "Public bucket".
