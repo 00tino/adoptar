@@ -5,11 +5,7 @@
 // se puede migrar a Supabase Realtime más adelante sin cambiar la UI).
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import {
-  enviarMensaje,
-  obtenerMensajes,
-  type MensajeChat,
-} from "@/lib/acciones-chat";
+import { enviarMensaje, type MensajeChat } from "@/lib/acciones-chat";
 
 export default function ChatAnimal({ animalId }: { animalId: string }) {
   const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
@@ -19,7 +15,12 @@ export default function ChatAnimal({ animalId }: { animalId: string }) {
 
   const refrescar = useCallback(async () => {
     try {
-      setMensajes(await obtenerMensajes(animalId));
+      // Polling contra un Route Handler estable (su URL no cambia en cada
+      // deploy, a diferencia del id de una server action).
+      const res = await fetch(`/api/chat/${animalId}`, { cache: "no-store" });
+      if (!res.ok) return;
+      const { mensajes } = (await res.json()) as { mensajes: MensajeChat[] };
+      setMensajes(mensajes);
     } catch {
       // sin sesión o sin red: no rompemos la página
     }

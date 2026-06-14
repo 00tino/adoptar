@@ -8,7 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { campoTexto, limitarPorIp } from "./limites";
 import { asegurarUsuario } from "./usuarios";
-import { emailNuevaPostulacion } from "./emails";
+import { emailNuevaPostulacion, emailPostulacionRecibida } from "./emails";
 import { crearNotificacion } from "./notificaciones";
 
 function clienteServidor() {
@@ -75,6 +75,9 @@ export async function postularAdopcion(formData: FormData) {
     "adopcion",
     `Nueva postulación para adoptar a ${animal.nombre} 🐾`
   );
+
+  // Confirmación al postulante (no corta el flujo si el email falla).
+  await emailPostulacionRecibida(email, nombre, animal.nombre);
 
   redirect(`/animales/${String(formData.get("slug"))}?postulado=1`);
 }

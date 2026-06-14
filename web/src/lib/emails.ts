@@ -232,6 +232,65 @@ export async function emailNuevaPostulacion(
   });
 }
 
+/** Confirma al postulante que su solicitud de adopción llegó bien. */
+export async function emailPostulacionRecibida(
+  para: string,
+  nombreCrudo: string,
+  animalCrudo: string
+) {
+  const nombre = escaparHtml(nombreCrudo);
+  const animal = escaparHtml(animalCrudo);
+  await enviarEmail({
+    para,
+    asunto: `Recibimos tu postulación para adoptar a ${animal} 🐾`,
+    html: plantilla(
+      `¡Gracias, ${nombre}!`,
+      `Recibimos tu postulación para adoptar a <strong>${animal}</strong>. ` +
+        "Quien lo publica va a revisarla y se va a poner en contacto con vos. " +
+        "Te avisaremos por este medio cuando haya novedades. ¡Gracias por darle " +
+        "una oportunidad a un animal en adopción!"
+    ),
+  });
+}
+
+/** Avisa al postulante que cambió el estado de su postulación. */
+export async function emailEstadoPostulacion(
+  para: string,
+  nombreCrudo: string,
+  animalCrudo: string,
+  estado: "en_proceso" | "aceptada" | "rechazada"
+) {
+  const nombre = escaparHtml(nombreCrudo);
+  const animal = escaparHtml(animalCrudo);
+  const textos: Record<typeof estado, { asunto: string; titulo: string; cuerpo: string }> = {
+    en_proceso: {
+      asunto: `Tu postulación para ${animal} está en proceso 🐾`,
+      titulo: `¡Buenas noticias, ${nombre}!`,
+      cuerpo:
+        `Quien publica a <strong>${animal}</strong> está revisando tu postulación. ` +
+        "Es posible que se contacte con vos para coordinar los próximos pasos.",
+    },
+    aceptada: {
+      asunto: `¡Tu postulación para adoptar a ${animal} fue aceptada! 🎉`,
+      titulo: `¡Felicitaciones, ${nombre}!`,
+      cuerpo:
+        `Tu postulación para adoptar a <strong>${animal}</strong> fue aceptada. ` +
+        "Quien lo publica se va a contactar con vos para coordinar el encuentro. " +
+        "¡Gracias por sumarte a la adopción responsable!",
+    },
+    rechazada: {
+      asunto: `Sobre tu postulación para adoptar a ${animal}`,
+      titulo: `Hola, ${nombre}`,
+      cuerpo:
+        `Esta vez tu postulación para adoptar a <strong>${animal}</strong> no avanzó. ` +
+        "No te desanimes: hay muchos animales esperando un hogar. Podés seguir " +
+        'explorando en <a href="https://adoptar.dpdns.org/animales" style="color:#d95d28">adoptar.dpdns.org</a>.',
+    },
+  };
+  const t = textos[estado];
+  await enviarEmail({ para, asunto: t.asunto, html: plantilla(t.titulo, t.cuerpo) });
+}
+
 export async function emailRefugioAprobado(para: string, nombreCrudo: string) {
   const nombre = escaparHtml(nombreCrudo);
   await enviarEmail({

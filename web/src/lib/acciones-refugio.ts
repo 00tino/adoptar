@@ -12,6 +12,8 @@ import { campoTexto, limitarPorIp } from "./limites";
 import { generarSlug, subirArchivos } from "./archivos";
 import { resolverEmbedVideo, validarUrlRed } from "./embeds";
 import { esCausa } from "./causas";
+import { emailEstadoPostulacion } from "./emails";
+import { crearNotificacion } from "./notificaciones";
 
 function clienteServidor() {
   return createClient(
@@ -316,7 +318,7 @@ export async function cambiarEstadoPostulacion(formData: FormData) {
   // Ownership: la postulación debe ser de un animal de este refugio
   const { data: post } = await sb
     .from("postulaciones")
-    .select("animal_id,animales(refugio_id)")
+    .select("animal_id,nombre,email,usuario_id,animales(refugio_id,nombre)")
     .eq("id", id)
     .maybeSingle();
   const animal = Array.isArray(post?.animales) ? post?.animales[0] : post?.animales;
@@ -325,6 +327,26 @@ export async function cambiarEstadoPostulacion(formData: FormData) {
   }
   const { error } = await sb.from("postulaciones").update({ estado }).eq("id", id);
   if (error) throw new Error(error.message);
+
+  // Avisamos al postulante cuando el refugio mueve el estado (salvo volver a
+  // "postulado", que es el inicial). Email + notificación in-app; ni el email
+  // ni la notificación cortan el flujo si fallan.
+  if (estado === "en_proceso" || estado === "aceptada" || estado === "rechazada") {
+    const nombreAnimal = (animal as { nombre?: string } | null)?.nombre ?? "el animal";
+    if (post.email) {
+      await emailEstadoPostulacion(post.email, post.nombre, nombreAnimal, estado);
+    }
+    if (post.usuario_id) {
+      const copy =
+        estado === "aceptada"
+          ? `¡Tu postulación para adoptar a ${nombreAnimal} fue aceptada! 🎉`
+          : estado === "rechazada"
+            ? `Tu postulación para adoptar a ${nombreAnimal} no avanzó esta vez`
+            : `Tu postulación para adoptar a ${nombreAnimal} está en proceso 🐾`;
+      await crearNotificacion(post.usuario_id, "adopcion", copy);
+    }
+  }
+
   revalidatePath("/mi-refugio");
 }
 
