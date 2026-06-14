@@ -1,13 +1,32 @@
-// Emails automáticos con Resend (capa gratuita: 3.000/mes).
-// Si RESEND_API_KEY no está configurada, las funciones no hacen nada
-// (la app sigue funcionando, solo no manda emails).
+// Emails automáticos. Dos backends, en orden de preferencia:
+//  1. Gmail SMTP (nodemailer) si GMAIL_USER + GMAIL_APP_PASSWORD están seteados.
+//     Es gratis y entrega de forma confiable (Gmail rebotaba el dominio propio
+//     gratuito por reputación). Manda desde la casilla real de AdoptAR.
+//  2. Resend (RESEND_API_KEY) como alternativa.
+// Si no hay ninguno configurado, las funciones no hacen nada (la app sigue ok).
 
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const REMITENTE = "AdoptAR <hola@adoptar.dpdns.org>";
-// Casilla real de contacto: como reply-to da una señal de legitimidad a Gmail
-// y permite que la gente conteste a un humano.
+// Casilla real de contacto: también es el reply-to.
 const RESPONDER_A = "adoptar.argentina.ayuda@gmail.com";
+const GMAIL_USER = process.env.GMAIL_USER || RESPONDER_A;
+const REMITENTE_GMAIL = `AdoptAR <${GMAIL_USER}>`;
+const REMITENTE_RESEND = "AdoptAR <hola@adoptar.dpdns.org>";
+
+// Transporter de Gmail reutilizado entre envíos (pool simple).
+let transporterGmail: nodemailer.Transporter | null = null;
+function gmailTransport() {
+  if (!transporterGmail) {
+    transporterGmail = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: { user: GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+    });
+  }
+  return transporterGmail;
+}
 
 /** Convierte el HTML de un email a texto plano legible (parte text/plain).
  *  Una versión de texto reduce mucho el riesgo de que Gmail lo marque spam. */
@@ -43,24 +62,40 @@ export async function enviarEmail(opciones: {
   html: string;
   texto?: string;
 }) {
-  if (!process.env.RESEND_API_KEY) return; // Resend no configurado todavía
+  const texto = opciones.texto ?? htmlAPlano(opciones.html);
+  // Gmail (reglas de remitentes 2024) espera List-Unsubscribe en automáticos.
+  const headers = {
+    "List-Unsubscribe": `<mailto:${RESPONDER_A}?subject=baja>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
-      from: REMITENTE,
-      to: opciones.para,
-      replyTo: RESPONDER_A,
-      subject: opciones.asunto,
-      html: opciones.html,
-      // Parte de texto plano: clave para que Gmail no lo marque "unsolicited".
-      text: opciones.texto ?? htmlAPlano(opciones.html),
-      headers: {
-        // Gmail (reglas de remitentes 2024) espera List-Unsubscribe en correos
-        // automáticos. Da de baja con un solo clic y mejora la entregabilidad.
-        "List-Unsubscribe": `<mailto:${RESPONDER_A}?subject=baja>`,
-        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-      },
-    });
+    // 1) Gmail SMTP (preferido: entrega confiable a Gmail)
+    if (process.env.GMAIL_APP_PASSWORD) {
+      await gmailTransport().sendMail({
+        from: REMITENTE_GMAIL,
+        to: opciones.para,
+        replyTo: RESPONDER_A,
+        subject: opciones.asunto,
+        html: opciones.html,
+        text: texto,
+        headers,
+      });
+      return;
+    }
+    // 2) Resend (alternativa)
+    if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: REMITENTE_RESEND,
+        to: opciones.para,
+        replyTo: RESPONDER_A,
+        subject: opciones.asunto,
+        html: opciones.html,
+        text: texto,
+        headers,
+      });
+    }
+    // Sin backend configurado: no-op (la app sigue funcionando).
   } catch (e) {
     // Un email fallido no debe romper la acción del admin
     console.error("Error enviando email:", e);
