@@ -79,5 +79,52 @@ export async function postularAdopcion(formData: FormData) {
   // Confirmación al postulante (no corta el flujo si el email falla).
   await emailPostulacionRecibida(email, nombre, animal.nombre);
 
+  // Reenganche con el chat: si el postulante está logueado, sembramos un
+  // mensaje en la conversación del animal para que postulación y chat no
+  // queden desconectados (aparece en /mensajes para ambos y pueden seguir
+  // hablando ahí). No mandamos notificación/email extra: la postulación ya
+  // avisó al refugio más arriba.
+  const publicaId = (refugio as { usuario_id?: string } | null)?.usuario_id ?? null;
+  if (yo?.id && publicaId && publicaId !== yo.id) {
+    const saludo = `Hola, me postulé para adoptar a ${animal.nombre}. 🐾`;
+    const cuerpo = mensaje ? `${saludo}\n\n${mensaje}` : saludo;
+    await sb.from("mensajes").insert({
+      sender_id: yo.id,
+      receiver_id: publicaId,
+      animal_id: animalId,
+      contenido: cuerpo.slice(0, 2000),
+    });
+  }
+
   redirect(`/animales/${String(formData.get("slug"))}?postulado=1`);
+}
+
+export interface MiPostulacion {
+  id: string;
+  animalNombre: string;
+  animalSlug: string;
+  estado: "postulado" | "en_proceso" | "aceptada" | "rechazada";
+  creadoEl: string;
+}
+
+/** Postulaciones del usuario logueado, para el seguimiento de su estado. */
+export async function misPostulaciones(): Promise<MiPostulacion[]> {
+  const yo = await asegurarUsuario();
+  if (!yo) return [];
+  const sb = clienteServidor();
+  const { data } = await sb
+    .from("postulaciones")
+    .select("id,estado,creado_el,animales(nombre,slug)")
+    .eq("usuario_id", yo.id)
+    .order("creado_el", { ascending: false });
+  return (data ?? []).map((p) => {
+    const animal = Array.isArray(p.animales) ? p.animales[0] : p.animales;
+    return {
+      id: p.id,
+      animalNombre: (animal as { nombre?: string } | null)?.nombre ?? "—",
+      animalSlug: (animal as { slug?: string } | null)?.slug ?? "",
+      estado: p.estado,
+      creadoEl: p.creado_el,
+    };
+  });
 }

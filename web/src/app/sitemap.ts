@@ -9,7 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     obtenerRefugios(),
   ]);
 
-  const fijas = ["", "/animales", "/transito", "/refugios", "/mapa", "/donaciones", "/registrar-refugio", "/quienes-somos", "/terminos", "/privacidad"].map(
+  const fijas = ["", "/animales", "/transito", "/refugios", "/mapa", "/donaciones", "/donaciones/mensual", "/registrar-refugio", "/quienes-somos", "/terminos", "/privacidad"].map(
     (ruta) => ({ url: `${base}${ruta}`, changeFrequency: "daily" as const })
   );
 

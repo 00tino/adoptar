@@ -128,7 +128,10 @@ export default async function PaginaAnimal({
           <p className="font-bold">¡Postulación enviada! 🐾</p>
           <p className="text-sm">
             Quien publica a {animal.nombre} recibió tus datos y se va a contactar
-            con vos. ¡Gracias por querer darle un hogar!
+            con vos. Mientras tanto, podés seguir la charla por el{" "}
+            <Link href="#chat" className="font-bold underline">chat de acá abajo</Link>{" "}
+            y ver el estado en{" "}
+            <Link href="/mis-postulaciones" className="font-bold underline">Mis postulaciones</Link>.
           </p>
         </div>
       )}
@@ -271,7 +274,7 @@ export default async function PaginaAnimal({
 
           {/* Chat interno: solo con sesión iniciada y Supabase configurado */}
           {supabaseDisponible() && clerkDisponible() && (
-            <div className="mt-6">
+            <div id="chat" className="mt-6 scroll-mt-24">
               <h2 className="font-display text-2xl font-bold">Chat con quien lo publica 💬</h2>
               {usuario ? (
                 <ChatAnimal animalId={animal.id} />

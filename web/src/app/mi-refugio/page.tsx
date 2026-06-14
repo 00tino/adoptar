@@ -243,6 +243,12 @@ function Postulaciones({
                   >
                     Actualizar
                   </button>
+                  <Link
+                    href={`/animales/${p.animalSlug}#chat`}
+                    className="rounded-full border-2 border-crema-2 px-4 py-1.5 text-sm font-bold text-tinta-suave hover:border-terracota transition-colors"
+                  >
+                    Chatear 💬
+                  </Link>
                 </form>
               </li>
             );

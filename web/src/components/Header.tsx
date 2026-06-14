@@ -123,6 +123,15 @@ export default async function Header() {
               Favoritos ❤️
             </LinkNav>
           )}
+          {conSesion && (
+            <LinkNav
+              href="/mis-postulaciones"
+              clase="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold text-tinta-suave hover:bg-crema-2 hover:text-tinta transition-colors"
+              claseActiva="bg-crema-2 text-tinta"
+            >
+              Postulaciones
+            </LinkNav>
+          )}
           {conRefugio && (
             <LinkNav
               href="/mi-refugio"
@@ -206,6 +215,15 @@ export default async function Header() {
                 claseActiva="bg-crema-2"
               >
                 Favoritos ❤️
+              </LinkNav>
+            )}
+            {conSesion && (
+              <LinkNav
+                href="/mis-postulaciones"
+                clase="rounded-xl px-4 py-3 text-base font-bold text-tinta hover:bg-crema-2 transition-colors"
+                claseActiva="bg-crema-2"
+              >
+                Mis postulaciones 🐾
               </LinkNav>
             )}
             {conRefugio && (
