@@ -9,6 +9,7 @@ import {
 } from "@/lib/datos";
 import { resolverEmbedVideo } from "@/lib/embeds";
 import CardAnimal from "@/components/CardAnimal";
+import BotonCompartir from "@/components/BotonCompartir";
 
 export async function generateMetadata({
   params,
@@ -140,6 +141,10 @@ export default async function PaginaRefugio({
                   Llamar 📞
                 </a>
               )}
+              <BotonCompartir
+                titulo={`${refugio.nombre} en AdoptAR`}
+                texto={`Conocé a ${refugio.nombre}, refugio de animales en ${refugio.ciudad}`}
+              />
             </div>
           </div>
 

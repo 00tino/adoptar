@@ -12,6 +12,7 @@ import MiniMapa from "@/components/MiniMapa";
 import CardAnimal from "@/components/CardAnimal";
 import ChatAnimal from "@/components/ChatAnimal";
 import BotonFavorito from "@/components/BotonFavorito";
+import BotonCompartir from "@/components/BotonCompartir";
 import FormularioAdopcion from "@/components/FormularioAdopcion";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
 import { idsFavoritos } from "@/lib/acciones-favoritos";
@@ -123,7 +124,7 @@ export default async function PaginaAnimal({
       </nav>
 
       {postulado && (
-        <div className="mt-4 rounded-2xl border-2 border-salvia bg-salvia/10 px-5 py-4 text-salvia-oscuro">
+        <div role="status" className="mt-4 rounded-2xl border-2 border-salvia bg-salvia/10 px-5 py-4 text-salvia-oscuro">
           <p className="font-bold">¡Postulación enviada! 🐾</p>
           <p className="text-sm">
             Quien publica a {animal.nombre} recibió tus datos y se va a contactar
@@ -239,6 +240,10 @@ export default async function PaginaAnimal({
                   Llamar 📞
                 </a>
               )}
+              <BotonCompartir
+                titulo={`${animal.nombre} busca hogar 🐾`}
+                texto={`Mirá a ${animal.nombre} en AdoptAR`}
+              />
             </div>
           </div>
 
