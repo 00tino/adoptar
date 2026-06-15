@@ -3,10 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
-// Menú hamburguesa para mobile. El contenido (links, badges, campanita)
+// Menú único (hamburguesa) para todas las pantallas: un solo panel desplegable
+// a lo ancho, sin menús que se solapen. El contenido (links, badges, campanita)
 // llega renderizado desde el servidor como children; acá solo se maneja
 // abrir/cerrar. Se cierra solo al navegar a otra página.
-export default function MenuMovil({ children }: { children: React.ReactNode }) {
+export default function MenuMovil({
+  children,
+  aviso = false,
+}: {
+  children: React.ReactNode;
+  /** Muestra un punto en el botón (mensajes/notificaciones sin ver). */
+  aviso?: boolean;
+}) {
   const [abierto, setAbierto] = useState(false);
   const ruta = usePathname();
   const panel = useRef<HTMLDivElement>(null);
@@ -25,14 +33,20 @@ export default function MenuMovil({ children }: { children: React.ReactNode }) {
   }, [abierto]);
 
   return (
-    <div className="md:hidden">
+    <div>
       <button
         type="button"
         aria-label={abierto ? "Cerrar menú" : "Abrir menú"}
         aria-expanded={abierto}
         onClick={() => setAbierto((v) => !v)}
-        className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-crema-2 text-tinta hover:border-tinta transition-colors"
+        className="relative flex h-11 w-11 items-center justify-center rounded-xl border-2 border-crema-2 text-tinta hover:border-tinta transition-colors"
       >
+        {aviso && !abierto && (
+          <span
+            aria-hidden
+            className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-terracota-oscuro ring-2 ring-blanco-calido"
+          />
+        )}
         {/* Ícono hamburguesa / cruz */}
         <svg
           viewBox="0 0 24 24"
@@ -69,7 +83,7 @@ export default function MenuMovil({ children }: { children: React.ReactNode }) {
             ref={panel}
             className="absolute inset-x-0 top-full z-50 max-h-[80dvh] overflow-y-auto border-b-2 border-crema-2 bg-blanco-calido px-4 pb-6 pt-2 shadow-lg"
           >
-            {children}
+            <div className="mx-auto max-w-6xl">{children}</div>
           </div>
         </>
       )}
