@@ -4,13 +4,14 @@ import { redirect } from "next/navigation";
 import {
   miRefugio,
   misAnimales,
-  cambiarEstadoAnimal,
   darDeBajaAnimal,
   postulacionesDeRefugio,
   cambiarEstadoPostulacion,
 } from "@/lib/acciones-refugio";
+import { edadLegible } from "@/lib/tipos";
 import FotoAnimal from "@/components/FotoAnimal";
 import Pestanas from "./Pestanas";
+import SelectorEstadoAdopcion from "./SelectorEstadoAdopcion";
 
 export const metadata: Metadata = {
   title: "Mi refugio",
@@ -97,82 +98,94 @@ export default async function PaginaMiRefugio({
             {animales.map((a) => {
               const etiqueta = etiquetaEstado[a.estado] ?? etiquetaEstado.pendiente;
               const aprobado = ["disponible", "en_proceso", "adoptado"].includes(a.estado);
+              const especieTexto =
+                a.especie === "perro" ? "Perro" : a.especie === "gato" ? "Gato" : "Otro";
+              const datos = [
+                especieTexto,
+                a.sexo === "hembra" ? "Hembra" : a.sexo === "macho" ? "Macho" : null,
+                a.tamano ? a.tamano[0].toUpperCase() + a.tamano.slice(1) : null,
+                a.edadMeses ? edadLegible(a.edadMeses) : null,
+                a.raza || null,
+                a.castrado ? "Castrado/a" : null,
+              ].filter(Boolean);
               return (
-                <li
-                  key={a.id}
-                  className="flex flex-wrap items-center gap-4 rounded-2xl bg-blanco-calido border-2 border-crema-2 p-4"
-                >
-                  <FotoAnimal
-                    especie={a.especie}
-                    nombre={a.nombre}
-                    semilla={a.id}
-                    foto={a.foto}
-                    clase="h-20 w-24 rounded-xl shrink-0"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-display text-xl font-bold">
-                      {aprobado ? (
-                        <Link href={`/animales/${a.slug}`} className="hover:text-terracota-oscuro">
-                          {a.nombre}
-                        </Link>
-                      ) : (
-                        a.nombre
-                      )}
-                    </p>
-                    <span
-                      className={`mt-1 inline-block rounded-full px-3 py-0.5 text-xs font-bold ${etiqueta.clase}`}
-                    >
-                      {etiqueta.texto}
-                    </span>
-                  </div>
+                <li key={a.id}>
+                  <details className="group rounded-2xl bg-blanco-calido border-2 border-crema-2 overflow-hidden">
+                    <summary className="flex cursor-pointer list-none items-center gap-4 p-4 hover:bg-crema-2/40 transition-colors">
+                      <FotoAnimal
+                        especie={a.especie}
+                        nombre={a.nombre}
+                        semilla={a.id}
+                        foto={a.foto}
+                        clase="h-16 w-20 rounded-xl shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-xl font-bold">{a.nombre}</p>
+                        <span
+                          className={`mt-1 inline-block rounded-full px-3 py-0.5 text-xs font-bold ${etiqueta.clase}`}
+                        >
+                          {etiqueta.texto}
+                        </span>
+                      </div>
+                      <span
+                        aria-hidden
+                        className="shrink-0 text-tinta-suave transition-transform group-open:rotate-180"
+                      >
+                        ▾
+                      </span>
+                    </summary>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {aprobado && (
-                      <form action={cambiarEstadoAnimal} className="flex items-center gap-2">
-                        <input type="hidden" name="id" value={a.id} />
-                        <label className="sr-only" htmlFor={`estado-${a.id}`}>
-                          Estado de {a.nombre}
-                        </label>
-                        <select
-                          id={`estado-${a.id}`}
-                          name="estado"
-                          defaultValue={a.estado}
-                          className="rounded-xl border-2 border-crema-2 bg-blanco-calido px-3 py-1.5 text-sm"
+                    <div className="border-t-2 border-crema-2 p-4 space-y-3">
+                      {datos.length > 0 && (
+                        <p className="text-sm text-tinta-suave">{datos.join(" · ")}</p>
+                      )}
+                      {a.descripcion ? (
+                        <p className="text-sm whitespace-pre-line">{a.descripcion}</p>
+                      ) : (
+                        <p className="text-sm italic text-tinta-suave">Sin descripción.</p>
+                      )}
+                      {a.vacunas.length > 0 && (
+                        <p className="text-xs text-tinta-suave">
+                          💉 Vacunas: {a.vacunas.join(", ")}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap items-end gap-2 pt-1">
+                        {aprobado && (
+                          <SelectorEstadoAdopcion id={a.id} nombre={a.nombre} estado={a.estado} />
+                        )}
+                        <Link
+                          href={`/mi-refugio/editar/${a.id}`}
+                          className={
+                            a.estado === "borrador"
+                              ? "rounded-full bg-terracota-oscuro px-4 py-1.5 text-sm font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors"
+                              : "rounded-full border-2 border-crema-2 px-4 py-1.5 text-sm font-bold hover:bg-crema-2 transition-colors"
+                          }
                         >
-                          <option value="disponible">Disponible</option>
-                          <option value="en_proceso">En proceso</option>
-                          <option value="adoptado">Adoptado</option>
-                        </select>
-                        <button
-                          type="submit"
-                          className="rounded-full border-2 border-salvia px-4 py-1.5 text-sm font-bold text-salvia-oscuro hover:bg-salvia hover:text-blanco-calido transition-colors"
-                        >
-                          Cambiar
-                        </button>
-                      </form>
-                    )}
-                    <Link
-                      href={`/mi-refugio/editar/${a.id}`}
-                      className={
-                        a.estado === "borrador"
-                          ? "rounded-full bg-terracota-oscuro px-4 py-1.5 text-sm font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors"
-                          : "rounded-full border-2 border-crema-2 px-4 py-1.5 text-sm font-bold hover:bg-crema-2 transition-colors"
-                      }
-                    >
-                      {a.estado === "borrador" ? "Agregar foto 📷" : "Editar"}
-                    </Link>
-                    {a.estado !== "rechazado" && (
-                      <form action={darDeBajaAnimal}>
-                        <input type="hidden" name="id" value={a.id} />
-                        <button
-                          type="submit"
-                          className="rounded-full border-2 border-terracota px-4 py-1.5 text-sm font-bold text-terracota-oscuro hover:bg-terracota-mas-oscuro hover:text-blanco-calido transition-colors"
-                        >
-                          Dar de baja
-                        </button>
-                      </form>
-                    )}
-                  </div>
+                          {a.estado === "borrador" ? "Agregar foto 📷" : "Modificar"}
+                        </Link>
+                        {aprobado && (
+                          <Link
+                            href={`/animales/${a.slug}`}
+                            className="rounded-full border-2 border-crema-2 px-4 py-1.5 text-sm font-bold text-tinta-suave hover:bg-crema-2 transition-colors"
+                          >
+                            Ver publicación
+                          </Link>
+                        )}
+                        {a.estado !== "rechazado" && (
+                          <form action={darDeBajaAnimal}>
+                            <input type="hidden" name="id" value={a.id} />
+                            <button
+                              type="submit"
+                              className="rounded-full border-2 border-terracota px-4 py-1.5 text-sm font-bold text-terracota-oscuro hover:bg-terracota-mas-oscuro hover:text-blanco-calido transition-colors"
+                            >
+                              Dar de baja
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    </div>
+                  </details>
                 </li>
               );
             })}

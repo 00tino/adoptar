@@ -1,0 +1,11 @@
+﻿Nombre	Especie	Raza	Edad	Sexo	Tamaño	Ciudad	Provincia	Descripción	Castrado	Tipo
+Luna	Perro	Mestizo	2	Hembra	Mediano	La Plata	Buenos Aires	Muy cariñosa y sociable	Sí	Adopción
+Rocky	Gato	Siamés	1	Macho	Chico	Córdoba	Córdoba	Juguetón	No	Adopción
+	Perro		3	Macho	Grande	Rosario	Santa Fe	Tranquilo, ideal para depto	true	Tránsito
+Milo		Caniche	0.5	Macho	Chico	Mendoza	Mendoza	Cachorro recién rescatado	No	Adopción
+Nina	Conejo		1	Hembra	Chico	CABA	CABA	Conejita mansa	No	Adopción
+Thor	perro	Ovejero alemán	5	macho	grande	Mar del Plata	Buenos Aires	Buen guardián	si	transito
+Maia	GATO		2	F	M	Salta	Salta		verdadero	adopcion
+		Desconocida			Mediano	Tigre	Buenos Aires	Encontrado en la calle, sin más datos	No	Adopción
+Coco	Ave		0	Macho	Chico	Neuquén	Neuquén	Pájaro rescatado	No	Adopción
+Frida	Gata	Mestiza	4	hembra	Mediano	San Juan	San Juan	Dulce y tranquila	1	adopción

@@ -38,15 +38,16 @@ export default async function PaginaRegistrarRefugio({
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="font-display text-4xl font-black">Registrá tu refugio 🏠</h1>
       <p className="mt-2 text-tinta-suave">
-        Es gratis y siempre lo va a ser. Revisamos cada solicitud a mano: te
-        pedimos un video institucional para verificar que el refugio existe y
-        los animales están bien cuidados.
+        Es gratis y siempre lo va a ser. Revisamos cada solicitud a mano. Si
+        tenés un video institucional, sumalo: ayuda a verificar más rápido que
+        el refugio existe y que los animales están bien cuidados (no es
+        obligatorio).
       </p>
 
       <ol className="mt-6 space-y-3 text-sm">
         {[
           "Completás este formulario con los datos del refugio.",
-          "Nuestro equipo revisa la información y el video (24–72 hs).",
+          "Nuestro equipo revisa la información (y el video, si lo cargaste) en 24–72 hs.",
           "Te llega un email con la aprobación y ya podés publicar animales.",
         ].map((paso, i) => (
           <li key={i} className="flex gap-3 items-start">
@@ -83,7 +84,7 @@ export default async function PaginaRegistrarRefugio({
           { etiqueta: "Email *", nombre: "email", requerido: true, tipo: "email" },
           { etiqueta: "WhatsApp", nombre: "whatsapp", requerido: false },
           { etiqueta: "Redes sociales (Instagram, Facebook…)", nombre: "redes", requerido: false },
-          { etiqueta: "Video institucional (link de YouTube o Drive) *", nombre: "video", requerido: true, tipo: "url" },
+          { etiqueta: "Video institucional (link de YouTube o Drive) — opcional", nombre: "video", requerido: false, tipo: "url" },
         ].map((c) => (
           <div key={c.nombre}>
             <label className="block text-sm font-bold" htmlFor={c.nombre}>{c.etiqueta}</label>

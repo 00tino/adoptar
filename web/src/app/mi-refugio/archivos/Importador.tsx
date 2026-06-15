@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   previsualizarImport,
@@ -12,6 +13,7 @@ import {
   ETIQUETA_CAMPO,
   type Mapeo,
   type CampoImport,
+  type FilaImportada,
 } from "@/lib/importador";
 
 interface Preview {
@@ -22,6 +24,20 @@ interface Preview {
 
 type Override = { nombre?: string; especie?: "perro" | "gato" | "otro" };
 
+/** Link a /publicar con los datos que sí tenía la fila ya prellenados. */
+function urlCargarAMano(r: FilaImportada): string {
+  const p = new URLSearchParams();
+  if (r.nombre) p.set("nombre", r.nombre);
+  if (r.especie) p.set("especie", r.especie);
+  if (r.sexo) p.set("sexo", r.sexo);
+  if (r.tamano) p.set("tamano", r.tamano);
+  if (r.raza) p.set("raza", r.raza);
+  if (r.edad_meses) p.set("edad_meses", String(r.edad_meses));
+  if (r.descripcion) p.set("descripcion", r.descripcion);
+  if (r.castrado) p.set("castrado", "true");
+  return `/mi-refugio/publicar?${p.toString()}`;
+}
+
 export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -30,6 +46,7 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
   const [overrides, setOverrides] = useState<Record<number, Override>>({});
   const [saltadas, setSaltadas] = useState<Set<number>>(new Set());
   const [resultado, setResultado] = useState<{ creados: number; salteados: number } | null>(null);
+  const [pendientes, setPendientes] = useState<FilaImportada[]>([]);
 
   // Re-normaliza las filas cada vez que cambia el mapeo (lógica pura, sin xlsx).
   const filas = useMemo(() => {
@@ -79,8 +96,21 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
         .map(({ _i, faltantes, ...resto }) => resto); // no mandamos metadatos
       const formData = new FormData();
       formData.set("filas", JSON.stringify(payload));
+      // Los que NO se crean (saltados a mano o sin nombre/especie): se ofrecen
+      // para cargar a mano, con sus datos prellenados.
+      const noImportados = filas
+        .map((f, i) => ({
+          ...f,
+          nombre: overrides[i]?.nombre ?? f.nombre,
+          especie: overrides[i]?.especie ?? f.especie,
+          _i: i,
+        }))
+        .filter((f) => saltadas.has(f._i) || faltaNombre(f._i) || faltaEspecie(f._i))
+        .map(({ _i, ...resto }) => resto as FilaImportada);
+
       const r = await confirmarImport(formData);
       setResultado(r);
+      setPendientes(noImportados);
       setPreview(null);
       setMapeo(null);
     } catch (e) {
@@ -96,35 +126,62 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
   return (
     <div className="mt-4">
       {!preview && (
-        <form action={previsualizar} className="space-y-3">
-          <div>
-            <label className="block text-sm font-bold">Subir una planilla nueva</label>
-            <input
-              type="file"
-              name="archivo"
-              accept=".csv,.tsv,.xls,.xlsx,.ods"
-              className="mt-1 w-full rounded-xl border-2 border-crema-2 bg-blanco-calido px-4 py-3 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-crema-2 file:px-4 file:py-1.5 file:font-bold"
-            />
-          </div>
-          {archivos.length > 0 && (
+        <>
+          <ol className="mb-4 flex flex-col gap-2 text-sm text-tinta-suave sm:flex-row sm:gap-4">
+            {[
+              "Subí o elegí tu planilla (CSV o Excel).",
+              "Revisá la vista previa y corregí lo que haga falta.",
+              "Confirmá: se cargan esperando foto.",
+            ].map((paso, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-crema-2 text-xs font-bold text-tinta">
+                  {i + 1}
+                </span>
+                <span>{paso}</span>
+              </li>
+            ))}
+          </ol>
+
+          <form action={previsualizar} className="rounded-2xl border-2 border-crema-2 p-4 space-y-4">
             <div>
-              <label className="block text-sm font-bold">…o usar una de tus archivos</label>
-              <select name="archivoId" defaultValue="" className={`mt-1 w-full ${claseSelect} py-3`}>
-                <option value="">— elegir —</option>
-                {archivos.map((a) => (
-                  <option key={a.id} value={a.id}>{a.nombre}</option>
-                ))}
-              </select>
+              <label htmlFor="archivo-import" className="block text-sm font-bold">
+                📄 Subir una planilla nueva
+              </label>
+              <p className="text-xs text-tinta-suave">Formatos: CSV, TSV, XLS, XLSX, ODS (hasta 20 MB).</p>
+              <input
+                id="archivo-import"
+                type="file"
+                name="archivo"
+                accept=".csv,.tsv,.xls,.xlsx,.ods"
+                className="mt-1 w-full rounded-xl border-2 border-crema-2 bg-blanco-calido px-4 py-3 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-crema-2 file:px-4 file:py-1.5 file:font-bold"
+              />
             </div>
-          )}
-          <button
-            type="submit"
-            disabled={cargando}
-            className="rounded-full bg-terracota-oscuro px-6 py-3 font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors disabled:opacity-60"
-          >
-            {cargando ? "Leyendo…" : "Previsualizar"}
-          </button>
-        </form>
+            {archivos.length > 0 && (
+              <div className="border-t-2 border-crema-2 pt-3">
+                <label htmlFor="archivo-id" className="block text-sm font-bold">
+                  …o usar una planilla que ya subiste
+                </label>
+                <select id="archivo-id" name="archivoId" defaultValue="" className={`mt-1 w-full ${claseSelect} py-3`}>
+                  <option value="">— elegir de tus archivos —</option>
+                  {archivos.map((a) => (
+                    <option key={a.id} value={a.id}>{a.nombre}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={cargando}
+              className="w-full rounded-full bg-terracota-oscuro px-6 py-3 font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors disabled:opacity-60 sm:w-auto"
+            >
+              {cargando ? "Leyendo…" : "Previsualizar →"}
+            </button>
+            <p className="text-xs text-tinta-suave">
+              Reconocemos columnas comunes en español e inglés (nombre, especie,
+              raza, edad, sexo, tamaño, ciudad, provincia, descripción, castrado, tipo).
+            </p>
+          </form>
+        </>
       )}
 
       {error && (
@@ -139,6 +196,40 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
           {resultado.salteados > 0 && ` (${resultado.salteados} salteado${resultado.salteados === 1 ? "" : "s"} por falta de datos)`}.
           Ahora agregales una foto desde “Mis animales” para publicarlos.
         </p>
+      )}
+
+      {pendientes.length > 0 && (
+        <div className="mt-3 rounded-2xl border-2 border-sol bg-sol/15 p-4">
+          <p className="font-bold text-tinta">
+            Quedaron {pendientes.length} sin importar (les faltaba nombre o especie)
+          </p>
+          <p className="mt-1 text-sm text-tinta-suave">
+            Cargalos a mano: te abrimos el formulario con los datos que sí tenían.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {pendientes.map((r, i) => (
+              <li
+                key={i}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blanco-calido border-2 border-crema-2 px-3 py-2"
+              >
+                <span className="min-w-0 text-sm">
+                  <strong>{r.nombre || "(sin nombre)"}</strong>
+                  <span className="text-tinta-suave">
+                    {" "}— {r.especie || "sin especie"}
+                    {r.raza ? `, ${r.raza}` : ""}
+                    {r.descripcion ? ` · ${r.descripcion.slice(0, 40)}` : ""}
+                  </span>
+                </span>
+                <Link
+                  href={urlCargarAMano(r)}
+                  className="shrink-0 rounded-full bg-terracota-oscuro px-4 py-1.5 text-sm font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors"
+                >
+                  Cargar a mano →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {preview && mapeo && (

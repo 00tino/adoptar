@@ -17,11 +17,16 @@ export interface AnimalParaEditar {
 export default function FormularioAnimal({
   accion,
   animal,
+  prefill,
 }: {
   accion: (formData: FormData) => Promise<void>;
   animal?: AnimalParaEditar;
+  // Valores iniciales para "publicar" (ej: cargar a mano un animal salteado en
+  // una importación). No activa el modo edición: sigue pidiendo foto y dice "Publicar".
+  prefill?: Partial<AnimalParaEditar>;
 }) {
   const editando = Boolean(animal);
+  const ini = animal ?? prefill;
   return (
     <form
       action={accion}
@@ -29,12 +34,12 @@ export default function FormularioAnimal({
     >
       {animal && <input type="hidden" name="id" value={animal.id} />}
 
-      <Campo etiqueta="Nombre" nombre="nombre" requerido valor={animal?.nombre} />
+      <Campo etiqueta="Nombre" nombre="nombre" requerido valor={ini?.nombre} />
       <div className="grid grid-cols-2 gap-4">
         <Select
           etiqueta="Especie *"
           nombre="especie"
-          valor={animal?.especie}
+          valor={ini?.especie}
           opciones={[
             ["perro", "Perro"],
             ["gato", "Gato"],
@@ -44,7 +49,7 @@ export default function FormularioAnimal({
         <Select
           etiqueta="Sexo *"
           nombre="sexo"
-          valor={animal?.sexo}
+          valor={ini?.sexo}
           opciones={[
             ["hembra", "Hembra"],
             ["macho", "Macho"],
@@ -53,7 +58,7 @@ export default function FormularioAnimal({
         <Select
           etiqueta="Tamaño *"
           nombre="tamano"
-          valor={animal?.tamano}
+          valor={ini?.tamano}
           opciones={[
             ["chico", "Chico"],
             ["mediano", "Mediano"],
@@ -64,35 +69,35 @@ export default function FormularioAnimal({
           etiqueta="Edad (meses)"
           nombre="edad_meses"
           tipo="number"
-          valor={animal ? String(animal.edadMeses) : undefined}
+          valor={ini?.edadMeses != null ? String(ini.edadMeses) : undefined}
         />
       </div>
-      <Campo etiqueta="Raza (o 'mestizo')" nombre="raza" valor={animal?.raza ?? ""} />
+      <Campo etiqueta="Raza (o 'mestizo')" nombre="raza" valor={ini?.raza ?? ""} />
       <Campo
         etiqueta="Vacunas (separadas por coma)"
         nombre="vacunas"
         placeholder="Ej: Quíntuple, Antirrábica"
-        valor={animal?.vacunas.join(", ")}
+        valor={ini?.vacunas?.join(", ")}
       />
       <label className="flex items-center gap-2 text-sm font-bold">
         <input
           type="checkbox"
           name="castrado"
-          defaultChecked={animal?.castrado}
+          defaultChecked={ini?.castrado}
           className="h-4 w-4 accent-terracota"
         />
         Castrado/a o esterilizado/a
       </label>
       <div>
         <label className="block text-sm font-bold" htmlFor="descripcion">
-          Descripción *
+          Descripción {!editando && "*"}
         </label>
         <textarea
           id="descripcion"
           name="descripcion"
-          required
+          required={!editando}
           rows={4}
-          defaultValue={animal?.descripcion}
+          defaultValue={ini?.descripcion}
           className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido"
           placeholder="Su carácter, con quién se lleva bien, qué necesita…"
         />
@@ -105,7 +110,7 @@ export default function FormularioAnimal({
           id="historia"
           name="historia"
           rows={3}
-          defaultValue={animal?.historia}
+          defaultValue={ini?.historia}
           className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido"
           placeholder="¿Cómo lo rescataron o encontraron? Su historia ayuda a que se enamoren 💛"
         />

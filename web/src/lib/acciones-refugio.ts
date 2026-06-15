@@ -91,6 +91,13 @@ export interface AnimalDeRefugio {
   slug: string;
   nombre: string;
   especie: "perro" | "gato" | "otro";
+  sexo: string | null;
+  tamano: string | null;
+  raza: string | null;
+  edadMeses: number | null;
+  castrado: boolean;
+  vacunas: string[];
+  descripcion: string;
   estado: string;
   foto: string | null;
   creadoEl: string;
@@ -103,7 +110,7 @@ export async function misAnimales(): Promise<AnimalDeRefugio[]> {
   const sb = clienteServidor();
   const { data } = await sb
     .from("animales")
-    .select("id,slug,nombre,especie,estado,fotos,creado_el")
+    .select("id,slug,nombre,especie,sexo,tamano,raza,edad_meses,castrado,vacunas,descripcion,estado,fotos,creado_el")
     .eq("refugio_id", refugio.id)
     .order("creado_el", { ascending: false });
   return (data ?? []).map((f) => ({
@@ -111,6 +118,13 @@ export async function misAnimales(): Promise<AnimalDeRefugio[]> {
     slug: f.slug,
     nombre: f.nombre,
     especie: f.especie,
+    sexo: f.sexo,
+    tamano: f.tamano,
+    raza: f.raza,
+    edadMeses: f.edad_meses,
+    castrado: Boolean(f.castrado),
+    vacunas: Array.isArray(f.vacunas) ? f.vacunas : [],
+    descripcion: f.descripcion ?? "",
     estado: f.estado,
     foto: Array.isArray(f.fotos) && f.fotos.length > 0 ? f.fotos[0] : null,
     creadoEl: f.creado_el,
