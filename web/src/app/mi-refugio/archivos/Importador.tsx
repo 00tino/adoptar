@@ -13,7 +13,6 @@ import {
   ETIQUETA_CAMPO,
   type Mapeo,
   type CampoImport,
-  type FilaImportada,
 } from "@/lib/importador";
 
 interface Preview {
@@ -24,20 +23,6 @@ interface Preview {
 
 type Override = { nombre?: string; especie?: "perro" | "gato" | "otro" };
 
-/** Link a /publicar con los datos que sí tenía la fila ya prellenados. */
-function urlCargarAMano(r: FilaImportada): string {
-  const p = new URLSearchParams();
-  if (r.nombre) p.set("nombre", r.nombre);
-  if (r.especie) p.set("especie", r.especie);
-  if (r.sexo) p.set("sexo", r.sexo);
-  if (r.tamano) p.set("tamano", r.tamano);
-  if (r.raza) p.set("raza", r.raza);
-  if (r.edad_meses) p.set("edad_meses", String(r.edad_meses));
-  if (r.descripcion) p.set("descripcion", r.descripcion);
-  if (r.castrado) p.set("castrado", "true");
-  return `/mi-refugio/publicar?${p.toString()}`;
-}
-
 export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -45,8 +30,7 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
   const [mapeo, setMapeo] = useState<Mapeo | null>(null);
   const [overrides, setOverrides] = useState<Record<number, Override>>({});
   const [saltadas, setSaltadas] = useState<Set<number>>(new Set());
-  const [resultado, setResultado] = useState<{ creados: number; salteados: number } | null>(null);
-  const [pendientes, setPendientes] = useState<FilaImportada[]>([]);
+  const [resultado, setResultado] = useState<{ creados: number; incompletos: number } | null>(null);
 
   // Re-normaliza las filas cada vez que cambia el mapeo (lógica pura, sin xlsx).
   const filas = useMemo(() => {
@@ -96,21 +80,8 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
         .map(({ _i, faltantes, ...resto }) => resto); // no mandamos metadatos
       const formData = new FormData();
       formData.set("filas", JSON.stringify(payload));
-      // Los que NO se crean (saltados a mano o sin nombre/especie): se ofrecen
-      // para cargar a mano, con sus datos prellenados.
-      const noImportados = filas
-        .map((f, i) => ({
-          ...f,
-          nombre: overrides[i]?.nombre ?? f.nombre,
-          especie: overrides[i]?.especie ?? f.especie,
-          _i: i,
-        }))
-        .filter((f) => saltadas.has(f._i) || faltaNombre(f._i) || faltaEspecie(f._i))
-        .map(({ _i, ...resto }) => resto as FilaImportada);
-
       const r = await confirmarImport(formData);
       setResultado(r);
-      setPendientes(noImportados);
       setPreview(null);
       setMapeo(null);
     } catch (e) {
@@ -191,44 +162,27 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
       )}
 
       {resultado && (
-        <p className="mt-3 rounded-xl bg-salvia/20 border-2 border-salvia px-4 py-3 font-bold text-salvia-oscuro">
-          ✅ Importamos {resultado.creados} animal{resultado.creados === 1 ? "" : "es"}
-          {resultado.salteados > 0 && ` (${resultado.salteados} salteado${resultado.salteados === 1 ? "" : "s"} por falta de datos)`}.
-          Ahora agregales una foto desde “Mis animales” para publicarlos.
-        </p>
-      )}
-
-      {pendientes.length > 0 && (
-        <div className="mt-3 rounded-2xl border-2 border-sol bg-sol/15 p-4">
-          <p className="font-bold text-tinta">
-            Quedaron {pendientes.length} sin importar (les faltaba nombre o especie)
+        <div className="mt-3 rounded-xl bg-salvia/20 border-2 border-salvia px-4 py-3 text-salvia-oscuro">
+          <p className="font-bold">
+            ✅ Importamos {resultado.creados} animal{resultado.creados === 1 ? "" : "es"}
+            {resultado.incompletos > 0 &&
+              ` (${resultado.incompletos} para completar a mano)`}.
           </p>
-          <p className="mt-1 text-sm text-tinta-suave">
-            Cargalos a mano: te abrimos el formulario con los datos que sí tenían.
+          <p className="mt-1 text-sm">
+            {resultado.incompletos > 0 ? (
+              <>
+                Los que tenían nombre quedan <strong>esperando foto</strong> y los que
+                no, <strong>para completar a mano</strong>.{" "}
+              </>
+            ) : (
+              <>Quedan <strong>esperando foto</strong>. </>
+            )}
+            Terminalos desde{" "}
+            <Link href="/mi-refugio" className="font-bold underline">
+              Mis animales
+            </Link>
+            .
           </p>
-          <ul className="mt-3 space-y-2">
-            {pendientes.map((r, i) => (
-              <li
-                key={i}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blanco-calido border-2 border-crema-2 px-3 py-2"
-              >
-                <span className="min-w-0 text-sm">
-                  <strong>{r.nombre || "(sin nombre)"}</strong>
-                  <span className="text-tinta-suave">
-                    {" "}— {r.especie || "sin especie"}
-                    {r.raza ? `, ${r.raza}` : ""}
-                    {r.descripcion ? ` · ${r.descripcion.slice(0, 40)}` : ""}
-                  </span>
-                </span>
-                <Link
-                  href={urlCargarAMano(r)}
-                  className="shrink-0 rounded-full bg-terracota-oscuro px-4 py-1.5 text-sm font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors"
-                >
-                  Cargar a mano →
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       )}
 

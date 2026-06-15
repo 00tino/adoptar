@@ -1,3 +1,5 @@
+import BotonGuardar from "./BotonGuardar";
+
 export interface AnimalParaEditar {
   id: string;
   nombre: string;
@@ -128,12 +130,7 @@ export default function FormularioAnimal({
       />
       {!editando && <Campo etiqueta="Video (opcional)" nombre="video" tipo="file" />}
 
-      <button
-        type="submit"
-        className="w-full rounded-xl bg-terracota-oscuro text-blanco-calido py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
-      >
-        {editando ? "Guardar cambios" : "Publicar 🐾"}
-      </button>
+      <BotonGuardar etiqueta={editando ? "Guardar cambios" : "Publicar 🐾"} />
     </form>
   );
 }

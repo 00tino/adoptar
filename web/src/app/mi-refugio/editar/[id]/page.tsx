@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { miRefugio, editarAnimalRefugio } from "@/lib/acciones-refugio";
@@ -33,7 +34,15 @@ export default async function PaginaEditarAnimal({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="font-display text-4xl font-black">Editar a {data.nombre}</h1>
+      <Link
+        href="/mi-refugio"
+        className="inline-flex items-center gap-1 text-sm font-bold text-tinta-suave hover:text-tinta transition-colors"
+      >
+        ← Volver a Mis animales
+      </Link>
+      <h1 className="mt-3 font-display text-4xl font-black">
+        Editar a {data.nombre || "este animal"}
+      </h1>
       <FormularioAnimal
         accion={editarAnimalRefugio}
         animal={{

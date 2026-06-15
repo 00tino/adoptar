@@ -7,7 +7,7 @@ import Vault from "./Vault";
 import Importador from "./Importador";
 
 export const metadata: Metadata = {
-  title: "Archivos — Mi refugio",
+  title: "Cargar animales — Mi refugio",
   robots: { index: false },
 };
 
@@ -25,16 +25,7 @@ export default async function PaginaArchivosRefugio() {
       <Pestanas activa="/mi-refugio/archivos" />
 
       <section className="mt-8">
-        <h2 className="font-display text-2xl font-bold">Tus archivos</h2>
-        <p className="mt-1 text-tinta-suave">
-          Guardá acá tus bases de datos, planillas, PDFs o lo que necesites.
-          Solo vos los ves (hasta 20 MB cada uno, 200 MB en total).
-        </p>
-        <Vault archivos={archivos} />
-      </section>
-
-      <section className="mt-12">
-        <h2 className="font-display text-2xl font-bold">Importar animales</h2>
+        <h2 className="font-display text-2xl font-bold">Importar animales desde una planilla</h2>
         <p className="mt-1 text-tinta-suave">
           Subí una planilla CSV o Excel con tus animales. Detectamos las columnas
           automáticamente y te mostramos una vista previa antes de confirmar. Los
@@ -42,6 +33,15 @@ export default async function PaginaArchivosRefugio() {
           que les agregues al menos una).
         </p>
         <Importador archivos={archivos.filter((a) => a.importable)} />
+      </section>
+
+      <section className="mt-12">
+        <h2 className="font-display text-2xl font-bold">Tus archivos guardados</h2>
+        <p className="mt-1 text-tinta-suave">
+          Guardá acá tus bases de datos, planillas, PDFs o lo que necesites.
+          Solo vos los ves (hasta 20 MB cada uno, 200 MB en total).
+        </p>
+        <Vault archivos={archivos} />
       </section>
     </div>
   );

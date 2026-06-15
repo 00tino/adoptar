@@ -228,7 +228,7 @@ const TIPOS = ["adopcion", "transito"];
  */
 export async function confirmarImport(
   formData: FormData
-): Promise<{ creados: number; salteados: number }> {
+): Promise<{ creados: number; incompletos: number }> {
   await limitarPorIp("vault-import", 10, 60);
   const refugio = await exigirRefugio();
   const sb = clienteServidor();
@@ -247,42 +247,46 @@ export async function confirmarImport(
   }
 
   const registros: Record<string, unknown>[] = [];
-  let salteados = 0;
+  let incompletos = 0;
   for (const cruda of crudas) {
     const f = (cruda ?? {}) as Record<string, unknown>;
     const nombre = campoTexto(f.nombre, 80);
     const especie = ESPECIES.includes(String(f.especie)) ? String(f.especie) : "otro";
-    // Mínimo requerido: nombre + especie reconocida. Si falta, se saltea.
-    if (!nombre || !f.especie || String(f.especie).trim() === "") {
-      salteados++;
-      continue;
-    }
+    const descripcion = campoTexto(f.descripcion, 3000);
+    const raza = campoTexto(f.raza, 80) || null;
+    const ciudad = campoTexto(f.ciudad, 120);
+    // Importamos todas las filas como borrador (invisibles en público). Las que
+    // no tienen nombre quedan "para completar a mano" en Mis animales. Solo se
+    // descarta una fila si no tiene NINGÚN dato útil.
+    if (!nombre && !descripcion && !raza && !ciudad) continue;
+    if (!nombre) incompletos++;
+
     const edad = Math.min(Math.max(Math.round(Number(f.edad_meses) || 0), 0), 600);
     registros.push({
-      nombre,
+      nombre, // puede quedar "" → "para completar a mano"
       especie,
-      raza: campoTexto(f.raza, 80) || null,
+      raza,
       edad_meses: edad,
       sexo: SEXOS.includes(String(f.sexo)) ? String(f.sexo) : "macho",
       tamano: TAMANOS.includes(String(f.tamano)) ? String(f.tamano) : "mediano",
       castrado: f.castrado === true,
       vacunas: [],
-      descripcion: campoTexto(f.descripcion, 3000),
+      descripcion,
       historia: "",
-      slug: generarSlug(["adoptar", especie, nombre, refugio.ciudad]),
-      ciudad: campoTexto(f.ciudad, 120) || refugio.ciudad,
+      slug: generarSlug(["adoptar", especie, nombre || "sin-nombre", ciudad || refugio.ciudad]),
+      ciudad: ciudad || refugio.ciudad,
       provincia: campoTexto(f.provincia, 120) || refugio.provincia,
       lat_aprox: refugio.lat,
       lng_aprox: refugio.lng,
       tipo: TIPOS.includes(String(f.tipo)) ? String(f.tipo) : "adopcion",
-      estado: "borrador", // esperando foto: invisible en público
+      estado: "borrador", // invisible en público hasta tener foto (y nombre)
       fotos: [],
       video_url: null,
       refugio_id: refugio.id,
     });
   }
   if (registros.length === 0) {
-    throw new Error("Ninguna fila tenía nombre y especie. Completá esos datos.");
+    throw new Error("No había filas con datos para importar.");
   }
 
   const { error } = await sb.from("animales").insert(registros);
@@ -290,5 +294,5 @@ export async function confirmarImport(
 
   revalidatePath("/mi-refugio");
   revalidatePath("/mi-refugio/archivos");
-  return { creados: registros.length, salteados };
+  return { creados: registros.length, incompletos };
 }
