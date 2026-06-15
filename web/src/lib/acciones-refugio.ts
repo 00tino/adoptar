@@ -117,7 +117,7 @@ export async function misAnimales(): Promise<AnimalDeRefugio[]> {
   }));
 }
 
-async function exigirRefugio(): Promise<MiRefugio> {
+export async function exigirRefugio(): Promise<MiRefugio> {
   await exigirUsuarioActivo(); // corta si la cuenta está suspendida
   const refugio = await miRefugio();
   if (!refugio) {
@@ -216,11 +216,16 @@ export async function editarAnimalRefugio(formData: FormData) {
     const urls = await subirArchivos(sb, fotosNuevas.slice(0, 6), "animales");
     const { data: actual } = await sb
       .from("animales")
-      .select("fotos")
+      .select("fotos,estado")
       .eq("id", animalId)
       .single();
     const existentes: string[] = Array.isArray(actual?.fotos) ? actual.fotos : [];
     actualizacion = { ...datos, fotos: [...existentes, ...urls].slice(0, 10) };
+    // Animal importado en 'borrador' (esperando foto): al sumar su 1ra foto ya
+    // puede publicarse. Estrella → directo; verificado → cola del admin.
+    if (actual?.estado === "borrador" && existentes.length === 0) {
+      actualizacion.estado = refugio.estado === "estrella" ? "disponible" : "pendiente";
+    }
   }
 
   const { error } = await sb.from("animales").update(actualizacion).eq("id", animalId);

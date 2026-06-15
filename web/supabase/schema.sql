@@ -66,7 +66,8 @@ create table animales (
   -- "Mi historia": cómo lo encontraron / rescataron (la cuenta quien publica)
   historia text not null default '',
   tipo text not null check (tipo in ('adopcion','transito')),
-  estado text not null default 'pendiente' check (estado in ('pendiente','disponible','en_proceso','adoptado','rechazado')),
+  -- 'borrador' = importado sin foto: no se ve en público hasta tener ≥1 foto (Fase 10)
+  estado text not null default 'pendiente' check (estado in ('borrador','pendiente','disponible','en_proceso','adoptado','rechazado')),
   creado_el timestamptz not null default now(),
   -- Un animal lo publica un refugio O un particular, nunca ambos.
   -- (Puede no tener ninguno mientras la cuenta del particular no esté
@@ -237,10 +238,30 @@ create table postulaciones (
 alter table postulaciones enable row level security;
 create index idx_postulaciones_animal on postulaciones (animal_id);
 
+-- ============ ARCHIVOS DE REFUGIO / VAULT (Fase 10) ============
+-- Cada refugio sube y guarda sus propios archivos (bases de datos, PDFs, etc.)
+-- a un bucket PRIVADO. Acá viven los metadatos; el binario va a Storage.
+create table archivos_refugio (
+  id uuid primary key default gen_random_uuid(),
+  refugio_id uuid not null references refugios(id) on delete cascade,
+  nombre text not null,            -- nombre original sanitizado
+  ruta text not null,              -- path dentro del bucket "archivos-refugio"
+  tipo_mime text not null,
+  tamano_bytes bigint not null,
+  creado_el timestamptz not null default now()
+);
+alter table archivos_refugio enable row level security;
+-- Sin políticas públicas: todo el acceso es server-side con service role.
+create index idx_archivos_refugio on archivos_refugio (refugio_id, creado_el desc);
+
 -- ============ STORAGE ============
 -- Crear también un bucket PÚBLICO llamado "media" desde el panel de Supabase:
 -- Storage → New bucket → nombre "media" → marcar "Public bucket".
 -- Ahí se guardan las fotos y videos de animales y refugios.
+--
+-- Y un bucket PRIVADO llamado "archivos-refugio" (Fase 10): NO marcar "Public".
+-- Guarda las bases de datos/archivos que sube cada refugio; se descargan por
+-- signed URL desde el servidor (service role). RLS por carpeta <refugio_id>/.
 
 -- Índices para las consultas del catálogo
 create index idx_animales_estado on animales (estado);

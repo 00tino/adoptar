@@ -4,6 +4,7 @@ import Link from "next/link";
 const pestanas = [
   { href: "/mi-refugio", texto: "Mis animales" },
   { href: "/mi-refugio/campanas", texto: "Campañas" },
+  { href: "/mi-refugio/archivos", texto: "Archivos" },
   { href: "/mi-refugio/perfil", texto: "Mi perfil" },
 ];
 

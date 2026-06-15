@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 // Panel del refugio: gestión de sus propios animales sin depender del admin.
 
 const etiquetaEstado: Record<string, { texto: string; clase: string }> = {
+  borrador: { texto: "Esperando foto 📷", clase: "bg-terracota/15 text-terracota-oscuro" },
   pendiente: { texto: "Pendiente de aprobación", clase: "bg-sol text-tinta" },
   disponible: { texto: "Disponible", clase: "bg-salvia text-blanco-calido" },
   en_proceso: { texto: "En proceso", clase: "bg-sol text-tinta" },
@@ -78,6 +79,14 @@ export default async function PaginaMiRefugio({
         <h2 className="font-display text-2xl font-bold">
           Tus animales ({animales.length})
         </h2>
+
+        {animales.some((a) => a.estado === "borrador") && (
+          <p className="mt-4 rounded-2xl bg-terracota/10 border-2 border-terracota/40 px-5 py-3 text-sm text-terracota-oscuro">
+            📷 Tenés animales importados <strong>esperando foto</strong>. No se
+            ven en el catálogo hasta que les agregues al menos una. Tocá
+            “Agregar foto” en cada uno.
+          </p>
+        )}
 
         {animales.length === 0 ? (
           <p className="mt-4 text-tinta-suave">
@@ -144,9 +153,13 @@ export default async function PaginaMiRefugio({
                     )}
                     <Link
                       href={`/mi-refugio/editar/${a.id}`}
-                      className="rounded-full border-2 border-crema-2 px-4 py-1.5 text-sm font-bold hover:bg-crema-2 transition-colors"
+                      className={
+                        a.estado === "borrador"
+                          ? "rounded-full bg-terracota-oscuro px-4 py-1.5 text-sm font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors"
+                          : "rounded-full border-2 border-crema-2 px-4 py-1.5 text-sm font-bold hover:bg-crema-2 transition-colors"
+                      }
                     >
-                      Editar
+                      {a.estado === "borrador" ? "Agregar foto 📷" : "Editar"}
                     </Link>
                     {a.estado !== "rechazado" && (
                       <form action={darDeBajaAnimal}>
