@@ -5,7 +5,6 @@
 // políticas públicas).
 
 import { createClient } from "@supabase/supabase-js";
-import { revalidatePath } from "next/cache";
 import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import type { Animal } from "./tipos";
 import { filaAAnimal } from "./datos";
@@ -69,6 +68,7 @@ export async function alternarFavorito(formData: FormData) {
   } else if (!deseado && existe) {
     await sb.from("favoritos").delete().eq("id", existe.id);
   }
-  revalidatePath("/favoritos");
-  revalidatePath("/animales");
+  // No revalidamos: el corazón se actualiza optimista en el cliente y las
+  // páginas /favoritos y /animales son dinámicas (datos frescos por request).
+  // Así el toggle responde al toque sin refrescar la lista de fondo.
 }
