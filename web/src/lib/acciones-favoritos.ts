@@ -44,7 +44,8 @@ export async function misFavoritos(): Promise<Animal[]> {
     .filter((a): a is Animal => a !== null);
 }
 
-/** Agrega o quita un favorito (toggle). Devuelve el nuevo estado. */
+/** Guarda o quita un favorito. Si el form trae `fav` ("1"/"0") fija ese estado
+ *  de forma idempotente (seguro ante clicks rápidos); si no, togglea. */
 export async function alternarFavorito(formData: FormData) {
   const yo = await exigirUsuarioActivo();
   const animalId = String(formData.get("animal_id"));
@@ -58,10 +59,15 @@ export async function alternarFavorito(formData: FormData) {
     .eq("animal_id", animalId)
     .maybeSingle();
 
-  if (existe) {
-    await sb.from("favoritos").delete().eq("id", existe.id);
-  } else {
+  // Estado deseado explícito (idempotente) o, en su defecto, toggle.
+  const deseadoCrudo = formData.get("fav");
+  const deseado =
+    deseadoCrudo === "1" ? true : deseadoCrudo === "0" ? false : !existe;
+
+  if (deseado && !existe) {
     await sb.from("favoritos").insert({ usuario_id: yo.id, animal_id: animalId });
+  } else if (!deseado && existe) {
+    await sb.from("favoritos").delete().eq("id", existe.id);
   }
   revalidatePath("/favoritos");
   revalidatePath("/animales");
