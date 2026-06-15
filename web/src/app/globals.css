@@ -51,3 +51,30 @@ h1, h2, h3, h4 {
   background: var(--color-sol);
   color: var(--color-tinta);
 }
+
+/* Botón de favorito: el corazón rebota y suelta una explosión de corazoncitos
+   al guardar. Solo CSS; se respeta prefers-reduced-motion. */
+@keyframes latido {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.4); }
+  45% { transform: scale(0.85); }
+  70% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.animar-latido {
+  animation: latido 0.45s ease;
+}
+@keyframes latido-particula {
+  0% { transform: translate(0, 0) scale(0.2); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}
+.latido-particula {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  animation: latido-particula 0.6s ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animar-latido { animation: none; }
+  .latido-particula { display: none; }
+}
