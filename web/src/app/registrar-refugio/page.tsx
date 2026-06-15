@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { SignInButton } from "@clerk/nextjs";
 import { registrarRefugio } from "@/lib/acciones";
 import { supabaseDisponible } from "@/lib/supabase";
+import { clerkDisponible, usuarioActual } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Registrar mi refugio",
@@ -15,6 +17,9 @@ export default async function PaginaRegistrarRefugio({
 }) {
   const { enviado } = await searchParams;
   const activo = supabaseDisponible();
+  // Necesitamos saber quién registra para vincular el refugio a su cuenta.
+  const usuario = clerkDisponible() ? await usuarioActual() : null;
+  const necesitaLogin = clerkDisponible() && !usuario;
 
   if (enviado) {
     return (
@@ -51,9 +56,24 @@ export default async function PaginaRegistrarRefugio({
         ))}
       </ol>
 
+      {necesitaLogin && (
+        <div className="mt-6 rounded-2xl bg-sol/30 border-2 border-sol px-5 py-4">
+          <p className="font-bold text-tinta">Primero ingresá con tu cuenta 🐾</p>
+          <p className="mt-1 text-sm text-tinta-suave">
+            Vinculamos el refugio a tu cuenta para que, una vez aprobado, puedas
+            administrarlo desde tu panel.
+          </p>
+          <SignInButton mode="modal">
+            <button className="mt-3 rounded-full bg-terracota-oscuro px-6 py-2.5 text-sm font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors">
+              Ingresar
+            </button>
+          </SignInButton>
+        </div>
+      )}
+
       <form
-        action={activo ? registrarRefugio : undefined}
-        className="mt-8 space-y-5 rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6 sm:p-8"
+        action={activo && !necesitaLogin ? registrarRefugio : undefined}
+        className={`mt-8 space-y-5 rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6 sm:p-8 ${necesitaLogin ? "opacity-60" : ""}`}
       >
         {[
           { etiqueta: "Nombre del refugio *", nombre: "nombre", requerido: true },
@@ -89,9 +109,10 @@ export default async function PaginaRegistrarRefugio({
         {activo ? (
           <button
             type="submit"
-            className="w-full rounded-xl bg-terracota-oscuro text-blanco-calido py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
+            disabled={necesitaLogin}
+            className="w-full rounded-xl bg-terracota-oscuro text-blanco-calido py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Enviar solicitud 🏠
+            {necesitaLogin ? "Ingresá para enviar" : "Enviar solicitud 🏠"}
           </button>
         ) : (
           <>

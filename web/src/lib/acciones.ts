@@ -87,6 +87,9 @@ export async function publicarTransito(formData: FormData) {
 
 export async function registrarRefugio(formData: FormData) {
   await limitarPorIp("registrar-refugio", 3, 60); // máx 3 solicitudes/hora por IP
+  // Hay que estar logueado: así el refugio queda vinculado a esta cuenta y, al
+  // aprobarlo, la persona accede a su panel /mi-refugio (ownership por usuario_id).
+  const yo = await exigirUsuarioActivo();
   const sb = clienteServidor();
 
   const nombre = campoTexto(formData.get("nombre"), 80);
@@ -95,6 +98,7 @@ export async function registrarRefugio(formData: FormData) {
   const [ciudad, provincia = "Argentina"] = ciudadProvincia.split(",").map((s) => s.trim());
 
   const { error } = await sb.from("refugios").insert({
+    usuario_id: yo.id,
     slug: generarSlug([nombre, ciudad]),
     nombre,
     descripcion: campoTexto(formData.get("descripcion"), 3000),
