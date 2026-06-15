@@ -33,7 +33,7 @@ export default function MenuMovil({
   }, [abierto]);
 
   return (
-    <div>
+    <div className="md:hidden">
       <button
         type="button"
         aria-label={abierto ? "Cerrar menú" : "Abrir menú"}
