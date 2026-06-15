@@ -10,6 +10,7 @@ import {
 import type { Notificacion } from "@/lib/notificaciones";
 import { supabaseDisponible } from "@/lib/supabase";
 import MenuMovil from "./MenuMovil";
+import MenuCuenta from "./MenuCuenta";
 import LinkNav from "./LinkNav";
 
 // Encabezado principal. Para que la barra respire, la navegación de catálogo
@@ -133,26 +134,9 @@ export default async function Header() {
           </SignInButton>
         )}
 
-        {/* Menú "Mi cuenta" (desktop): único desplegable, sin solaparse con nada */}
+        {/* Menú "Mi cuenta" (desktop): único desplegable, cierra al clic afuera + animado */}
         {conSesion && (
-          <details className="group relative hidden md:block">
-            <summary
-              aria-label={`Mi cuenta${pendientes > 0 ? ` (${pendientes} sin ver)` : ""}`}
-              className="flex cursor-pointer list-none items-center gap-1"
-            >
-              <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-salvia text-sm font-bold text-blanco-calido ring-2 ring-transparent transition group-hover:ring-crema-2">
-                {inicial}
-                {pendientes > 0 && (
-                  <span
-                    aria-hidden
-                    className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-terracota-oscuro ring-2 ring-blanco-calido"
-                  />
-                )}
-              </span>
-              <span aria-hidden className="text-xs text-tinta-suave transition-transform group-open:rotate-180">▾</span>
-            </summary>
-
-            <div className="absolute right-0 z-50 mt-2 w-72 rounded-2xl border-2 border-crema-2 bg-blanco-calido p-2 shadow-lg">
+          <MenuCuenta inicial={inicial} pendientes={pendientes} className="hidden md:block">
               <p className="truncate px-3 pt-1 pb-2 text-xs text-tinta-suave">
                 Hola, <span className="font-bold text-tinta">{nombreCorto}</span> 👋
               </p>
@@ -211,8 +195,7 @@ export default async function Header() {
                   </button>
                 </SignOutButton>
               </div>
-            </div>
-          </details>
+          </MenuCuenta>
         )}
 
         {/* Menú hamburguesa (solo mobile) */}
