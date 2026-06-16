@@ -509,3 +509,75 @@ export async function darDeBajaAnimal(formData: FormData) {
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
 }
+
+// ---------- Acciones en lote (selección múltiple en Mis animales) ----------
+
+/** Normaliza y valida la lista de ids contra los animales del refugio. */
+function idsValidos(ids: unknown): string[] {
+  if (!Array.isArray(ids)) return [];
+  return ids.map(String).filter((s) => s.length > 0).slice(0, 500);
+}
+
+/** Da de baja varios animales propios de una (los pasa a "rechazado"). */
+export async function darDeBajaAnimales(ids: string[]) {
+  const refugio = await exigirRefugio();
+  const sb = clienteServidor();
+  const lista = idsValidos(ids);
+  if (lista.length === 0) return;
+  const { error } = await sb
+    .from("animales")
+    .update({ estado: "rechazado" })
+    .in("id", lista)
+    .eq("refugio_id", refugio.id); // ownership: solo los suyos
+  if (error) throw new Error(error.message);
+  revalidatePath("/animales");
+  revalidatePath("/mi-refugio");
+}
+
+/** Restaura animales "dados de baja": vuelven a un estado visible según tengan
+ *  foto (con foto → disponible/pendiente; sin foto → borrador "esperando foto"). */
+export async function restaurarAnimales(ids: string[]) {
+  const refugio = await exigirRefugio();
+  const sb = clienteServidor();
+  const lista = idsValidos(ids);
+  if (lista.length === 0) return;
+
+  const { data } = await sb
+    .from("animales")
+    .select("id,fotos")
+    .in("id", lista)
+    .eq("refugio_id", refugio.id)
+    .eq("estado", "rechazado"); // solo se restaura lo que está dado de baja
+
+  const conFoto = refugio.estado === "estrella" ? "disponible" : "pendiente";
+  for (const a of data ?? []) {
+    const tieneFoto = Array.isArray(a.fotos) && a.fotos.length > 0;
+    await sb
+      .from("animales")
+      .update({ estado: tieneFoto ? conFoto : "borrador" })
+      .eq("id", a.id);
+  }
+  revalidatePath("/animales");
+  revalidatePath("/mi-refugio");
+}
+
+/** Cambia el estado de adopción de varios a la vez. Solo afecta a los que ya
+ *  están aprobados (no saltea la cola del admin). */
+export async function cambiarEstadoAnimalesVarios(ids: string[], estado: string) {
+  const refugio = await exigirRefugio();
+  const sb = clienteServidor();
+  if (!["disponible", "en_proceso", "adoptado"].includes(estado)) {
+    throw new Error("Estado inválido.");
+  }
+  const lista = idsValidos(ids);
+  if (lista.length === 0) return;
+  const { error } = await sb
+    .from("animales")
+    .update({ estado })
+    .in("id", lista)
+    .eq("refugio_id", refugio.id)
+    .in("estado", ["disponible", "en_proceso", "adoptado"]); // solo aprobados
+  if (error) throw new Error(error.message);
+  revalidatePath("/animales");
+  revalidatePath("/mi-refugio");
+}

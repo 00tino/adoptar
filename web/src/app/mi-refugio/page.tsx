@@ -4,15 +4,11 @@ import { redirect } from "next/navigation";
 import {
   miRefugio,
   misAnimales,
-  darDeBajaAnimal,
   postulacionesDeRefugio,
   cambiarEstadoPostulacion,
-  type AnimalDeRefugio,
 } from "@/lib/acciones-refugio";
-import { edadLegible } from "@/lib/tipos";
-import FotoAnimal from "@/components/FotoAnimal";
 import Pestanas from "./Pestanas";
-import SelectorEstadoAdopcion from "./SelectorEstadoAdopcion";
+import PanelAnimales from "./PanelAnimales";
 
 export const metadata: Metadata = {
   title: "Mi refugio",
@@ -20,15 +16,6 @@ export const metadata: Metadata = {
 };
 
 // Panel del refugio: gestión de sus propios animales sin depender del admin.
-
-const etiquetaEstado: Record<string, { texto: string; clase: string }> = {
-  borrador: { texto: "Esperando foto 📷", clase: "bg-terracota/15 text-terracota-oscuro" },
-  pendiente: { texto: "Pendiente de aprobación", clase: "bg-sol text-tinta" },
-  disponible: { texto: "Disponible", clase: "bg-salvia text-blanco-calido" },
-  en_proceso: { texto: "En proceso", clase: "bg-sol text-tinta" },
-  adoptado: { texto: "Adoptado 🎉", clase: "bg-tinta-suave text-blanco-calido" },
-  rechazado: { texto: "Dado de baja", clase: "bg-crema-2 text-tinta-suave" },
-};
 
 export default async function PaginaMiRefugio({
   searchParams,
@@ -95,169 +82,12 @@ export default async function PaginaMiRefugio({
             Todavía no publicaste ningún animal. ¡Empezá con el botón de arriba!
           </p>
         ) : (
-          (() => {
-            const grupos: { titulo: string; ayuda?: string; items: AnimalDeRefugio[] }[] = [
-              {
-                titulo: "Publicados",
-                items: animales.filter((a) =>
-                  ["disponible", "en_proceso", "adoptado"].includes(a.estado)
-                ),
-              },
-              {
-                titulo: "En revisión del admin",
-                ayuda: "Las estamos revisando; te avisamos al aprobarlas.",
-                items: animales.filter((a) => a.estado === "pendiente"),
-              },
-              {
-                titulo: "Esperando foto",
-                ayuda: "Importados con datos. Agregales una foto para publicarlos.",
-                items: animales.filter((a) => a.estado === "borrador" && a.nombre.trim() !== ""),
-              },
-              {
-                titulo: "Para completar a mano",
-                ayuda: "Les faltaba el nombre en la planilla. Completalos y agregá una foto.",
-                items: animales.filter((a) => a.estado === "borrador" && a.nombre.trim() === ""),
-              },
-              {
-                titulo: "Dados de baja",
-                items: animales.filter((a) => a.estado === "rechazado"),
-              },
-            ];
-            return grupos
-              .filter((g) => g.items.length > 0)
-              .map((g) => (
-                <div key={g.titulo} className="mt-8">
-                  <h3 className="font-display text-lg font-bold text-tinta">
-                    {g.titulo} ({g.items.length})
-                  </h3>
-                  {g.ayuda && <p className="text-sm text-tinta-suave">{g.ayuda}</p>}
-                  <ul className="mt-3 space-y-3">
-                    {g.items.map((a) => (
-                      <FilaAnimal key={a.id} a={a} />
-                    ))}
-                  </ul>
-                </div>
-              ));
-          })()
+          <PanelAnimales animales={animales} />
         )}
       </section>
 
       <Postulaciones postulaciones={postulaciones} />
     </div>
-  );
-}
-
-// Fila plana de un animal: foto + nombre + badge + acciones, con un desplegable
-// "Ver info" que muestra SOLO los datos del animal (sin acciones).
-function FilaAnimal({ a }: { a: AnimalDeRefugio }) {
-  const aprobado = ["disponible", "en_proceso", "adoptado"].includes(a.estado);
-  const sinNombre = a.estado === "borrador" && a.nombre.trim() === "";
-  const esperandoFoto = a.estado === "borrador" && a.nombre.trim() !== "";
-
-  const etiqueta = sinNombre
-    ? { texto: "Para completar 📝", clase: "bg-terracota/15 text-terracota-oscuro" }
-    : etiquetaEstado[a.estado] ?? etiquetaEstado.pendiente;
-
-  const especieTexto =
-    a.especie === "perro" ? "Perro" : a.especie === "gato" ? "Gato" : "Otro";
-  const datos = [
-    especieTexto,
-    a.sexo === "hembra" ? "Hembra" : a.sexo === "macho" ? "Macho" : null,
-    a.tamano ? a.tamano[0].toUpperCase() + a.tamano.slice(1) : null,
-    a.edadMeses ? edadLegible(a.edadMeses) : null,
-    a.raza || null,
-    a.castrado ? "Castrado/a" : null,
-  ].filter(Boolean);
-
-  const claseLink =
-    "rounded-full border-2 border-crema-2 px-4 py-1.5 text-sm font-bold hover:bg-crema-2 transition-colors";
-  const claseLinkPrimario =
-    "rounded-full bg-terracota-oscuro px-4 py-1.5 text-sm font-bold text-blanco-calido hover:bg-terracota-mas-oscuro transition-colors";
-
-  return (
-    <li className="rounded-2xl bg-blanco-calido border-2 border-crema-2 p-4">
-      <div className="flex flex-wrap items-center gap-4">
-        <FotoAnimal
-          especie={a.especie}
-          nombre={a.nombre || "Sin nombre"}
-          semilla={a.id}
-          foto={a.foto}
-          clase="h-16 w-20 rounded-xl shrink-0"
-        />
-        <div className="min-w-0 flex-1">
-          <p className="font-display text-xl font-bold">
-            {a.nombre || <span className="text-tinta-suave italic">(sin nombre)</span>}
-          </p>
-          <span
-            className={`mt-1 inline-block rounded-full px-3 py-0.5 text-xs font-bold ${etiqueta.clase}`}
-          >
-            {etiqueta.texto}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-end gap-2">
-          {aprobado && (
-            <SelectorEstadoAdopcion id={a.id} nombre={a.nombre} estado={a.estado} />
-          )}
-          {sinNombre ? (
-            <Link href={`/mi-refugio/editar/${a.id}`} className={claseLinkPrimario}>
-              Completar datos ✏️
-            </Link>
-          ) : esperandoFoto ? (
-            <>
-              <Link href={`/mi-refugio/editar/${a.id}`} className={claseLinkPrimario}>
-                Agregar foto 📷
-              </Link>
-              <Link href={`/mi-refugio/editar/${a.id}`} className={claseLink}>
-                Modificar
-              </Link>
-            </>
-          ) : (
-            a.estado !== "rechazado" && (
-              <Link href={`/mi-refugio/editar/${a.id}`} className={claseLink}>
-                Modificar
-              </Link>
-            )
-          )}
-          {aprobado && (
-            <Link href={`/animales/${a.slug}`} className={claseLink}>
-              Ver publicación
-            </Link>
-          )}
-          {a.estado !== "rechazado" && (
-            <form action={darDeBajaAnimal}>
-              <input type="hidden" name="id" value={a.id} />
-              <button
-                type="submit"
-                className="rounded-full border-2 border-terracota px-4 py-1.5 text-sm font-bold text-terracota-oscuro hover:bg-terracota-mas-oscuro hover:text-blanco-calido transition-colors"
-              >
-                Dar de baja
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
-
-      <details className="group mt-2">
-        <summary className="cursor-pointer list-none text-sm font-bold text-tinta-suave hover:text-tinta">
-          <span className="group-open:hidden">Ver info ▾</span>
-          <span className="hidden group-open:inline">Ocultar info ▴</span>
-        </summary>
-        <div className="mt-2 space-y-2 border-t-2 border-crema-2 pt-2">
-          {datos.length > 0 && (
-            <p className="text-sm text-tinta-suave">{datos.join(" · ")}</p>
-          )}
-          {a.descripcion ? (
-            <p className="text-sm whitespace-pre-line">{a.descripcion}</p>
-          ) : (
-            <p className="text-sm italic text-tinta-suave">Sin descripción.</p>
-          )}
-          {a.vacunas.length > 0 && (
-            <p className="text-xs text-tinta-suave">💉 Vacunas: {a.vacunas.join(", ")}</p>
-          )}
-        </div>
-      </details>
-    </li>
   );
 }
 
