@@ -561,6 +561,24 @@ export async function restaurarAnimales(ids: string[]) {
   revalidatePath("/mi-refugio");
 }
 
+/** Elimina DEFINITIVAMENTE animales propios que estén dados de baja
+ *  (estado "rechazado"). Las postulaciones/favoritos/mensajes se borran en
+ *  cascada (FK on delete cascade). Solo toca lo que es del refugio y rechazado. */
+export async function eliminarAnimales(ids: string[]) {
+  const refugio = await exigirRefugio();
+  const sb = clienteServidor();
+  const lista = idsValidos(ids);
+  if (lista.length === 0) return;
+  const { error } = await sb
+    .from("animales")
+    .delete()
+    .in("id", lista)
+    .eq("refugio_id", refugio.id)
+    .eq("estado", "rechazado"); // solo se borran los dados de baja
+  if (error) throw new Error(error.message);
+  revalidatePath("/mi-refugio");
+}
+
 /** Cambia el estado de adopción de varios a la vez. Solo afecta a los que ya
  *  están aprobados (no saltea la cola del admin). */
 export async function cambiarEstadoAnimalesVarios(ids: string[], estado: string) {

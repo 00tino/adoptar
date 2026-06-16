@@ -8,6 +8,7 @@ import {
   darDeBajaAnimales,
   restaurarAnimales,
   cambiarEstadoAnimalesVarios,
+  eliminarAnimales,
   type AnimalDeRefugio,
 } from "@/lib/acciones-refugio";
 import SelectorEstadoAdopcion from "./SelectorEstadoAdopcion";
@@ -125,6 +126,10 @@ export default function PanelAnimales({ animales }: { animales: AnimalDeRefugio[
                   onToggle={() => toggle(a.id)}
                   onDarDeBaja={() => ejecutar(() => darDeBajaAnimales([a.id]))}
                   onRestaurar={() => ejecutar(() => restaurarAnimales([a.id]))}
+                  onEliminar={() => {
+                    if (confirm(`¿Eliminar a ${a.nombre || "este animal"} definitivamente? No se puede deshacer.`))
+                      ejecutar(() => eliminarAnimales([a.id]));
+                  }}
                 />
               ))}
             </ul>
@@ -181,6 +186,21 @@ export default function PanelAnimales({ animales }: { animales: AnimalDeRefugio[
           </button>
           <button
             type="button"
+            disabled={pendiente}
+            onClick={() => {
+              if (
+                confirm(
+                  "¿Eliminar definitivamente los seleccionados que estén dados de baja? No se puede deshacer."
+                )
+              )
+                ejecutar(() => eliminarAnimales(ids));
+            }}
+            className="rounded-full bg-terracota-mas-oscuro px-4 py-1.5 text-sm font-bold text-blanco-calido hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            Eliminar
+          </button>
+          <button
+            type="button"
             onClick={() => setSel(new Set())}
             className="ml-auto text-sm font-bold text-tinta-suave hover:text-tinta"
           >
@@ -198,12 +218,14 @@ function FilaAnimal({
   onToggle,
   onDarDeBaja,
   onRestaurar,
+  onEliminar,
 }: {
   a: AnimalDeRefugio;
   seleccionado: boolean;
   onToggle: () => void;
   onDarDeBaja: () => void;
   onRestaurar: () => void;
+  onEliminar: () => void;
 }) {
   const aprobado = ["disponible", "en_proceso", "adoptado"].includes(a.estado);
   const sinNombre = a.estado === "borrador" && a.nombre.trim() === "";
@@ -281,9 +303,18 @@ function FilaAnimal({
             </Link>
           )}
           {a.estado === "rechazado" ? (
-            <button type="button" onClick={onRestaurar} className={claseLinkPrimario}>
-              Deshacer baja ↩
-            </button>
+            <>
+              <button type="button" onClick={onRestaurar} className={claseLinkPrimario}>
+                Deshacer baja ↩
+              </button>
+              <button
+                type="button"
+                onClick={onEliminar}
+                className="rounded-full bg-terracota-mas-oscuro px-4 py-1.5 text-sm font-bold text-blanco-calido hover:opacity-90 transition-opacity"
+              >
+                Eliminar 🗑
+              </button>
+            </>
           ) : (
             <button type="button" onClick={onDarDeBaja} className={claseBtnBaja}>
               Dar de baja
