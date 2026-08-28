@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { listarSuscripcionesAdmin } from "@/lib/acciones-admin-gestion";
 import { nombreCausa } from "@/lib/causas";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Suscripciones — Admin",
   robots: { index: false, follow: false },
