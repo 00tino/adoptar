@@ -8,6 +8,8 @@ import Footer from "@/components/Footer";
 import BannerVitrina from "@/components/BannerVitrina";
 import { clerkDisponible } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
