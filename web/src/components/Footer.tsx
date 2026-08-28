@@ -23,6 +23,7 @@ export default function Footer() {
         <nav aria-label="Links de participación" className="text-sm space-y-2">
           <p className="font-bold text-sol uppercase tracking-wide text-xs">Sumate</p>
           <Link className="block hover:text-sol" href="/publicar-transito">Publicar un animal en tránsito</Link>
+          <Link className="block hover:text-sol" href="/sumate">Sumá tu refugio</Link>
           <Link className="block hover:text-sol" href="/registrar-refugio">Registrar mi refugio</Link>
           <p className="pt-3 font-bold text-sol uppercase tracking-wide text-xs">AdoptAR</p>
           <Link className="block hover:text-sol" href="/quienes-somos">Quiénes somos</Link>
@@ -32,6 +33,9 @@ export default function Footer() {
       </div>
       <div className="border-t border-crema/10 py-4 text-center text-xs text-crema-2/60">
         © {new Date().getFullYear()} AdoptAR · Hecho con ❤️ en Argentina
+        <span className="block mt-1">
+          Esta plataforma no está relacionada con adoptar.com.ar (perdidos / EncontrAR).
+        </span>
       </div>
     </footer>
   );
