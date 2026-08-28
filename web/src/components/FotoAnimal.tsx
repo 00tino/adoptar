@@ -1,8 +1,7 @@
 import Image from "next/image";
 import type { Especie } from "@/lib/tipos";
+import { esFotoBasura } from "@/lib/vitrina";
 
-// Foto del animal: muestra la primera foto real de Supabase Storage si existe;
-// si no hay fotos, cae al retrato cálido de gradiente + emoji de su especie.
 const emojiPorEspecie: Record<Especie, string> = {
   perro: "🐶",
   gato: "🐱",
@@ -27,13 +26,11 @@ export default function FotoAnimal({
   especie: Especie;
   nombre: string;
   semilla: string;
-  /** URL pública de la foto real (Supabase Storage); si falta, placeholder */
   foto?: string | null;
-  /** true para la imagen principal de la página (LCP) */
   prioridad?: boolean;
   clase?: string;
 }) {
-  if (foto) {
+  if (foto && !esFotoBasura(foto)) {
     return (
       <div className={`relative overflow-hidden ${clase}`}>
         <Image
@@ -48,7 +45,6 @@ export default function FotoAnimal({
     );
   }
 
-  // Elegimos el gradiente según el id para que cada animal tenga su color fijo
   const g = gradientes[semilla.charCodeAt(semilla.length - 1) % gradientes.length];
   return (
     <div

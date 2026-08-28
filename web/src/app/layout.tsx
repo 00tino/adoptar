@@ -5,10 +5,9 @@ import { esES } from "@clerk/localizations";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import BannerVitrina from "@/components/BannerVitrina";
 import { clerkDisponible } from "@/lib/auth";
 
-// Fraunces: serif cálida y con personalidad, para títulos.
-// Nunito Sans: redondeada y muy legible, para el cuerpo.
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s | AdoptAR",
   },
   description:
-    "Plataforma argentina sin fines de lucro para adoptar perros, gatos y otros animales, encontrar hogares de tránsito y ayudar a refugios de todo el país.",
+    "Plataforma argentina sin fines de lucro para adoptar perros, gatos y otros animales, encontrar hogares de tránsito y ayudar a refugios.",
   openGraph: {
     siteName: "AdoptAR",
     locale: "es_AR",
@@ -37,7 +36,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Color de la barra del navegador (mismo crema del fondo del sitio)
 export const viewport: Viewport = {
   themeColor: "#faf4ea",
 };
@@ -54,14 +52,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Header />
+        <BannerVitrina />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>
     </html>
   );
 
-  // Clerk (login) en español, solo si hay claves configuradas.
-  // Sin claves, la app corre igual en modo demo.
   if (!clerkDisponible()) return contenido;
   return <ClerkProvider localization={esES}>{contenido}</ClerkProvider>;
 }
