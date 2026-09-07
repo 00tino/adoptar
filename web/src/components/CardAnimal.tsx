@@ -1,12 +1,10 @@
 import Link from "next/link";
 import type { Animal } from "@/lib/tipos";
 import { edadLegible } from "@/lib/tipos";
+import { formatearZona } from "@/lib/vitrina";
 import FotoAnimal from "./FotoAnimal";
 import BotonFavorito from "./BotonFavorito";
 
-// Tarjeta de animal para grillas (home, catálogo, perfil de refugio).
-// `distanciaKm` (opcional) se muestra en modo "cerca mío".
-// `favorito`/`logueado` (opcionales) habilitan el corazón de favoritos.
 export default function CardAnimal({
   animal,
   distanciaKm,
@@ -61,12 +59,12 @@ export default function CardAnimal({
             {animal.sexo === "hembra" ? "Hembra" : "Macho"}
           </p>
           <p className="mt-1 text-sm text-tinta-suave">
-            📍 {animal.ciudad}, {animal.provincia}
+            📍 {formatearZona(animal.ciudad, animal.provincia)}
           </p>
           <p className="mt-2 text-xs font-bold text-salvia-oscuro">
             {animal.particularNombre
               ? `Publica: ${animal.particularNombre} (particular)`
-              : "Publica: refugio verificado"}
+              : "Publica: refugio"}
           </p>
         </div>
       </Link>
