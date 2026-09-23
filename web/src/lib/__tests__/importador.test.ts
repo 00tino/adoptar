@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectarMapeo, normalizarFila } from "../importador";
+import { detectarMapeo, normalizarFila, normalizarNotas } from "../importador";
 
 describe("detectarMapeo", () => {
   it("detecta encabezados en español", () => {
@@ -30,6 +30,22 @@ describe("detectarMapeo", () => {
     const m = detectarMapeo(["Nombre"]);
     expect(m.especie).toBe(null);
     expect(m.ciudad).toBe(null);
+  });
+});
+
+describe("normalizarNotas", () => {
+  it("separa dos animales, extrae lo identificable y conserva cada nota", () => {
+    const filas = normalizarNotas("Nombre: Luna\nEspecie: perra\nEdad: 2 años\nMuy tranquila. Necesita tránsito.\n\nCoco - gato de 8 meses\nBusca familia.");
+    expect(filas).toHaveLength(2);
+    expect(filas[0]).toMatchObject({ nombre: "Luna", especie: "perro", edad_meses: 24, tipo: "transito", faltantes: [] });
+    expect(filas[1]).toMatchObject({ nombre: "Coco", especie: "gato", edad_meses: 8, faltantes: [] });
+    expect(filas[1].descripcion).toContain("Busca familia.");
+  });
+
+  it("no inventa nombre ni especie si una nota no los dice", () => {
+    const [fila] = normalizarNotas("Lo encontramos ayer. Está asustado y necesita ayuda.");
+    expect(fila.faltantes).toEqual(["nombre", "especie"]);
+    expect(fila.descripcion).toContain("necesita ayuda");
   });
 });
 

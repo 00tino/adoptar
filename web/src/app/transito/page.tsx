@@ -33,6 +33,9 @@ export default async function PaginaTransito() {
           <Link href="/transito/alertas" className="rounded-full border-2 border-blanco-calido px-6 py-3 hover:bg-blanco-calido hover:text-terracota-oscuro transition-colors">
             Avisarme de animales cerca mío 💛
           </Link>
+          <Link href="/transito/hogares" className="rounded-full border-2 border-blanco-calido px-6 py-3 hover:bg-blanco-calido hover:text-terracota-oscuro transition-colors">
+            Buscar hogares disponibles
+          </Link>
         </div>
         </div>
         <Image
@@ -45,6 +48,14 @@ export default async function PaginaTransito() {
           className="h-56 w-full object-cover lg:h-full"
         />
       </div>
+
+      <section className="mt-8 grid gap-4 rounded-2xl border-2 border-salvia bg-salvia/15 p-6 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div>
+          <h2 className="font-display text-2xl font-bold">¿Tenés lugar para recibir un animal?</h2>
+          <p className="mt-1 text-tinta-suave">Indicá cuándo podés ayudar. Rescatistas y refugios podrán encontrarte y pedirte tránsito en privado.</p>
+        </div>
+        <Link href="/transito/ofrecer" className="rounded-full bg-terracota-oscuro px-5 py-3 text-center font-bold text-blanco-calido hover:bg-terracota-mas-oscuro">Ofrecer mi hogar</Link>
+      </section>
 
       <section className="mt-12">
         <h2 className="font-display text-3xl font-black">Necesitan tránsito ahora</h2>

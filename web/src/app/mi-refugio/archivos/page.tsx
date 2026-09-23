@@ -25,12 +25,11 @@ export default async function PaginaArchivosRefugio() {
       <Pestanas activa="/mi-refugio/archivos" />
 
       <section className="mt-8">
-        <h2 className="font-display text-2xl font-bold">Importar animales desde una planilla</h2>
+        <h2 className="font-display text-2xl font-bold">Cargar varios animales a la vez</h2>
         <p className="mt-1 text-tinta-suave">
-          Subí una planilla CSV o Excel con tus animales. Detectamos las columnas
-          automáticamente y te mostramos una vista previa antes de confirmar. Los
-          animales se crean <strong>esperando foto</strong> (no se publican hasta
-          que les agregues al menos una).
+          Subí una planilla CSV o Excel, pegá tus notas o elegí un archivo de texto.
+          Revisá la vista previa antes de confirmar. Los animales se crean
+          <strong> esperando foto</strong> (no se publican hasta que les agregues al menos una).
         </p>
         <Importador archivos={archivos.filter((a) => a.importable)} />
       </section>

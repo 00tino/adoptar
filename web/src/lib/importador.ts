@@ -2,6 +2,7 @@
 // Lógica PURA (auto-detección y normalización), sin xlsx ni red: así se puede
 // testear con vitest y reutilizar en el cliente para re-mapear columnas sin
 // bundlear SheetJS. El parseo del binario vive en ./planilla.ts (server-only).
+import { edadAproximadaEnMeses } from "./tipos";
 
 /** Campos de un animal que sabemos mapear desde una planilla. */
 export type CampoImport =
@@ -191,4 +192,38 @@ export function normalizarFila(fila: string[], mapeo: Mapeo): FilaImportada {
     tipo: normalizarTipo(valor(fila, mapeo.tipo)),
     faltantes,
   };
+}
+
+/** Un bloque de nota = un animal. Conservamos el texto original para no perder datos. */
+export function normalizarNotas(texto: string): FilaImportada[] {
+  const bloques = texto.replace(/\r\n?/g, "\n")
+    .split(/\n\s*\n|\n\s*---+\s*\n/g)
+    .map((bloque) => bloque.trim())
+    .filter(Boolean);
+
+  return bloques.map((bloque) => {
+    const campo = (nombre: string) => bloque.match(new RegExp(`^\\s*${nombre}\\s*:\\s*(.+)$`, "im"))?.[1]?.trim() ?? "";
+    const primera = bloque.split("\n")[0];
+    const nombreDeInicio = primera.match(/^([A-ZÁÉÍÓÚÑ][\p{L} ]{1,39})\s*[-–,|]\s*\S/u)?.[1]?.trim() ?? "";
+    const nombre = (campo("nombre") || nombreDeInicio).slice(0, 80);
+    const especieTexto = campo("especie") || bloque.match(/\b(perr[oa]s?|gat[oa]s?|conej[oa]s?|h[aá]mster|cobay[oa]s?|aves?)\b/i)?.[0] || "";
+    const especie = especieTexto ? normalizarEspecie(especieTexto) : null;
+    const sexoTexto = campo("sexo").toLowerCase();
+    const tamanoTexto = campo("tamaño") || campo("tamano");
+    const faltantes = [!nombre && "nombre", !especie && "especie"].filter(Boolean) as string[];
+    return {
+      nombre,
+      especie: especie ?? "otro",
+      raza: campo("raza").slice(0, 80) || null,
+      edad_meses: edadAproximadaEnMeses(bloque),
+      sexo: sexoTexto === "hembra" || sexoTexto === "macho" ? sexoTexto : null,
+      tamano: tamanoTexto ? normalizarTamano(tamanoTexto) : null,
+      ciudad: campo("ciudad").slice(0, 120),
+      provincia: campo("provincia").slice(0, 120),
+      descripcion: bloque.slice(0, 3000),
+      castrado: /^(?:castrado|esterilizado)\s*:\s*(?:s[ií]|yes|true)\b/im.test(bloque),
+      tipo: /(?:^tipo\s*:\s*tr[aá]nsito\b|\b(?:necesita|busca)\s+(?:un\s+)?(?:hogar\s+de\s+)?tr[aá]nsito\b)/im.test(bloque) ? "transito" : "adopcion",
+      faltantes,
+    };
+  });
 }

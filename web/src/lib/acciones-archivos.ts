@@ -12,6 +12,7 @@ import { generarSlug } from "./archivos";
 import {
   detectarMapeo,
   normalizarFila,
+  normalizarNotas,
   EXT_IMPORTABLES,
   type Mapeo,
   type FilaImportada,
@@ -214,6 +215,26 @@ export async function previsualizarImport(
     listas: filas.length - conProblemas,
     conProblemas,
   };
+}
+
+/** Acepta texto pegado o una nota .txt/.md, sin guardar el archivo ni publicar animales. */
+export async function previsualizarNotas(formData: FormData): Promise<FilaImportada[]> {
+  await limitarPorIp("notas-preview", 30, 60);
+  await exigirRefugio();
+  let texto = String(formData.get("notas") ?? "").trim();
+  const archivo = formData.get("notas_archivo") as File | null;
+  if (archivo?.size) {
+    if (!["txt", "md"].includes(extension(archivo.name)) || archivo.size > 100_000) {
+      throw new Error("La nota tiene que ser .txt o .md y pesar menos de 100 KB.");
+    }
+    texto = (await archivo.text()).trim();
+  }
+  if (!texto || texto.length > 100_000) {
+    throw new Error("Pegá una nota o elegí un archivo de hasta 100 KB.");
+  }
+  const filas = normalizarNotas(texto);
+  if (filas.length > MAX_FILAS) throw new Error(`Máximo ${MAX_FILAS} animales por importación.`);
+  return filas;
 }
 
 // Whitelists para revalidar lo que llega del cliente (no confiar en el JSON).

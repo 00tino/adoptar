@@ -210,6 +210,38 @@ alter table alertas_transito enable row level security;
 create index idx_alertas_transito_activa on alertas_transito (activa);
 create index idx_alertas_transito_usuario on alertas_transito (usuario_id);
 
+-- ============ RED DE HOGARES DE TRÁNSITO ============
+-- Los datos de contacto siguen en usuarios; la lista pública solo recibe
+-- nombre, zona aproximada y disponibilidad desde el servidor.
+create table hogares_transito (
+  id uuid primary key default gen_random_uuid(),
+  usuario_id uuid not null unique references usuarios(id) on delete cascade,
+  nombre_publico text not null,
+  ciudad text not null,
+  provincia text not null,
+  especies text[] not null,
+  cupos int not null check (cupos between 1 and 10),
+  descripcion text not null default '',
+  disponible boolean not null default true,
+  actualizado_el timestamptz not null default now(),
+  check (cardinality(especies) between 1 and 3)
+);
+alter table hogares_transito enable row level security;
+revoke all on table hogares_transito from anon, authenticated;
+create index idx_hogares_transito_busqueda on hogares_transito (provincia, disponible);
+
+create table solicitudes_hogar_transito (
+  id uuid primary key default gen_random_uuid(),
+  hogar_id uuid not null references hogares_transito(id) on delete cascade,
+  solicitante_id uuid not null references usuarios(id) on delete cascade,
+  mensaje text not null check (char_length(mensaje) between 20 and 1500),
+  creado_el timestamptz not null default now()
+);
+alter table solicitudes_hogar_transito enable row level security;
+revoke all on table solicitudes_hogar_transito from anon, authenticated;
+create index idx_solicitudes_hogar_transito on solicitudes_hogar_transito (hogar_id, creado_el desc);
+create index idx_solicitudes_hogar_solicitante on solicitudes_hogar_transito (solicitante_id);
+
 -- ============ FAVORITOS (Fase 8) ============
 create table favoritos (
   id uuid primary key default gen_random_uuid(),

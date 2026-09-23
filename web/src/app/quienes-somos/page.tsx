@@ -32,6 +32,12 @@ export default function PaginaQuienesSomos() {
         </p>
 
         <h2 className="font-display text-2xl font-black text-tinta pt-2">Qué hacemos</h2>
+        <p>
+          También reunimos a rescatistas, refugios y personas que ofrecen un
+          hogar temporal. Si alguien tiene lugar libre, otro equipo que acaba de
+          rescatar animales puede encontrarlo y pedirle ayuda. Cada hogar decide
+          qué casos puede recibir y puede pausar su disponibilidad.
+        </p>
         <ul className="list-disc pl-5 space-y-2">
           <li>
             Publicamos animales en <strong className="text-tinta">adopción</strong> y
@@ -48,6 +54,9 @@ export default function PaginaQuienesSomos() {
           <li>
             Protegemos los datos de quienes publican: nunca mostramos la dirección
             exacta de un particular, solo una zona aproximada.
+          </li>
+          <li>
+            Mostramos <Link href="/transito/hogares" className="font-bold text-terracota-oscuro hover:underline">hogares de tránsito disponibles</Link> por zona y especie, y enviamos las solicitudes de ayuda en privado.
           </li>
         </ul>
 

@@ -44,12 +44,17 @@ export default async function PaginaMiRefugio({
             )}
           </p>
         </div>
-        <Link
-          href="/mi-refugio/publicar"
-          className="rounded-full bg-terracota-oscuro text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
-        >
-          Publicar animal 🐾
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/transito/hogares" className="rounded-full border-2 border-terracota-oscuro px-6 py-3 font-bold text-terracota-oscuro hover:bg-terracota/10">
+            Buscar hogares de tránsito
+          </Link>
+          <Link
+            href="/mi-refugio/publicar"
+            className="rounded-full bg-terracota-oscuro text-blanco-calido px-6 py-3 font-bold hover:bg-terracota-mas-oscuro transition-colors"
+          >
+            Publicar animal 🐾
+          </Link>
+        </div>
       </div>
 
       <Pestanas activa="/mi-refugio" />
