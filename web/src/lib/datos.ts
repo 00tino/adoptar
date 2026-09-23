@@ -6,6 +6,8 @@
 //    siempre corre. Las páginas no notan la diferencia.
 
 import type { Animal, Campana, Refugio } from "./tipos";
+import { edadLegible } from "./tipos";
+import type { PuntoMapa } from "@/components/MapaArgentina";
 import { crearClienteSupabase, supabaseDisponible } from "./supabase";
 import { distanciaKm } from "./geo";
 
@@ -261,10 +263,10 @@ export function filaAAnimal(f: any): Animal {
     slug: f.slug,
     nombre: f.nombre,
     especie: f.especie,
-    raza: f.raza ?? "Mestizo/a",
-    edadMeses: f.edad_meses ?? 0,
-    sexo: f.sexo ?? "macho",
-    tamano: f.tamano ?? "mediano",
+    raza: f.raza ?? "",
+    edadMeses: f.edad_meses ?? null,
+    sexo: f.sexo ?? null,
+    tamano: f.tamano ?? null,
     castrado: f.castrado,
     vacunas: f.vacunas ?? [],
     descripcion: f.descripcion,
@@ -329,7 +331,7 @@ export interface FiltrosAnimales {
   tamano?: string;
   sexo?: string;
   edad?: string; // cachorro (<1 año) | adulto (1-7) | mayor (7+)
-  castrado?: string; // "si" | "no"
+  castrado?: string; // "si" confirmado | "no" no confirmado
   q?: string;
 }
 
@@ -344,7 +346,8 @@ const rangosEdad: Record<string, [number, number]> = {
 };
 
 export async function obtenerAnimales(
-  filtros: FiltrosAnimales = {}
+  filtros: FiltrosAnimales = {},
+  limite?: number
 ): Promise<Animal[]> {
   if (supabaseDisponible()) {
     const sb = crearClienteSupabase();
@@ -370,12 +373,13 @@ export async function obtenerAnimales(
           `nombre.ilike.%${q}%,ciudad.ilike.%${q}%,provincia.ilike.%${q}%,raza.ilike.%${q}%`
         );
     }
+    if (limite) consulta = consulta.limit(limite);
     const { data, error } = await consulta;
     if (error) throw error;
     return (data ?? []).map(filaAAnimal);
   }
 
-  return animales.filter((a) => {
+  const filtrados = animales.filter((a) => {
     if (a.estado === "pendiente" || a.estado === "rechazado") return false;
     if (filtros.especie && a.especie !== filtros.especie) return false;
     if (filtros.tipo && a.tipo !== filtros.tipo) return false;
@@ -384,7 +388,7 @@ export async function obtenerAnimales(
     if (filtros.sexo && a.sexo !== filtros.sexo) return false;
     if (filtros.castrado && a.castrado !== (filtros.castrado === "si")) return false;
     const rango = filtros.edad ? rangosEdad[filtros.edad] : null;
-    if (rango && (a.edadMeses < rango[0] || a.edadMeses > rango[1])) return false;
+    if (rango && (a.edadMeses == null || a.edadMeses < rango[0] || a.edadMeses > rango[1])) return false;
     if (filtros.q) {
       const q = filtros.q.toLowerCase();
       const texto = `${a.nombre} ${a.raza} ${a.ciudad} ${a.provincia}`.toLowerCase();
@@ -392,6 +396,7 @@ export async function obtenerAnimales(
     }
     return true;
   });
+  return limite ? filtrados.slice(0, limite) : filtrados;
 }
 
 /** Catálogo paginado: una página de resultados + total para la paginación */
@@ -478,18 +483,50 @@ export async function obtenerAnimalPorSlug(slug: string): Promise<Animal | null>
   return animales.find((a) => a.slug === slug) ?? null;
 }
 
-export async function obtenerRefugios(): Promise<Refugio[]> {
+export async function obtenerRefugios(limite?: number): Promise<Refugio[]> {
   if (supabaseDisponible()) {
     const sb = crearClienteSupabase();
-    const { data, error } = await sb
+    let consulta = sb
       .from("refugios")
       .select("*")
       .in("estado", ["verificado", "estrella"])
       .order("nombre");
+    if (limite) consulta = consulta.limit(limite);
+    const { data, error } = await consulta;
     if (error) throw error;
     return (data ?? []).map(filaARefugio);
   }
-  return refugios.filter((r) => r.estado === "verificado" || r.estado === "estrella");
+  const visibles = refugios.filter((r) => r.estado === "verificado" || r.estado === "estrella");
+  return limite ? visibles.slice(0, limite) : visibles;
+}
+
+/** Cuenta animales disponibles de todos los refugios en consultas por lotes. */
+export async function contarAnimalesPorRefugio(): Promise<Record<string, number>> {
+  const conteos: Record<string, number> = {};
+  if (supabaseDisponible()) {
+    const sb = crearClienteSupabase();
+    const tamanoLote = 1000;
+    for (let desde = 0; ; desde += tamanoLote) {
+      const { data, error } = await sb.from("animales")
+        .select("id,refugio_id")
+        .eq("estado", "disponible")
+        .not("refugio_id", "is", null)
+        .order("id")
+        .range(desde, desde + tamanoLote - 1);
+      if (error) throw error;
+      for (const animal of data ?? []) {
+        if (animal.refugio_id) conteos[animal.refugio_id] = (conteos[animal.refugio_id] ?? 0) + 1;
+      }
+      if (!data || data.length < tamanoLote) break;
+    }
+    return conteos;
+  }
+  for (const animal of animales) {
+    if (animal.estado === "disponible" && animal.refugioId) {
+      conteos[animal.refugioId] = (conteos[animal.refugioId] ?? 0) + 1;
+    }
+  }
+  return conteos;
 }
 
 export async function obtenerRefugioPorSlug(slug: string): Promise<Refugio | null> {
@@ -524,18 +561,87 @@ export async function obtenerAnimalesDeRefugio(refugioId: string): Promise<Anima
   return animales.filter((a) => a.refugioId === refugioId);
 }
 
-export async function obtenerCampanasActivas(): Promise<Campana[]> {
+/** Proyección liviana: el mapa no necesita fotos, historias ni datos de contacto. */
+export async function obtenerPuntosMapa(): Promise<PuntoMapa[]> {
+  if (supabaseDisponible()) {
+    const sb = crearClienteSupabase();
+    const [resultadoAnimales, resultadoRefugios] = await Promise.all([
+      sb.from("animales")
+        .select("id,slug,tipo,nombre,raza,edad_meses,ciudad,lat_aprox,lng_aprox")
+        .eq("estado", "disponible"),
+      sb.from("refugios")
+        .select("id,slug,nombre,ciudad,provincia,lat,lng")
+        .in("estado", ["verificado", "estrella"]),
+    ]);
+    if (resultadoAnimales.error) throw resultadoAnimales.error;
+    if (resultadoRefugios.error) throw resultadoRefugios.error;
+    return [
+      ...(resultadoAnimales.data ?? [])
+        .filter((a) => a.lat_aprox && a.lng_aprox)
+        .map((a) => ({
+          id: `a-${a.id}`,
+          tipo: a.tipo as "adopcion" | "transito",
+          nombre: a.nombre,
+          detalle: [a.raza, a.edad_meses ? edadLegible(a.edad_meses) : null, a.ciudad].filter(Boolean).join(" · "),
+          url: `/animales/${a.slug}`,
+          lat: a.lat_aprox,
+          lng: a.lng_aprox,
+        })),
+      ...(resultadoRefugios.data ?? [])
+        .filter((r) => r.lat && r.lng)
+        .map((r) => ({
+          id: `r-${r.id}`,
+          tipo: "refugio" as const,
+          nombre: r.nombre,
+          detalle: `${r.ciudad}, ${r.provincia}`,
+          url: `/refugios/${r.slug}`,
+          lat: r.lat,
+          lng: r.lng,
+        })),
+    ];
+  }
+  return [
+    ...animales
+      .filter((a) => a.latAprox && a.lngAprox && a.estado === "disponible")
+      .map((a) => ({
+        id: `a-${a.id}`,
+        tipo: a.tipo,
+        nombre: a.nombre,
+        detalle: [a.raza, a.edadMeses ? edadLegible(a.edadMeses) : null, a.ciudad].filter(Boolean).join(" · "),
+        url: `/animales/${a.slug}`,
+        lat: a.latAprox,
+        lng: a.lngAprox,
+      })),
+    ...refugios
+      .filter((r) => r.lat && r.lng)
+      .map((r) => ({
+        id: `r-${r.id}`,
+        tipo: "refugio" as const,
+        nombre: r.nombre,
+        detalle: `${r.ciudad}, ${r.provincia}`,
+        url: `/refugios/${r.slug}`,
+        lat: r.lat,
+        lng: r.lng,
+      })),
+  ];
+}
+
+export async function obtenerCampanasActivas(limite?: number): Promise<Campana[]> {
   if (supabaseDisponible()) {
     const sb = crearClienteSupabase();
     // "recaudado" se calcula sumando donaciones acreditadas (vista en schema.sql)
-    const { data, error } = await sb
+    let consulta = sb
       .from("campanas_con_recaudado")
       .select("*")
-      .eq("estado", "activa");
+      .eq("estado", "activa")
+      .order("creado_el", { ascending: false });
+    if (limite) consulta = consulta.limit(limite);
+    const { data, error } = await consulta;
     if (error) throw error;
     return (data ?? []).map(filaACampana);
   }
-  return campanas.filter((c) => c.estado === "activa");
+  const activas = campanas.filter((c) => c.estado === "activa");
+  return limite ? activas.slice(0, limite) : activas;
 }
 
 export async function obtenerProvincias(): Promise<string[]> {

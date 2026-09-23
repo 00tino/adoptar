@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { obtenerAnimales, obtenerRefugios } from "@/lib/datos";
-import { edadLegible } from "@/lib/tipos";
+import { obtenerPuntosMapa } from "@/lib/datos";
 import MapaCliente from "@/components/MapaCliente";
-import type { PuntoMapa } from "@/components/MapaArgentina";
 
 export const metadata: Metadata = {
   title: "Mapa de animales en adopción en Argentina",
@@ -12,35 +10,7 @@ export const metadata: Metadata = {
 
 // MAPA: los datos se leen en el servidor y el mapa se dibuja en el cliente.
 export default async function PaginaMapa() {
-  const [animales, refugios] = await Promise.all([
-    obtenerAnimales(),
-    obtenerRefugios(),
-  ]);
-
-  const puntos: PuntoMapa[] = [
-    ...animales
-      .filter((a) => a.latAprox && a.lngAprox && a.estado === "disponible")
-      .map((a) => ({
-        id: `a-${a.id}`,
-        tipo: a.tipo,
-        nombre: a.nombre,
-        detalle: `${a.raza} · ${edadLegible(a.edadMeses)} · ${a.ciudad}`,
-        url: `/animales/${a.slug}`,
-        lat: a.latAprox,
-        lng: a.lngAprox,
-      })),
-    ...refugios
-      .filter((r) => r.lat && r.lng)
-      .map((r) => ({
-        id: `r-${r.id}`,
-        tipo: "refugio" as const,
-        nombre: r.nombre,
-        detalle: `${r.ciudad}, ${r.provincia}`,
-        url: `/refugios/${r.slug}`,
-        lat: r.lat,
-        lng: r.lng,
-      })),
-  ];
+  const puntos = await obtenerPuntosMapa();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">

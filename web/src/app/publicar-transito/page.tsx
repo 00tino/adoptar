@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { publicarTransito } from "@/lib/acciones";
 import { supabaseDisponible } from "@/lib/supabase";
+import { CampoAnimal, SelectorAnimal } from "@/components/CamposAnimal";
 
 export const metadata: Metadata = {
   title: "Publicar un animal en tránsito",
@@ -44,27 +45,14 @@ export default async function PaginaPublicarTransito({
         action={activo ? publicarTransito : undefined}
         className="mt-8 space-y-5 rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6 sm:p-8"
       >
-        <Campo etiqueta="Nombre del animal" nombre="nombre" requerido />
+        <CampoAnimal etiqueta="Nombre del animal" nombre="nombre" requerido />
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-bold" htmlFor="especie">Especie *</label>
-            <select id="especie" name="especie" required className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido">
-              <option value="perro">Perro</option>
-              <option value="gato">Gato</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-bold" htmlFor="sexo">Sexo *</label>
-            <select id="sexo" name="sexo" required className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido">
-              <option value="hembra">Hembra</option>
-              <option value="macho">Macho</option>
-            </select>
-          </div>
+          <SelectorAnimal etiqueta="Especie *" nombre="especie" requerido opciones={[["perro", "Perro"], ["gato", "Gato"], ["otro", "Otro"]]} />
+          <SelectorAnimal etiqueta="Sexo *" nombre="sexo" requerido opciones={[["hembra", "Hembra"], ["macho", "Macho"]]} />
         </div>
-        <Campo etiqueta="Raza (o 'mestizo')" nombre="raza" />
-        <Campo etiqueta="Edad aproximada" nombre="edad" placeholder="Ej: 2 años" />
-        <Campo etiqueta="Zona (ciudad, NO tu dirección exacta)" nombre="zona" requerido placeholder="Ej: Caballito, CABA" />
+        <CampoAnimal etiqueta="Raza (o 'mestizo')" nombre="raza" />
+        <CampoAnimal etiqueta="Edad aproximada" nombre="edad" placeholder="Ej: 2 años" />
+        <CampoAnimal etiqueta="Zona (ciudad, NO tu dirección exacta)" nombre="zona" requerido placeholder="Ej: Caballito, CABA" />
         <div>
           <label className="block text-sm font-bold" htmlFor="descripcion">Descripción *</label>
           <textarea
@@ -88,9 +76,9 @@ export default async function PaginaPublicarTransito({
             placeholder="¿Cómo lo encontraste o rescataste? Contá su historia para emocionar a quien lo lea 💛"
           />
         </div>
-        <Campo etiqueta="Fotos (mínimo 2, máximo 6)" nombre="fotos" tipo="file" multiple />
-        <Campo etiqueta="Video (obligatorio, para verificación)" nombre="video" tipo="file" requerido />
-        <Campo etiqueta="Tu WhatsApp de contacto" nombre="whatsapp" requerido placeholder="Ej: 5491122334455" />
+        <CampoAnimal etiqueta="Fotos (mínimo 2, máximo 6)" nombre="fotos" tipo="file" multiple requerido accept="image/jpeg,image/png,image/webp" />
+        <CampoAnimal etiqueta="Video (obligatorio, para verificación)" nombre="video" tipo="file" requerido accept="video/mp4,video/webm,video/quicktime" />
+        <p className="text-sm text-tinta-suave">Las personas interesadas van a poder escribirte por el chat de la publicación.</p>
 
         {activo ? (
           <button
@@ -115,40 +103,6 @@ export default async function PaginaPublicarTransito({
           </>
         )}
       </form>
-    </div>
-  );
-}
-
-// Campo de texto reutilizable del formulario
-function Campo({
-  etiqueta,
-  nombre,
-  tipo = "text",
-  requerido = false,
-  multiple = false,
-  placeholder,
-}: {
-  etiqueta: string;
-  nombre: string;
-  tipo?: string;
-  requerido?: boolean;
-  multiple?: boolean;
-  placeholder?: string;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-bold" htmlFor={nombre}>
-        {etiqueta} {requerido && "*"}
-      </label>
-      <input
-        id={nombre}
-        name={nombre}
-        type={tipo}
-        required={requerido}
-        multiple={multiple}
-        placeholder={placeholder}
-        className="mt-1 w-full rounded-xl border-2 border-crema-2 px-4 py-2 bg-blanco-calido"
-      />
     </div>
   );
 }

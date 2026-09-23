@@ -12,6 +12,7 @@ import { exigirUsuarioActivo } from "./usuarios";
 import { campoTexto, limitarPorIp } from "./limites";
 import { generarSlug, subirArchivos } from "./archivos";
 import { desplazar, geocodificarZona } from "./geo";
+import { edadAproximadaEnMeses } from "./tipos";
 
 // Cliente con service role: solo vive en el servidor y saltea RLS
 // (necesario para insertar filas "pendientes" que el público no puede leer).
@@ -31,10 +32,12 @@ export async function publicarTransito(formData: FormData) {
 
   // Si Clerk está activo, exigimos sesión (los particulares deben registrarse)
   let nombreParticular = "Particular";
+  let particularId: string | null = null;
   if (clerkDisponible()) {
     const user = await usuarioActual();
     if (!user) throw new Error("Tenés que iniciar sesión para publicar.");
-    await exigirUsuarioActivo(); // corta si la cuenta está suspendida
+    const yo = await exigirUsuarioActivo(); // corta si la cuenta está suspendida
+    particularId = yo.id;
     nombreParticular = `${user.firstName ?? "Particular"} ${(user.lastName ?? "").charAt(0)}.`.trim();
   }
 
@@ -69,6 +72,7 @@ export async function publicarTransito(formData: FormData) {
     especie,
     raza: campoTexto(formData.get("raza"), 80) || null,
     sexo: String(formData.get("sexo")) === "hembra" ? "hembra" : "macho",
+    edad_meses: edadAproximadaEnMeses(campoTexto(formData.get("edad"), 40)),
     descripcion: campoTexto(formData.get("descripcion"), 3000),
     historia: campoTexto(formData.get("historia"), 3000),
     ciudad,
@@ -77,8 +81,8 @@ export async function publicarTransito(formData: FormData) {
     estado: "pendiente", // ← entra a la cola de aprobación del admin
     fotos: urlsFotos,
     video_url: urlVideo,
+    particular_id: particularId,
     particular_nombre: nombreParticular,
-    // particular_id se completa cuando sincronicemos usuarios de Clerk
   });
   if (error) throw new Error(`No pudimos guardar la publicación: ${error.message}`);
 

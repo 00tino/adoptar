@@ -261,14 +261,16 @@ export async function confirmarImport(
     if (!nombre && !descripcion && !raza && !ciudad) continue;
     if (!nombre) incompletos++;
 
-    const edad = Math.min(Math.max(Math.round(Number(f.edad_meses) || 0), 0), 600);
+    const edad = f.edad_meses == null || f.edad_meses === ""
+      ? null
+      : Math.min(Math.max(Math.round(Number(f.edad_meses) || 0), 0), 600);
     registros.push({
       nombre, // puede quedar "" → "para completar a mano"
       especie,
       raza,
       edad_meses: edad,
-      sexo: SEXOS.includes(String(f.sexo)) ? String(f.sexo) : "macho",
-      tamano: TAMANOS.includes(String(f.tamano)) ? String(f.tamano) : "mediano",
+      sexo: SEXOS.includes(String(f.sexo)) ? String(f.sexo) : null,
+      tamano: TAMANOS.includes(String(f.tamano)) ? String(f.tamano) : null,
       castrado: f.castrado === true,
       vacunas: [],
       descripcion,

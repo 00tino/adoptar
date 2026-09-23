@@ -69,6 +69,8 @@ describe("normalizarFila", () => {
     const f = normalizarFila(["", "", "1", "", "", "", ""], mapeo);
     expect(f.faltantes).toContain("nombre");
     expect(f.faltantes).toContain("especie");
+    expect(f.sexo).toBeNull();
+    expect(f.tamano).toBeNull();
   });
 
   it("una especie desconocida cae en 'otro' sin marcarse como faltante", () => {

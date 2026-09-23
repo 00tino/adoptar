@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { obtenerAnimalesDeRefugio, obtenerRefugios } from "@/lib/datos";
+import { contarAnimalesPorRefugio, obtenerRefugios } from "@/lib/datos";
 import { FOTOS } from "@/lib/fotos";
 
 export const metadata: Metadata = {
@@ -11,15 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function PaginaRefugios() {
-  const refugios = await obtenerRefugios();
-  const conConteo = await Promise.all(
-    refugios.map(async (r) => ({
-      ...r,
-      cantidad: (await obtenerAnimalesDeRefugio(r.id)).filter(
-        (a) => a.estado === "disponible"
-      ).length,
-    }))
-  );
+  const [refugios, conteos] = await Promise.all([
+    obtenerRefugios(),
+    contarAnimalesPorRefugio(),
+  ]);
+  const conConteo = refugios.map((r) => ({ ...r, cantidad: conteos[r.id] ?? 0 }));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">

@@ -294,7 +294,7 @@ function FormFiltros({
       <select name="castrado" aria-label="Castrado o esterilizado" defaultValue={filtros.castrado ?? ""} className={claseCampo}>
         <option value="">Castrado: indistinto</option>
         <option value="si">Castrado/esterilizado</option>
-        <option value="no">Sin castrar</option>
+        <option value="no">Sin castración confirmada</option>
       </select>
       <input
         type="text"

@@ -15,14 +15,10 @@ export default function MenuMovil({
   /** Muestra un punto en el botón (mensajes/notificaciones sin ver). */
   aviso?: boolean;
 }) {
-  const [abierto, setAbierto] = useState(false);
+  const [rutaAbierta, setRutaAbierta] = useState<string | null>(null);
   const ruta = usePathname();
   const panel = useRef<HTMLDivElement>(null);
-
-  // Al cambiar de página se cierra el menú
-  useEffect(() => {
-    setAbierto(false);
-  }, [ruta]);
+  const abierto = rutaAbierta === ruta;
 
   // Sin scroll de fondo mientras el menú está abierto
   useEffect(() => {
@@ -38,7 +34,7 @@ export default function MenuMovil({
         type="button"
         aria-label={abierto ? "Cerrar menú" : "Abrir menú"}
         aria-expanded={abierto}
-        onClick={() => setAbierto((v) => !v)}
+        onClick={() => setRutaAbierta(abierto ? null : ruta)}
         className="relative flex h-11 w-11 items-center justify-center rounded-xl border-2 border-crema-2 text-tinta hover:border-tinta transition-colors"
       >
         {aviso && !abierto && (
@@ -76,7 +72,7 @@ export default function MenuMovil({
           {/* Fondo oscurecido: tocar afuera cierra. Se ancla al header (sticky). */}
           <div
             aria-hidden
-            onClick={() => setAbierto(false)}
+            onClick={() => setRutaAbierta(null)}
             className="absolute inset-x-0 top-full z-40 h-dvh bg-tinta/30"
           />
           <div

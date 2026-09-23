@@ -161,12 +161,13 @@ function datosAnimalDeFormulario(formData: FormData) {
   if (!nombre) throw new Error("El nombre es obligatorio.");
   const especieCruda = String(formData.get("especie") ?? "otro");
   const tamanoCrudo = String(formData.get("tamano") ?? "mediano");
-  const edadMeses = Math.min(Math.max(Number(formData.get("edad_meses")) || 0, 0), 600);
+  const edadCruda = String(formData.get("edad_meses") ?? "").trim();
+  const edadMeses = edadCruda ? Math.min(Math.max(Number(edadCruda) || 0, 0), 600) : null;
   return {
     nombre,
     especie: ["perro", "gato", "otro"].includes(especieCruda) ? especieCruda : "otro",
-    sexo: String(formData.get("sexo")) === "hembra" ? "hembra" : "macho",
-    tamano: ["chico", "mediano", "grande"].includes(tamanoCrudo) ? tamanoCrudo : "mediano",
+    sexo: ["hembra", "macho"].includes(String(formData.get("sexo"))) ? String(formData.get("sexo")) : null,
+    tamano: ["chico", "mediano", "grande"].includes(tamanoCrudo) ? tamanoCrudo : null,
     raza: campoTexto(formData.get("raza"), 80) || null,
     edad_meses: edadMeses,
     castrado: formData.get("castrado") === "on",
@@ -248,6 +249,40 @@ export async function editarAnimalRefugio(formData: FormData) {
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
   redirect("/mi-refugio?editado=1");
+}
+
+/** Permite completar la foto de un importado desde la lista, sin abrir el editor. */
+export async function agregarFotosAnimal(formData: FormData) {
+  await limitarPorIp("fotos-refugio", 30, 60);
+  const refugio = await exigirRefugio();
+  const sb = clienteServidor();
+  const animalId = String(formData.get("id") ?? "");
+  const { data: animal } = await sb
+    .from("animales")
+    .select("nombre,fotos,estado")
+    .eq("id", animalId)
+    .eq("refugio_id", refugio.id)
+    .maybeSingle();
+  if (!animal) throw new Error("Ese animal no es de tu refugio.");
+
+  const fotos = (formData.getAll("fotos") as File[]).filter((f) => f.size > 0);
+  const existentes: string[] = Array.isArray(animal.fotos) ? animal.fotos : [];
+  if (fotos.length < 1 || fotos.length > 6 || existentes.length + fotos.length > 10) {
+    throw new Error("Elegí entre 1 y 6 fotos, sin superar 10 por animal.");
+  }
+  const urls = await subirArchivos(sb, fotos, "animales");
+  const estado = animal.estado === "borrador" && animal.nombre.trim()
+    ? refugio.estado === "estrella" ? "disponible" : "pendiente"
+    : animal.estado;
+  const { error } = await sb.from("animales")
+    .update({ fotos: [...existentes, ...urls], estado })
+    .eq("id", animalId)
+    .eq("refugio_id", refugio.id);
+  if (error) throw new Error(`No pudimos guardar las fotos: ${error.message}`);
+
+  revalidatePath("/mi-refugio");
+  revalidatePath("/animales");
+  revalidatePath("/");
 }
 
 /** Cambia el estado: disponible → en_proceso → adoptado (y vuelta) */

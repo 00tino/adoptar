@@ -35,20 +35,20 @@ export async function enviarMensaje(animalId: string, contenido: string) {
 
   const sb = clienteServidor();
 
-  // Buscamos el animal y a quién pertenece (refugio con email, si tiene)
+  // Buscamos el animal y a quién pertenece (refugio o particular).
   const { data: animal } = await sb
     .from("animales")
-    .select("id,nombre,slug,refugio_id,refugios(email,nombre,usuario_id)")
+    .select("id,nombre,slug,refugio_id,particular_id,refugios(email,nombre,usuario_id)")
     .eq("id", animalId)
     .single();
   if (!animal) throw new Error("El animal no existe.");
 
   const refugio = Array.isArray(animal.refugios) ? animal.refugios[0] : animal.refugios;
-  const soyQuienPublica = refugio?.usuario_id === yo.id;
+  const soyQuienPublica = refugio?.usuario_id === yo.id || animal.particular_id === yo.id;
 
   // Receptor: si escribe un interesado, quien publica; si responde quien
   // publica, el último interesado que escribió en la conversación.
-  let receptorId: string | null = refugio?.usuario_id ?? null;
+  let receptorId: string | null = refugio?.usuario_id ?? animal.particular_id ?? null;
   if (soyQuienPublica) {
     const { data: ultimoAjeno } = await sb
       .from("mensajes")
@@ -201,11 +201,13 @@ export async function obtenerMensajes(animalId: string): Promise<MensajeChat[]> 
   const admin = await esAdmin();
 
   const sb = clienteServidor();
-  const { data, error } = await sb
+  let consulta = sb
     .from("mensajes")
     .select("id,contenido,creado_el,sender_id,receiver_id,usuarios!mensajes_sender_id_fkey(nombre)")
     .eq("animal_id", animalId)
     .order("creado_el");
+  if (!admin) consulta = consulta.or(`sender_id.eq.${yo.id},receiver_id.eq.${yo.id}`);
+  const { data, error } = await consulta;
   if (error) throw new Error(error.message);
 
   // Abrir la conversación marca como leídos los mensajes dirigidos a mí
@@ -217,8 +219,6 @@ export async function obtenerMensajes(animalId: string): Promise<MensajeChat[]> 
     .eq("leido", false);
 
   return (data ?? [])
-    // Solo participantes (o admin) pueden leer la conversación
-    .filter((m) => admin || m.sender_id === yo.id || m.receiver_id === yo.id)
     .map((m) => {
       const autor = Array.isArray(m.usuarios) ? m.usuarios[0] : m.usuarios;
       return {

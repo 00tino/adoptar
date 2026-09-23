@@ -60,9 +60,9 @@ export interface FilaImportada {
   nombre: string;
   especie: "perro" | "gato" | "otro";
   raza: string | null;
-  edad_meses: number;
-  sexo: "macho" | "hembra";
-  tamano: "chico" | "mediano" | "grande";
+  edad_meses: number | null;
+  sexo: "macho" | "hembra" | null;
+  tamano: "chico" | "mediano" | "grande" | null;
   ciudad: string;
   provincia: string;
   descripcion: string;
@@ -132,14 +132,16 @@ function normalizarEspecie(v: string): "perro" | "gato" | "otro" | null {
   return "otro";
 }
 
-function normalizarSexo(v: string): "macho" | "hembra" {
+function normalizarSexo(v: string): "macho" | "hembra" | null {
   const n = normalizar(v);
+  if (!n) return null;
   if (["hembra", "female", "f", "h", "hembras"].includes(n) || n.startsWith("hemb")) return "hembra";
   return "macho";
 }
 
-function normalizarTamano(v: string): "chico" | "mediano" | "grande" {
+function normalizarTamano(v: string): "chico" | "mediano" | "grande" | null {
   const n = normalizar(v);
+  if (!n) return null;
   if (["chico", "pequeno", "small", "s", "mini", "petizo"].some((a) => n.includes(a))) return "chico";
   if (["grande", "large", "big", "g", "xl", "l"].some((a) => n === a || n.includes(a))) return "grande";
   return "mediano";
@@ -170,10 +172,10 @@ export function normalizarFila(fila: string[], mapeo: Mapeo): FilaImportada {
   // Edad: prioridad a meses; si no, años × 12
   const mesesCrudo = Number(valor(fila, mapeo.edad_meses).replace(/[^\d.]/g, ""));
   const aniosCrudo = Number(valor(fila, mapeo.edad_anios).replace(/[^\d.]/g, ""));
-  let edad_meses = 0;
+  let edad_meses: number | null = null;
   if (Number.isFinite(mesesCrudo) && mesesCrudo > 0) edad_meses = Math.round(mesesCrudo);
   else if (Number.isFinite(aniosCrudo) && aniosCrudo > 0) edad_meses = Math.round(aniosCrudo * 12);
-  edad_meses = Math.min(Math.max(edad_meses, 0), 600);
+  if (edad_meses !== null) edad_meses = Math.min(Math.max(edad_meses, 0), 600);
 
   return {
     nombre,

@@ -27,9 +27,21 @@ export default function ChatAnimal({ animalId }: { animalId: string }) {
   }, [animalId]);
 
   useEffect(() => {
-    refrescar();
-    const intervalo = setInterval(refrescar, 5000);
-    return () => clearInterval(intervalo);
+    let intervalo: ReturnType<typeof setInterval> | undefined;
+    const cambiarVisibilidad = () => {
+      if (intervalo) clearInterval(intervalo);
+      if (!document.hidden) {
+        void refrescar();
+        intervalo = setInterval(refrescar, 5000);
+      }
+    };
+    const inicial = setTimeout(cambiarVisibilidad, 0);
+    document.addEventListener("visibilitychange", cambiarVisibilidad);
+    return () => {
+      clearTimeout(inicial);
+      if (intervalo) clearInterval(intervalo);
+      document.removeEventListener("visibilitychange", cambiarVisibilidad);
+    };
   }, [refrescar]);
 
   // Auto-scroll al último mensaje

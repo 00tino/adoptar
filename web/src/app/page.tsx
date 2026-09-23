@@ -7,9 +7,9 @@ import CardAnimal from "@/components/CardAnimal";
 // HOME: hero emocional + buscador + animales destacados + refugios + donaciones.
 export default async function Home() {
   const [animales, refugios, campanas] = await Promise.all([
-    obtenerAnimales(),
-    obtenerRefugios(),
-    obtenerCampanasActivas(),
+    obtenerAnimales({}, 6),
+    obtenerRefugios(3),
+    obtenerCampanasActivas(2),
   ]);
 
   return (
@@ -91,7 +91,7 @@ export default async function Home() {
           </Link>
         </div>
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {animales.slice(0, 6).map((a) => (
+          {animales.map((a) => (
             <CardAnimal key={a.id} animal={a} />
           ))}
         </div>
@@ -100,7 +100,10 @@ export default async function Home() {
       {/* REFUGIOS */}
       <section className="bg-crema-2/60">
         <div className="mx-auto max-w-6xl px-4 py-14">
-          <h2 className="font-display text-3xl font-black">Refugios que confían en AdoptAR</h2>
+          <div className="flex items-end justify-between gap-4">
+            <h2 className="font-display text-3xl font-black">Refugios que confían en AdoptAR</h2>
+            <Link href="/refugios" className="shrink-0 text-sm font-bold text-terracota-oscuro hover:underline">Ver todos</Link>
+          </div>
           <div className="mt-6 grid gap-5 sm:grid-cols-3">
             {refugios.map((r) => (
               <Link
@@ -119,7 +122,10 @@ export default async function Home() {
 
       {/* DONACIONES */}
       <section className="mx-auto max-w-6xl px-4 py-14">
-        <h2 className="font-display text-3xl font-black">Causas que necesitan tu ayuda</h2>
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="font-display text-3xl font-black">Causas que necesitan tu ayuda</h2>
+          <Link href="/donaciones" className="shrink-0 text-sm font-bold text-terracota-oscuro hover:underline">Ver todas</Link>
+        </div>
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
           {campanas.map((c) => (
             <div key={c.id} className="rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6">

@@ -22,6 +22,7 @@ interface Preview {
 }
 
 type Override = { nombre?: string; especie?: "perro" | "gato" | "otro" };
+const FILAS_POR_VISTA = 25;
 
 export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
   const [mapeo, setMapeo] = useState<Mapeo | null>(null);
   const [overrides, setOverrides] = useState<Record<number, Override>>({});
   const [saltadas, setSaltadas] = useState<Set<number>>(new Set());
+  const [paginaVista, setPaginaVista] = useState(1);
   const [resultado, setResultado] = useState<{ creados: number; incompletos: number } | null>(null);
 
   // Re-normaliza las filas cada vez que cambia el mapeo (lógica pura, sin xlsx).
@@ -44,8 +46,10 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
   function faltaEspecie(i: number) {
     return (filas[i]?.faltantes.includes("especie") ?? false) && !overrides[i]?.especie;
   }
-  const conProblemas = filas.filter((_, i) => faltaNombre(i) || faltaEspecie(i)).length;
+  const conProblemas = filas.filter((_, i) => !saltadas.has(i) && (faltaNombre(i) || faltaEspecie(i))).length;
   const aImportar = filas.filter((_, i) => !saltadas.has(i)).length;
+  const totalPaginas = Math.max(1, Math.ceil(filas.length / FILAS_POR_VISTA));
+  const desde = (paginaVista - 1) * FILAS_POR_VISTA;
 
   async function previsualizar(formData: FormData) {
     setError(null);
@@ -57,6 +61,7 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
       setMapeo(r.mapeo);
       setOverrides({});
       setSaltadas(new Set());
+      setPaginaVista(1);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No pudimos leer la planilla.");
     } finally {
@@ -74,10 +79,8 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
           ...f,
           nombre: overrides[i]?.nombre ?? f.nombre,
           especie: overrides[i]?.especie ?? f.especie,
-          _i: i,
         }))
-        .filter((f) => !saltadas.has(f._i))
-        .map(({ _i, faltantes, ...resto }) => resto); // no mandamos metadatos
+        .filter((_, i) => !saltadas.has(i));
       const formData = new FormData();
       formData.set("filas", JSON.stringify(payload));
       const r = await confirmarImport(formData);
@@ -231,6 +234,7 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b-2 border-crema-2 text-left">
+                  <th className="px-2 py-2">Fila</th>
                   <th className="px-2 py-2">Saltar</th>
                   <th className="px-2 py-2">Nombre</th>
                   <th className="px-2 py-2">Especie</th>
@@ -240,7 +244,8 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
                 </tr>
               </thead>
               <tbody>
-                {filas.map((f, i) => {
+                {filas.slice(desde, desde + FILAS_POR_VISTA).map((f, indice) => {
+                  const i = desde + indice;
                   const problema = faltaNombre(i) || faltaEspecie(i);
                   const saltada = saltadas.has(i);
                   return (
@@ -248,6 +253,7 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
                       key={i}
                       className={`border-b border-crema-2 ${saltada ? "opacity-40" : problema ? "bg-terracota/5" : ""}`}
                     >
+                      <td className="px-2 py-1 text-tinta-suave">{i + 2}</td>
                       <td className="px-2 py-1">
                         <input
                           type="checkbox"
@@ -289,7 +295,7 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
                           <option value="otro">Otro</option>
                         </select>
                       </td>
-                      <td className="px-2 py-1 text-tinta-suave">{f.sexo}</td>
+                      <td className="px-2 py-1 text-tinta-suave">{f.sexo ?? "—"}</td>
                       <td className="px-2 py-1 text-tinta-suave">{f.edad_meses || "—"}</td>
                       <td className="px-2 py-1 text-tinta-suave">{f.ciudad || "(refugio)"}</td>
                     </tr>
@@ -298,6 +304,14 @@ export default function Importador({ archivos }: { archivos: ArchivoVault[] }) {
               </tbody>
             </table>
           </div>
+
+          {totalPaginas > 1 && (
+            <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+              <button type="button" disabled={paginaVista === 1} onClick={() => setPaginaVista((p) => p - 1)} className="rounded-full border-2 border-crema-2 px-4 py-2 font-bold disabled:opacity-40">Anterior</button>
+              <span>Página {paginaVista} de {totalPaginas}</span>
+              <button type="button" disabled={paginaVista === totalPaginas} onClick={() => setPaginaVista((p) => p + 1)} className="rounded-full border-2 border-crema-2 px-4 py-2 font-bold disabled:opacity-40">Siguiente</button>
+            </div>
+          )}
 
           <div className="mt-4 flex flex-wrap gap-3">
             <button

@@ -38,7 +38,9 @@ export default async function Image({
     : gradientes[0];
   const foto = animal?.fotos[0] ?? null;
   const detalle = animal
-    ? `${animal.sexo === "hembra" ? "Hembra" : "Macho"} · ${edadLegible(animal.edadMeses)} · ${animal.ciudad}, ${animal.provincia}`
+    ? [animal.sexo === "hembra" ? "Hembra" : animal.sexo === "macho" ? "Macho" : null,
+      animal.edadMeses ? edadLegible(animal.edadMeses) : null,
+      `${animal.ciudad}, ${animal.provincia}`].filter(Boolean).join(" · ")
     : "Adopción de animales en Argentina";
 
   return new ImageResponse(
@@ -66,7 +68,6 @@ export default async function Image({
           }}
         >
           {foto ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={foto}
               alt=""

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { cambiarEstadoAnimal } from "@/lib/acciones-refugio";
 
 // Estado de adopción de un animal aprobado: al elegir una opción se guarda solo
@@ -16,12 +16,9 @@ export default function SelectorEstadoAdopcion({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [guardando, setGuardando] = useState(false);
-  const [valor, setValor] = useState(estado);
+  const [edicion, setEdicion] = useState<{ base: string; valor: string } | null>(null);
   const [, startTransition] = useTransition();
-
-  // Sincroniza con el estado real cuando el server revalida (evita que el
-  // desplegable "vuelva" a otro valor tras guardar).
-  useEffect(() => setValor(estado), [estado]);
+  const valor = edicion?.base === estado ? edicion.valor : estado;
 
   return (
     <form
@@ -29,8 +26,11 @@ export default function SelectorEstadoAdopcion({
       action={(formData) => {
         setGuardando(true);
         startTransition(async () => {
-          await cambiarEstadoAnimal(formData);
-          setGuardando(false);
+          try {
+            await cambiarEstadoAnimal(formData);
+          } finally {
+            setGuardando(false);
+          }
         });
       }}
       className="flex flex-col gap-1"
@@ -45,7 +45,7 @@ export default function SelectorEstadoAdopcion({
         value={valor}
         aria-label={`Estado de adopción de ${nombre}`}
         onChange={(e) => {
-          setValor(e.target.value);
+          setEdicion({ base: estado, valor: e.target.value });
           formRef.current?.requestSubmit();
         }}
         className="rounded-xl border-2 border-crema-2 bg-blanco-calido px-3 py-1.5 text-sm"

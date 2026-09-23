@@ -28,12 +28,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const animal = await obtenerAnimalPorSlug(slug);
   if (!animal) return {};
+  const descripcion = animal.descripcion.trim() || `${animal.nombre} busca hogar en ${animal.ciudad}, ${animal.provincia}.`;
   return {
     title: `Adoptá a ${animal.nombre} — ${animal.especie} en ${animal.ciudad}`,
-    description: animal.descripcion.slice(0, 160),
+    description: descripcion.slice(0, 160),
     openGraph: {
       title: `Adoptá a ${animal.nombre} | AdoptAR`,
-      description: animal.descripcion.slice(0, 160),
+      description: descripcion.slice(0, 160),
     },
   };
 }
@@ -97,7 +98,7 @@ export default async function PaginaAnimal({
     "@context": "https://schema.org",
     "@type": "Product",
     name: `${animal.nombre} — ${animal.especie} en adopción`,
-    description: animal.descripcion,
+    description: animal.descripcion.trim() || `${animal.nombre} busca hogar en ${animal.ciudad}, ${animal.provincia}.`,
     offers: {
       "@type": "Offer",
       price: 0,
@@ -202,18 +203,18 @@ export default async function PaginaAnimal({
 
           <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm rounded-2xl bg-blanco-calido border-2 border-crema-2 p-5">
             <div><dt className="font-bold text-tinta-suave">Especie</dt><dd className="capitalize">{animal.especie}</dd></div>
-            <div><dt className="font-bold text-tinta-suave">Raza</dt><dd>{animal.raza}</dd></div>
+            <div><dt className="font-bold text-tinta-suave">Raza</dt><dd>{animal.raza || "No informada"}</dd></div>
             <div><dt className="font-bold text-tinta-suave">Edad</dt><dd>{edadLegible(animal.edadMeses)}</dd></div>
-            <div><dt className="font-bold text-tinta-suave">Sexo</dt><dd>{animal.sexo === "hembra" ? "Hembra" : "Macho"}</dd></div>
-            <div><dt className="font-bold text-tinta-suave">Tamaño</dt><dd className="capitalize">{animal.tamano}</dd></div>
-            <div><dt className="font-bold text-tinta-suave">Castrado/a</dt><dd>{animal.castrado ? "Sí ✅" : "Todavía no"}</dd></div>
+            <div><dt className="font-bold text-tinta-suave">Sexo</dt><dd>{animal.sexo === "hembra" ? "Hembra" : animal.sexo === "macho" ? "Macho" : "No informado"}</dd></div>
+            <div><dt className="font-bold text-tinta-suave">Tamaño</dt><dd className="capitalize">{animal.tamano ?? "No informado"}</dd></div>
+            <div><dt className="font-bold text-tinta-suave">Castrado/a</dt><dd>{animal.castrado ? "Sí ✅" : "No confirmado"}</dd></div>
             <div className="col-span-2">
               <dt className="font-bold text-tinta-suave">Vacunas</dt>
               <dd>{animal.vacunas.length ? animal.vacunas.join(", ") : "Sin datos"}</dd>
             </div>
           </dl>
 
-          <p className="mt-6 leading-relaxed">{animal.descripcion}</p>
+          {animal.descripcion && <p className="mt-6 leading-relaxed">{animal.descripcion}</p>}
 
           {/* Contacto */}
           <div className="mt-8 rounded-2xl bg-salvia-oscuro text-crema p-6">

@@ -48,9 +48,9 @@ export interface Animal {
   especie: Especie;
   raza: string;
   /** Edad aproximada en meses */
-  edadMeses: number;
-  sexo: Sexo;
-  tamano: Tamano;
+  edadMeses: number | null;
+  sexo: Sexo | null;
+  tamano: Tamano | null;
   castrado: boolean;
   vacunas: string[];
   descripcion: string;
@@ -88,8 +88,21 @@ export interface Campana {
 }
 
 /** Edad legible en español: "3 meses", "2 años" */
-export function edadLegible(meses: number): string {
+export function edadLegible(meses: number | null): string {
+  if (meses == null || meses <= 0) return "Edad no informada";
   if (meses < 12) return `${meses} ${meses === 1 ? "mes" : "meses"}`;
   const anios = Math.floor(meses / 12);
   return `${anios} ${anios === 1 ? "año" : "años"}`;
+}
+
+/** Interpreta edades libres como "2 años", "8 meses" o "1 año y 6 meses". */
+export function edadAproximadaEnMeses(texto: string): number | null {
+  const limpio = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const anios = limpio.match(/(\d+(?:[.,]\d+)?)\s*(?:anos?|anios?)/);
+  const meses = limpio.match(/(\d+(?:[.,]\d+)?)\s*mes(?:es)?/);
+  const numero = (valor: string | undefined) => Number(valor?.replace(",", ".") ?? 0);
+  const total = anios || meses
+    ? numero(anios?.[1]) * 12 + numero(meses?.[1])
+    : /^\s*\d+(?:[.,]\d+)?\s*$/.test(limpio) ? numero(limpio) * 12 : 0;
+  return total > 0 ? Math.min(Math.round(total), 600) : null;
 }

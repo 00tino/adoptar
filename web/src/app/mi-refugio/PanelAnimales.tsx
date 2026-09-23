@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import FotoAnimal from "@/components/FotoAnimal";
 import { edadLegible } from "@/lib/tipos";
@@ -9,6 +10,7 @@ import {
   restaurarAnimales,
   cambiarEstadoAnimalesVarios,
   eliminarAnimales,
+  agregarFotosAnimal,
   type AnimalDeRefugio,
 } from "@/lib/acciones-refugio";
 import SelectorEstadoAdopcion from "./SelectorEstadoAdopcion";
@@ -283,9 +285,6 @@ function FilaAnimal({
             </Link>
           ) : esperandoFoto ? (
             <>
-              <Link href={`/mi-refugio/editar/${a.id}`} className={claseLinkPrimario}>
-                Agregar foto 📷
-              </Link>
               <Link href={`/mi-refugio/editar/${a.id}`} className={claseLink}>
                 Modificar
               </Link>
@@ -323,6 +322,30 @@ function FilaAnimal({
         </div>
       </div>
 
+      {esperandoFoto && (
+        <form action={agregarFotosAnimal} className="mt-4 border-t-2 border-crema-2 pt-4">
+          <p className="mb-2 text-sm text-tinta-suave">
+            Se enviará como <strong>{a.nombre} · {a.especie}</strong>. Si algún dato no coincide, usá “Modificar” primero.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+            <input type="hidden" name="id" value={a.id} />
+            <label className="min-w-0 flex-1 text-sm font-bold">
+              Agregar fotos y {" "}
+              {a.estado === "borrador" ? "enviar a publicación" : "guardar"}
+              <input
+                type="file"
+                name="fotos"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                required
+                className="mt-1 block w-full rounded-xl border-2 border-crema-2 bg-blanco-calido px-3 py-2 text-sm font-normal file:mr-3 file:rounded-full file:border-0 file:bg-crema-2 file:px-3 file:py-1 file:font-bold"
+              />
+            </label>
+            <BotonSubirFotos />
+          </div>
+        </form>
+      )}
+
       <details className="group mt-2">
         <summary className="cursor-pointer list-none text-sm font-bold text-tinta-suave hover:text-tinta">
           <span className="group-open:hidden">Ver info ▾</span>
@@ -341,5 +364,18 @@ function FilaAnimal({
         </div>
       </details>
     </li>
+  );
+}
+
+function BotonSubirFotos() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className={`${claseLinkPrimario} min-h-11 disabled:opacity-60`}
+    >
+      {pending ? "Subiendo…" : "Subir fotos 📷"}
+    </button>
   );
 }

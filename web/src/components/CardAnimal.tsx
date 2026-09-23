@@ -20,6 +20,11 @@ export default function CardAnimal({
 }) {
   const esTransito = animal.tipo === "transito";
   const mostrarFavorito = logueado !== undefined;
+  const datos = [
+    animal.raza,
+    animal.edadMeses ? edadLegible(animal.edadMeses) : null,
+    animal.sexo === "hembra" ? "Hembra" : animal.sexo === "macho" ? "Macho" : null,
+  ].filter(Boolean);
   return (
     <div className="group relative rounded-2xl bg-blanco-calido border-2 border-crema-2 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
       {mostrarFavorito && (
@@ -56,10 +61,7 @@ export default function CardAnimal({
           <h3 className="font-display text-xl font-bold group-hover:text-terracota transition-colors">
             {animal.nombre}
           </h3>
-          <p className="text-sm text-tinta-suave">
-            {animal.raza} · {edadLegible(animal.edadMeses)} ·{" "}
-            {animal.sexo === "hembra" ? "Hembra" : "Macho"}
-          </p>
+          {datos.length > 0 && <p className="text-sm text-tinta-suave">{datos.join(" · ")}</p>}
           <p className="mt-1 text-sm text-tinta-suave">
             📍 {animal.ciudad}, {animal.provincia}
           </p>

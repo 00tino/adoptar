@@ -19,25 +19,21 @@ export default function MenuCuenta({
   className?: string;
   children: React.ReactNode;
 }) {
-  const [abierto, setAbierto] = useState(false);
+  const [rutaAbierta, setRutaAbierta] = useState<string | null>(null);
   const contenedor = useRef<HTMLDivElement>(null);
   const ruta = usePathname();
-
-  // Al navegar a otra página, se cierra
-  useEffect(() => {
-    setAbierto(false);
-  }, [ruta]);
+  const abierto = rutaAbierta === ruta;
 
   // Clic afuera o Escape cierra
   useEffect(() => {
     if (!abierto) return;
     function alClicAfuera(e: MouseEvent) {
       if (contenedor.current && !contenedor.current.contains(e.target as Node)) {
-        setAbierto(false);
+        setRutaAbierta(null);
       }
     }
     function alPresionar(e: KeyboardEvent) {
-      if (e.key === "Escape") setAbierto(false);
+      if (e.key === "Escape") setRutaAbierta(null);
     }
     document.addEventListener("mousedown", alClicAfuera);
     document.addEventListener("keydown", alPresionar);
@@ -51,7 +47,7 @@ export default function MenuCuenta({
     <div ref={contenedor} className={`relative ${className}`}>
       <button
         type="button"
-        onClick={() => setAbierto((v) => !v)}
+        onClick={() => setRutaAbierta(abierto ? null : ruta)}
         aria-haspopup="menu"
         aria-expanded={abierto}
         aria-label={`Mi cuenta${pendientes > 0 ? ` (${pendientes} sin ver)` : ""}`}

@@ -46,7 +46,6 @@ export default async function Image({
           }}
         >
           {foto ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={foto}
               alt=""
