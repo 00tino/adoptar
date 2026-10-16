@@ -6,6 +6,7 @@ export type Sexo = "macho" | "hembra";
 export type Tamano = "chico" | "mediano" | "grande";
 export type TipoPublicacion = "adopcion" | "transito";
 export type EstadoAnimal =
+  | "borrador"
   | "pendiente"
   | "disponible"
   | "en_proceso"

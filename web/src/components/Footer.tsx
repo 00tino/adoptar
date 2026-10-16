@@ -16,6 +16,9 @@ export default function Footer() {
         <nav aria-label="Links del pie" className="text-sm space-y-2">
           <p className="font-bold text-sol uppercase tracking-wide text-xs">Explorá</p>
           <Link className="block hover:text-sol" href="/animales">Animales en adopción</Link>
+          <Link className="block hover:text-sol" href="/adoptados">Adopciones felices</Link>
+          <Link className="block hover:text-sol" href="/adopcion-responsable">Adopción responsable</Link>
+          <Link className="block hover:text-sol" href="/animales/alertas">Alertas de adopción</Link>
           <Link className="block hover:text-sol" href="/transito">Hogares de tránsito</Link>
           <Link className="block hover:text-sol" href="/refugios">Refugios</Link>
           <Link className="block hover:text-sol" href="/donaciones">Donaciones</Link>

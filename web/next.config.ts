@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  turbopack: { root: __dirname },
   experimental: {
     // El límite por defecto de los Server Actions es 1 MB. Subimos fotos (8 MB),
     // videos (60 MB) y archivos del vault (20 MB) por server action, así que lo

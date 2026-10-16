@@ -5,11 +5,11 @@ import { obtenerAnimales, obtenerRefugios } from "@/lib/datos";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = "https://adoptar.dpdns.org";
   const [animales, refugios] = await Promise.all([
-    obtenerAnimales(),
+    Promise.all([obtenerAnimales(), obtenerAnimales({ estado: "adoptado" })]).then(([buscan, adoptados]) => [...buscan, ...adoptados]),
     obtenerRefugios(),
   ]);
 
-  const fijas = ["", "/animales", "/transito", "/refugios", "/mapa", "/donaciones", "/donaciones/mensual", "/registrar-refugio", "/quienes-somos", "/terminos", "/privacidad"].map(
+  const fijas = ["", "/animales", "/adoptados", "/adopcion-responsable", "/transito", "/refugios", "/mapa", "/donaciones", "/donaciones/mensual", "/registrar-refugio", "/quienes-somos", "/terminos", "/privacidad"].map(
     (ruta) => ({ url: `${base}${ruta}`, changeFrequency: "daily" as const })
   );
 

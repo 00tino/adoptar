@@ -324,7 +324,10 @@ function filaACampana(f: any): Campana {
 
 // ---------- Funciones de consulta ----------
 
+const COLUMNAS_ANIMAL = "id,slug,nombre,especie,raza,edad_meses,sexo,tamano,castrado,vacunas,descripcion,historia,fotos,video_url,lat_aprox,lng_aprox,ciudad,provincia,tipo,estado,refugio_id,particular_nombre,creado_el";
+
 export interface FiltrosAnimales {
+  estado?: "adoptado";
   especie?: string;
   tipo?: string;
   provincia?: string;
@@ -353,8 +356,8 @@ export async function obtenerAnimales(
     const sb = crearClienteSupabase();
     let consulta = sb
       .from("animales")
-      .select("*")
-      .in("estado", ["disponible", "en_proceso", "adoptado"])
+      .select(COLUMNAS_ANIMAL)
+      .in("estado", filtros.estado === "adoptado" ? ["adoptado"] : ["disponible", "en_proceso"])
       .order("creado_el", { ascending: false });
     if (filtros.especie) consulta = consulta.eq("especie", filtros.especie);
     if (filtros.tipo) consulta = consulta.eq("tipo", filtros.tipo);
@@ -380,7 +383,7 @@ export async function obtenerAnimales(
   }
 
   const filtrados = animales.filter((a) => {
-    if (a.estado === "pendiente" || a.estado === "rechazado") return false;
+    if (filtros.estado === "adoptado" ? a.estado !== "adoptado" : !["disponible", "en_proceso"].includes(a.estado)) return false;
     if (filtros.especie && a.especie !== filtros.especie) return false;
     if (filtros.tipo && a.tipo !== filtros.tipo) return false;
     if (filtros.provincia && a.provincia !== filtros.provincia) return false;
@@ -410,8 +413,8 @@ export async function obtenerAnimalesPaginados(
     const sb = crearClienteSupabase();
     let consulta = sb
       .from("animales")
-      .select("*", { count: "exact" })
-      .in("estado", ["disponible", "en_proceso", "adoptado"])
+      .select(COLUMNAS_ANIMAL, { count: "exact" })
+      .in("estado", filtros.estado === "adoptado" ? ["adoptado"] : ["disponible", "en_proceso"])
       .order("creado_el", { ascending: false });
     if (filtros.especie) consulta = consulta.eq("especie", filtros.especie);
     if (filtros.tipo) consulta = consulta.eq("tipo", filtros.tipo);
@@ -451,11 +454,8 @@ export interface AnimalConDistancia {
 }
 
 /**
- * Catálogo ordenado por cercanía a (lat,lng). Trae todos los animales que
- * cumplen los filtros, descarta los que no tienen coordenada, calcula la
- * distancia con Haversine y devuelve los que están dentro de `radioKm`
- * (radioKm = 0 → sin límite, solo ordena). Sin paginado: la lista por cercanía
- * suele ser corta y se recorre de más cerca a más lejos.
+ * Hasta 100 coincidencias más cercanas. Postgres filtra, calcula y ordena;
+ * el modo demo usa Haversine local. radioKm = 0 no limita el radio.
  */
 export async function obtenerAnimalesCercanos(
   filtros: FiltrosAnimales,
@@ -463,6 +463,17 @@ export async function obtenerAnimalesCercanos(
   lng: number,
   radioKm: number
 ): Promise<AnimalConDistancia[]> {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180
+    || !Number.isFinite(radioKm) || radioKm < 0) return [];
+  if (supabaseDisponible()) {
+    const { data, error } = await crearClienteSupabase().rpc("buscar_animales_cercanos", {
+      p_lat: lat, p_lng: lng, p_radio: radioKm, p_filtros: filtros,
+    });
+    if (error) throw error;
+    return (data ?? []).map((fila: { datos: Record<string, unknown>; distancia_km: number }) => ({
+      animal: filaAAnimal(fila.datos), distanciaKm: fila.distancia_km,
+    }));
+  }
   const todos = await obtenerAnimales(filtros);
   return todos
     .filter((a) => a.latAprox !== 0 || a.lngAprox !== 0) // sin coordenada => fuera
@@ -471,16 +482,35 @@ export async function obtenerAnimalesCercanos(
       distanciaKm: distanciaKm(lat, lng, animal.latAprox, animal.lngAprox),
     }))
     .filter((x) => radioKm <= 0 || x.distanciaKm <= radioKm)
-    .sort((a, b) => a.distanciaKm - b.distanciaKm);
+    .sort((a, b) => a.distanciaKm - b.distanciaKm).slice(0, 100);
 }
 
 export async function obtenerAnimalPorSlug(slug: string): Promise<Animal | null> {
   if (supabaseDisponible()) {
     const sb = crearClienteSupabase();
-    const { data } = await sb.from("animales").select("*").eq("slug", slug).maybeSingle();
+    const { data, error } = await sb.from("animales").select(COLUMNAS_ANIMAL).eq("slug", slug)
+      .in("estado", ["disponible", "en_proceso", "adoptado"]).maybeSingle();
+    if (error) throw error;
     return data ? filaAAnimal(data) : null;
   }
-  return animales.find((a) => a.slug === slug) ?? null;
+  return animales.find((a) => a.slug === slug && ["disponible", "en_proceso", "adoptado"].includes(a.estado)) ?? null;
+}
+
+/** La ficha solo necesita tres sugerencias públicas, no todo el catálogo. */
+export async function obtenerAnimalesRelacionados(animal: Animal): Promise<Animal[]> {
+  if (supabaseDisponible()) {
+    const sb = crearClienteSupabase();
+    const { data, error } = await sb.from("animales")
+      .select("id,slug,nombre,especie,raza,edad_meses,sexo,tamano,castrado,fotos,ciudad,provincia,tipo,estado,refugio_id,particular_nombre,creado_el")
+      .in("estado", ["disponible", "en_proceso"])
+      .neq("id", animal.id)
+      .or(`provincia.eq."${animal.provincia.replace(/["\\]/g, "")}",especie.eq.${animal.especie}`)
+      .order("creado_el", { ascending: false }).limit(3);
+    if (error) throw error;
+    return (data ?? []).map(filaAAnimal);
+  }
+  return animales.filter((a) => a.id !== animal.id && ["disponible", "en_proceso"].includes(a.estado)
+    && (a.provincia === animal.provincia || a.especie === animal.especie)).slice(0, 3);
 }
 
 export async function obtenerRefugios(limite?: number): Promise<Refugio[]> {
@@ -505,20 +535,9 @@ export async function contarAnimalesPorRefugio(): Promise<Record<string, number>
   const conteos: Record<string, number> = {};
   if (supabaseDisponible()) {
     const sb = crearClienteSupabase();
-    const tamanoLote = 1000;
-    for (let desde = 0; ; desde += tamanoLote) {
-      const { data, error } = await sb.from("animales")
-        .select("id,refugio_id")
-        .eq("estado", "disponible")
-        .not("refugio_id", "is", null)
-        .order("id")
-        .range(desde, desde + tamanoLote - 1);
-      if (error) throw error;
-      for (const animal of data ?? []) {
-        if (animal.refugio_id) conteos[animal.refugio_id] = (conteos[animal.refugio_id] ?? 0) + 1;
-      }
-      if (!data || data.length < tamanoLote) break;
-    }
+    const { data, error } = await sb.rpc("contar_animales_por_refugio");
+    if (error) throw error;
+    for (const fila of data ?? []) conteos[fila.refugio_id] = Number(fila.total);
     return conteos;
   }
   for (const animal of animales) {
@@ -552,13 +571,13 @@ export async function obtenerAnimalesDeRefugio(refugioId: string): Promise<Anima
     const sb = crearClienteSupabase();
     const { data, error } = await sb
       .from("animales")
-      .select("*")
+      .select(COLUMNAS_ANIMAL)
       .eq("refugio_id", refugioId)
       .in("estado", ["disponible", "en_proceso", "adoptado"]);
     if (error) throw error;
     return (data ?? []).map(filaAAnimal);
   }
-  return animales.filter((a) => a.refugioId === refugioId);
+  return animales.filter((a) => a.refugioId === refugioId && ["disponible", "en_proceso", "adoptado"].includes(a.estado));
 }
 
 /** Proyección liviana: el mapa no necesita fotos, historias ni datos de contacto. */

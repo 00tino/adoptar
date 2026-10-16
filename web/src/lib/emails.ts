@@ -85,12 +85,12 @@ export async function enviarEmail(opciones: {
         text: texto,
         headers,
       });
-      return;
+      return true;
     }
     // 2) Resend (alternativa)
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
+      const { error } = await resend.emails.send({
         from: REMITENTE_RESEND,
         to: opciones.para,
         replyTo: RESPONDER_A,
@@ -99,12 +99,28 @@ export async function enviarEmail(opciones: {
         text: texto,
         headers,
       });
+      if (error) throw error;
+      return true;
     }
     // Sin backend configurado: no-op (la app sigue funcionando).
   } catch (e) {
     // Un email fallido no debe romper la acción del admin
     console.error("Error enviando email:", e);
   }
+  return false;
+}
+
+export async function emailAlertaAdopcion(para: string, animal: { nombre: string; especie: string; ciudad: string; provincia: string; slug: string }) {
+  const nombre = escaparHtml(animal.nombre);
+  const lugar = escaparHtml(`${animal.ciudad}, ${animal.provincia}`);
+  return enviarEmail({
+    para,
+    asunto: `${animal.nombre} busca familia en ${animal.ciudad}`,
+    html: plantilla(`${nombre} busca una familia`,
+      `Hay un nuevo animal que coincide con tu alerta: <strong>${nombre}</strong> (${escaparHtml(animal.especie)}) en ${lugar}.<br><br>` +
+      `<a href="https://adoptar.dpdns.org/animales/${encodeURIComponent(animal.slug)}">Conocer a ${nombre}</a><br><br>` +
+      `Recibís este aviso porque activaste una alerta de adopción. <a href="https://adoptar.dpdns.org/animales/alertas">Pausar o cambiar mi alerta</a>.`),
+  });
 }
 
 function plantilla(titulo: string, cuerpo: string): string {

@@ -19,6 +19,19 @@ export function crearClienteSupabase() {
   }
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      // Solo lecturas anónimas del catálogo. Nunca cachear cuentas ni acciones.
+      global: {
+        fetch: (url, opciones) => {
+          const ruta = new URL(url instanceof Request ? url.url : String(url)).pathname;
+          const metodo = opciones?.method ?? (url instanceof Request ? url.method : "GET");
+          const publica = metodo.toUpperCase() === "GET" && ruta === "/rest/v1/animales";
+          return fetch(url, publica ? {
+            ...opciones, cache: "force-cache", next: { revalidate: 60, tags: ["animales-publicos"] },
+          } : opciones);
+        },
+      },
+    }
   );
 }

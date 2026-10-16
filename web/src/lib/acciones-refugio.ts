@@ -5,8 +5,10 @@
 // Cada acción vuelve a verificar en el servidor que el animal sea del refugio.
 
 import { createClient } from "@supabase/supabase-js";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { notificarAlertasAdopcion } from "./alertas-adopcion";
 import { asegurarUsuario, exigirUsuarioActivo } from "./usuarios";
 import { campoTexto, limitarPorIp } from "./limites";
 import { generarSlug, subirArchivos } from "./archivos";
@@ -195,7 +197,7 @@ export async function publicarAnimalRefugio(formData: FormData) {
   const urlVideo =
     video && video.size > 0 ? (await subirArchivos(sb, [video], "videos"))[0] : null;
 
-  const { error } = await sb.from("animales").insert({
+  const { data: publicado, error } = await sb.from("animales").insert({
     ...datos,
     slug: generarSlug(["adoptar", datos.especie, datos.nombre, refugio.ciudad]),
     ciudad: refugio.ciudad,
@@ -208,9 +210,12 @@ export async function publicarAnimalRefugio(formData: FormData) {
     fotos: urlsFotos,
     video_url: urlVideo,
     refugio_id: refugio.id,
-  });
+  }).select("id,estado").single();
   if (error) throw new Error(`No pudimos publicar: ${error.message}`);
+  if (publicado.estado === "disponible") after(() => notificarAlertasAdopcion(publicado.id));
 
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/");
   redirect("/mi-refugio?publicado=1");
@@ -245,7 +250,10 @@ export async function editarAnimalRefugio(formData: FormData) {
 
   const { error } = await sb.from("animales").update(actualizacion).eq("id", animalId);
   if (error) throw new Error(`No pudimos guardar: ${error.message}`);
+  if (actualizacion.estado === "disponible") after(() => notificarAlertasAdopcion(animalId));
 
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
   redirect("/mi-refugio?editado=1");
@@ -279,8 +287,11 @@ export async function agregarFotosAnimal(formData: FormData) {
     .eq("id", animalId)
     .eq("refugio_id", refugio.id);
   if (error) throw new Error(`No pudimos guardar las fotos: ${error.message}`);
+  if (animal.estado === "borrador" && estado === "disponible") after(() => notificarAlertasAdopcion(animalId));
 
   revalidatePath("/mi-refugio");
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/");
 }
@@ -309,6 +320,8 @@ export async function cambiarEstadoAnimal(formData: FormData) {
   const { error } = await sb.from("animales").update({ estado }).eq("id", animalId);
   if (error) throw new Error(error.message);
 
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
 }
@@ -541,6 +554,8 @@ export async function darDeBajaAnimal(formData: FormData) {
     .eq("id", animalId);
   if (error) throw new Error(error.message);
 
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
 }
@@ -565,6 +580,8 @@ export async function darDeBajaAnimales(ids: string[]) {
     .in("id", lista)
     .eq("refugio_id", refugio.id); // ownership: solo los suyos
   if (error) throw new Error(error.message);
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
 }
@@ -587,11 +604,15 @@ export async function restaurarAnimales(ids: string[]) {
   const conFoto = refugio.estado === "estrella" ? "disponible" : "pendiente";
   for (const a of data ?? []) {
     const tieneFoto = Array.isArray(a.fotos) && a.fotos.length > 0;
-    await sb
+    const { error } = await sb
       .from("animales")
       .update({ estado: tieneFoto ? conFoto : "borrador" })
       .eq("id", a.id);
+    if (error) throw new Error(error.message);
+    if (tieneFoto && conFoto === "disponible") after(() => notificarAlertasAdopcion(a.id));
   }
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
 }
@@ -631,6 +652,8 @@ export async function cambiarEstadoAnimalesVarios(ids: string[], estado: string)
     .eq("refugio_id", refugio.id)
     .in("estado", ["disponible", "en_proceso", "adoptado"]); // solo aprobados
   if (error) throw new Error(error.message);
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/mi-refugio");
 }

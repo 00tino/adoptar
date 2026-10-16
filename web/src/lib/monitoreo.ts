@@ -27,15 +27,18 @@ export async function registrarError(datos: DatosError): Promise<void> {
   const url = process.env.ERROR_WEBHOOK_URL;
   if (url) {
     try {
-      await fetch(url, {
+      const mensaje = `🛑 *${registro.contexto}* — ${registro.mensaje}${
+        registro.ruta ? `\nRuta: ${registro.metodo ?? ""} ${registro.ruta}` : ""
+      }`;
+      const host = new URL(url).hostname;
+      const discord = host === "discord.com" || host.endsWith(".discord.com") || host === "discordapp.com";
+      const respuesta = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: `🛑 *${registro.contexto}* — ${registro.mensaje}${
-            registro.ruta ? `\nRuta: ${registro.metodo ?? ""} ${registro.ruta}` : ""
-          }`,
-        }),
+        body: JSON.stringify(discord ? { content: mensaje.slice(0, 2000), allowed_mentions: { parse: [] } } : { text: mensaje }),
+        signal: AbortSignal.timeout(5000),
       });
+      if (!respuesta.ok) console.error("[ERROR500] Webhook de monitoreo rechazado:", respuesta.status);
     } catch {
       // El monitoreo nunca debe romper la request.
     }

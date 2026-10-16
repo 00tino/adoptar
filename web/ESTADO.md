@@ -1,0 +1,80 @@
+# AdoptAR — estado del trabajo, 16 de octubre de 2026
+
+Migración aplicada en Supabase `adoptar` el 16 de octubre de 2026. El usuario
+autorizó publicar este lote por GitHub → Vercel. No se eliminaron datos demo.
+Se conserva la identidad visual.
+
+## Implementado
+
+- `/adoptados`: galería paginada de adopciones confirmadas por el refugio/admin,
+  sin inventar testimonios ni fotos. Los adoptados dejan el catálogo de búsqueda;
+  su ficha conserva la historia y deja de ofrecer contacto para adoptarlos.
+- `/adopcion-responsable`: preparación del hogar y señales de publicaciones sospechosas.
+- Reporte privado en cada ficha, con sesión activa, límite por IP y una entrada
+  por persona/publicación. `/admin/reportes`: cola paginada, revisión y acceso a
+  la gestión del animal. Un reporte no da de baja una publicación automáticamente.
+- `/animales/alertas`: una alerta por usuario, especie/provincia opcionales y pausa.
+  Se avisa al aprobar un animal, publicarlo desde un refugio estrella o completar
+  sus fotos de importación. El aviso corre después de responder y se deduplica en
+  Postgres. Las cuentas suspendidas y las alertas pausadas no reciben avisos.
+- WhatsApp ya existía para refugios que cargaron ese contacto. Los particulares
+  siguen coordinando por chat: el modelo actual no guarda su teléfono público.
+- Favoritos idempotentes frente a solicitudes concurrentes y errores visibles.
+  Postulaciones solo para animales disponibles/en proceso; se respeta la suspensión
+  del usuario y se usa el slug de la base al confirmar.
+- Caché de 60 segundos solo para lecturas anónimas de animales. Las mutaciones
+  invalidan la etiqueta y la galería. Las cuentas, mensajes y escrituras no se cachean.
+- Tres relacionados consultados con límite; conteos agregados en Postgres y
+  cercanía resuelta en la base, con los 100 resultados más cercanos y aviso en UI.
+- Monitoreo compatible con Slack y Discord, con timeout, límite de Discord y
+  menciones desactivadas. Sin webhook sigue el registro local `[ERROR500]`.
+
+## Verificación
+
+- `npm test`: 84 pruebas en verde de autorización, alertas, favoritos, postulaciones,
+  monitoreo y caché, además de las pruebas previas del importador y del dominio.
+- Las pruebas SQL corren en PGlite (Postgres en memoria) con las tablas base del
+  esquema y la migración real: grants, RLS, restricciones, deduplicación, búsqueda
+  geográfica, límite y conteo. No se conectan a Supabase real ni envían emails.
+- `npm run lint`, `npx tsc --noEmit` y compilación de Next.js.
+- Navegador local con conexión a Supabase y Clerk desactivada: galería vacía,
+  guía y aviso de configuración de alertas, a 375 px, y galería en horizontal
+  (812 × 375) con movimiento reducido. Sin desborde horizontal. Las pantallas públicas se
+  verifican visualmente; esto no prueba la interacción de los formularios con sesión real.
+- El primer build falló al descargar Fraunces/Nunito Sans por la restricción de
+  red del entorno. Con acceso de red la compilación pasó.
+
+## Pendientes reales
+
+1. **Migración aplicada y verificada:** `supabase/migracion-comunidad.sql` en
+   `mkiedljddnlrncfzbkek`, registrada como `comunidad_reportes_alertas_y_consultas_publicas`.
+   Tres tablas privadas con RLS, dos funciones de lectura `SECURITY INVOKER` y
+   sus índices. Las huellas de todas las filas de animales (15), refugios (2),
+   usuarios (1) y campañas (2) coinciden antes y después. Las funciones de conteo
+   y cercanía responden en la base real. Lectura anónima/autenticada revocada
+   sobre las tres tablas privadas; escritura disponible solo para service role.
+2. **QA con sesión y correo real:** probar un reporte como usuario, su revisión
+   como admin, guardar/pausar una alerta y recibir un aviso de prueba autorizado.
+   La entrega real todavía no está comprobada. Los avisos son de mejor esfuerzo:
+   no hay cola durable ni reintento automático si una función termina por timeout.
+3. **Monitoreo:** falta configurar `ERROR_WEBHOOK_URL`; no se creó ningún canal
+   ni se enviaron mensajes a Slack/Discord.
+4. **Mercado Pago sandbox:** faltan token de prueba y comprador de prueba. No se
+   cambiaron credenciales ni se intentaron débitos. Hacer la prueba en un entorno
+   aislado, sin reemplazar el token de producción.
+5. **Limpieza demo:** sigue pendiente decidir qué conservar; no está autorizada
+   la eliminación de Luna, Rocky ni del refugio demo.
+6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin
+   contratar servicios ni habilitar planes pagos.
+7. **Capacidad:** no se realizó una prueba de carga. El build y la caché no
+   demuestran 1.000 usuarios simultáneos ni latencia menor a 300 ms.
+
+Publicación autorizada: push a `main` del repositorio `00tino/adoptar`, conectado
+al proyecto Vercel `adoptar` (`prj_HJO5TcccOPJW9bMPdg6NYsazelgj`). El sitio público
+es `https://adoptar.dpdns.org`; la verificación pública se hace después del deploy.
+
+El asesor de seguridad informó RLS sin políticas sobre tablas privadas (intencional:
+solo service role accede) y una advertencia previa sobre la vista agregada
+`campanas_con_recaudado`. La vista no fue modificada por este lote; su acceso
+existente permite sumar donaciones sin publicar sus filas privadas.
+[Referencia del asesor sobre vistas](https://supabase.com/docs/guides/database/database-linter?lint=0010_security_definer_view).

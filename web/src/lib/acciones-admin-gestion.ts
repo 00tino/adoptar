@@ -5,8 +5,10 @@
 // TODAS las acciones verifican la sesión de admin en el servidor.
 
 import { createClient } from "@supabase/supabase-js";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { notificarAlertasAdopcion } from "./alertas-adopcion";
 import { esAdmin } from "./auth";
 import { campoTexto } from "./limites";
 import { subirArchivos } from "./archivos";
@@ -203,9 +205,16 @@ export async function cambiarEstadoAnimalAdmin(formData: FormData) {
   const estado = String(formData.get("estado"));
   if (!ESTADOS_ANIMAL.includes(estado)) throw new Error("Estado inválido.");
   const sb = clienteServidor();
+  const { data: anterior, error: lectura } = await sb.from("animales").select("estado").eq("id", id).single();
+  if (lectura) throw new Error(lectura.message);
   const { error } = await sb.from("animales").update({ estado }).eq("id", id);
   if (error) throw new Error(error.message);
+  if (estado === "disponible" && ["pendiente", "rechazado"].includes(anterior.estado)) {
+    after(() => notificarAlertasAdopcion(id));
+  }
   revalidatePath("/admin/animales");
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/");
 }
@@ -252,6 +261,8 @@ export async function editarAnimalAdmin(formData: FormData) {
   const { error } = await sb.from("animales").update(actualizacion).eq("id", id);
   if (error) throw new Error(`No pudimos guardar: ${error.message}`);
   revalidatePath("/admin/animales");
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   redirect("/admin/animales?editado=1");
 }

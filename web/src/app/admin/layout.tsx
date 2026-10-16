@@ -25,6 +25,7 @@ export default async function LayoutAdmin({
   const pestanas: { href: string; texto: string; exacta?: boolean }[] = [
     { href: "/admin", texto: "Inicio", exacta: true },
     { href: "/admin/animales", texto: "Animales" },
+    { href: "/admin/reportes", texto: "Reportes" },
     { href: "/admin/refugios", texto: "Refugios" },
     { href: "/admin/campanas", texto: "Campañas" },
     { href: "/admin/donaciones", texto: "Donaciones" },

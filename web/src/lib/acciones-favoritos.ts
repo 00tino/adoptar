@@ -47,27 +47,21 @@ export async function misFavoritos(): Promise<Animal[]> {
  *  de forma idempotente (seguro ante clicks rápidos); si no, togglea. */
 export async function alternarFavorito(formData: FormData) {
   const yo = await exigirUsuarioActivo();
-  const animalId = String(formData.get("animal_id"));
-  if (!animalId) throw new Error("Falta el animal.");
+  const animalId = String(formData.get("animal_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(animalId)) throw new Error("Falta un animal válido.");
   const sb = clienteServidor();
-
-  const { data: existe } = await sb
-    .from("favoritos")
-    .select("id")
-    .eq("usuario_id", yo.id)
-    .eq("animal_id", animalId)
-    .maybeSingle();
-
-  // Estado deseado explícito (idempotente) o, en su defecto, toggle.
   const deseadoCrudo = formData.get("fav");
-  const deseado =
-    deseadoCrudo === "1" ? true : deseadoCrudo === "0" ? false : !existe;
-
-  if (deseado && !existe) {
-    await sb.from("favoritos").insert({ usuario_id: yo.id, animal_id: animalId });
-  } else if (!deseado && existe) {
-    await sb.from("favoritos").delete().eq("id", existe.id);
+  let deseado = deseadoCrudo === "1";
+  if (deseadoCrudo !== "1" && deseadoCrudo !== "0") {
+    const { data: existe, error } = await sb.from("favoritos").select("id")
+      .eq("usuario_id", yo.id).eq("animal_id", animalId).maybeSingle();
+    if (error) throw new Error("No pudimos consultar tus favoritos.");
+    deseado = !existe;
   }
+  const { error } = deseado
+    ? await sb.from("favoritos").upsert({ usuario_id: yo.id, animal_id: animalId }, { onConflict: "usuario_id,animal_id", ignoreDuplicates: true })
+    : await sb.from("favoritos").delete().eq("usuario_id", yo.id).eq("animal_id", animalId);
+  if (error) throw new Error("No pudimos actualizar tus favoritos.");
   // No revalidamos: el corazón se actualiza optimista en el cliente y las
   // páginas /favoritos y /animales son dinámicas (datos frescos por request).
   // Así el toggle responde al toque sin refrescar la lista de fondo.

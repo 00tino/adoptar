@@ -47,8 +47,9 @@ export default async function PaginaAnimales({
   const lat = Number(latCruda);
   const lng = Number(lngCruda);
   const cercania =
-    Number.isFinite(lat) && Number.isFinite(lng) && latCruda != null && lngCruda != null;
-  const radio = Number(radioCruda) || 0;
+    Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && latCruda != null && lngCruda != null;
+  const radioNumero = Number(radioCruda);
+  const radio = Number.isFinite(radioNumero) ? Math.max(0, radioNumero) : 0;
 
   const [cercanos, { animales, total }, provincias] = await Promise.all([
     cercania ? obtenerAnimalesCercanos(filtros, lat, lng, radio) : Promise.resolve([]),
@@ -81,6 +82,7 @@ export default async function PaginaAnimales({
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="font-display text-4xl font-black">Animales que buscan hogar</h1>
+      <Link href="/animales/alertas" className="mt-3 inline-block min-h-11 py-3 font-bold text-terracota-oscuro underline">Avisame cuando llegue un animal que coincida con mi búsqueda</Link>
       <p className="mt-2 text-tinta-suave">
         {totalMostrado} {totalMostrado === 1 ? "animal encontrado" : "animales encontrados"}
         {cercania
@@ -89,6 +91,8 @@ export default async function PaginaAnimales({
             : " · ordenados por cercanía"
           : totalPaginas > 1 && ` · página ${pagina} de ${totalPaginas}`}
       </p>
+
+      {cercania && cercanos.length === 100 && <p className="mt-2 text-sm text-tinta-suave">Mostramos los 100 más cercanos. Reducí el radio o agregá filtros para afinar la búsqueda.</p>}
 
       {/* Pestañas adopción / tránsito */}
       <div className="mt-6 flex gap-2 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">

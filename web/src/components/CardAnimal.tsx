@@ -26,7 +26,7 @@ export default function CardAnimal({
     animal.sexo === "hembra" ? "Hembra" : animal.sexo === "macho" ? "Macho" : null,
   ].filter(Boolean);
   return (
-    <div className="group relative rounded-2xl bg-blanco-calido border-2 border-crema-2 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+    <div className="group relative rounded-2xl bg-blanco-calido border-2 border-crema-2 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all motion-reduce:transform-none motion-reduce:transition-none">
       {mostrarFavorito && (
         <BotonFavorito animalId={animal.id} inicial={!!favorito} logueado={!!logueado} />
       )}
@@ -41,10 +41,10 @@ export default function CardAnimal({
           />
           <span
             className={`absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-bold text-blanco-calido ${
-              esTransito ? "bg-terracota-oscuro" : "bg-salvia"
+              animal.estado === "adoptado" ? "bg-salvia-oscuro" : esTransito ? "bg-terracota-oscuro" : "bg-salvia"
             }`}
           >
-            {esTransito ? "💛 En tránsito" : "🏡 En adopción"}
+            {animal.estado === "adoptado" ? "Ya tiene familia" : esTransito ? "💛 En tránsito" : "🏡 En adopción"}
           </span>
           {animal.estado === "en_proceso" && (
             <span className="absolute bottom-3 left-3 rounded-full px-3 py-1 text-xs font-bold bg-sol text-tinta">

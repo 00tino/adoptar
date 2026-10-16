@@ -38,14 +38,15 @@ export async function postularAdopcion(formData: FormData) {
   // El animal debe existir y estar disponible (no se postula a uno adoptado)
   const { data: animal } = await sb
     .from("animales")
-    .select("id,nombre,estado,refugios(usuario_id,email,nombre)")
+    .select("id,nombre,slug,estado,refugios(usuario_id,email,nombre)")
     .eq("id", animalId)
     .maybeSingle();
-  if (!animal || animal.estado === "adoptado" || animal.estado === "rechazado") {
+  if (!animal || !["disponible", "en_proceso"].includes(animal.estado)) {
     throw new Error("Esta publicación ya no recibe postulaciones.");
   }
 
   const yo = await asegurarUsuario();
+  if (yo?.suspendido) throw new Error("Tu cuenta está suspendida.");
   const { error } = await sb.from("postulaciones").insert({
     animal_id: animalId,
     usuario_id: yo?.id ?? null,
@@ -96,7 +97,7 @@ export async function postularAdopcion(formData: FormData) {
     });
   }
 
-  redirect(`/animales/${String(formData.get("slug"))}?postulado=1`);
+  redirect(`/animales/${encodeURIComponent(animal.slug)}?postulado=1`);
 }
 
 export interface MiPostulacion {
@@ -112,11 +113,12 @@ export async function misPostulaciones(): Promise<MiPostulacion[]> {
   const yo = await asegurarUsuario();
   if (!yo) return [];
   const sb = clienteServidor();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("postulaciones")
     .select("id,estado,creado_el,animales(nombre,slug)")
     .eq("usuario_id", yo.id)
     .order("creado_el", { ascending: false });
+  if (error) throw new Error("No pudimos cargar tus postulaciones.");
   return (data ?? []).map((p) => {
     const animal = Array.isArray(p.animales) ? p.animales[0] : p.animales;
     return {

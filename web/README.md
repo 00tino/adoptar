@@ -14,7 +14,19 @@ npm run dev
 Abrí http://localhost:3000 — la app funciona **sin configurar nada** usando
 datos de demostración (`src/lib/datos.ts`).
 
-## Estado del proyecto (Fase 1)
+## Estado actual
+
+El seguimiento de implementación, validación y publicación está en [ESTADO.md](ESTADO.md).
+La migración `supabase/migracion-comunidad.sql` debe aplicarse antes de desplegar
+las funciones de comunidad y las consultas de cercanía/conteos.
+
+```bash
+npm test       # incluye Postgres local en memoria, sin Docker ni datos reales
+npm run lint
+npm run build  # necesita descargar las fuentes de Google si no están en caché
+```
+
+## Registro histórico: Fase 1
 
 ✅ Hecho:
 - Diseño completo (paleta cálida, tipografías Fraunces + Nunito Sans, mobile-first)

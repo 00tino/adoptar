@@ -5,11 +5,13 @@
 // cada acción vuelve a verificar la sesión en el servidor.
 
 import { createClient } from "@supabase/supabase-js";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { after } from "next/server";
 import { esAdmin } from "./auth";
 import { emailRefugioAprobado, emailRefugioRechazado } from "./emails";
 import { crearNotificacion } from "./notificaciones";
 import { notificarAlertasTransito } from "./acciones-alertas";
+import { notificarAlertasAdopcion } from "./alertas-adopcion";
 import { esCausa } from "./causas";
 
 function clienteServidor() {
@@ -194,6 +196,7 @@ export async function decidirAnimal(formData: FormData) {
   await exigirAdmin();
   const id = String(formData.get("id"));
   const decision = String(formData.get("decision")); // "aprobar" | "rechazar"
+  if (!["aprobar", "rechazar"].includes(decision)) throw new Error("Decisión inválida.");
   const sb = clienteServidor();
 
   const estado = decision === "aprobar" ? "disponible" : "rechazado";
@@ -201,6 +204,7 @@ export async function decidirAnimal(formData: FormData) {
     .from("animales")
     .update({ estado })
     .eq("id", id)
+    .eq("estado", "pendiente")
     .select(
       "nombre,particular_id,tipo,especie,ciudad,provincia,descripcion,fotos,slug,lat_aprox,lng_aprox,refugios(usuario_id)"
     )
@@ -223,6 +227,9 @@ export async function decidirAnimal(formData: FormData) {
       tipo: data.tipo,
     });
   }
+  if (estado === "disponible" && data?.tipo === "adopcion") {
+    after(() => notificarAlertasAdopcion(id));
+  }
 
   // Notificación in-app a quien lo publicó (particular o refugio)
   const refugio = Array.isArray(data?.refugios) ? data.refugios[0] : data?.refugios;
@@ -234,6 +241,8 @@ export async function decidirAnimal(formData: FormData) {
       : `Tu publicación de ${data?.nombre} fue rechazada.`
   );
   revalidatePath("/admin");
+  revalidateTag("animales-publicos", { expire: 0 });
+  revalidatePath("/adoptados");
   revalidatePath("/animales");
   revalidatePath("/");
 }

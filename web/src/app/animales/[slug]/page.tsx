@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   obtenerAnimalPorSlug,
-  obtenerAnimales,
+  obtenerAnimalesRelacionados,
   obtenerRefugioPorId,
 } from "@/lib/datos";
 import { edadLegible } from "@/lib/tipos";
@@ -17,6 +17,7 @@ import FormularioAdopcion from "@/components/FormularioAdopcion";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
 import { idsFavoritos } from "@/lib/acciones-favoritos";
 import { supabaseDisponible } from "@/lib/supabase";
+import FormularioReporte from "@/components/FormularioReporte";
 
 // PERFIL DE ANIMAL: datos completos + contacto + SEO con Schema.org.
 
@@ -30,10 +31,10 @@ export async function generateMetadata({
   if (!animal) return {};
   const descripcion = animal.descripcion.trim() || `${animal.nombre} busca hogar en ${animal.ciudad}, ${animal.provincia}.`;
   return {
-    title: `Adoptá a ${animal.nombre} — ${animal.especie} en ${animal.ciudad}`,
+    title: animal.estado === "adoptado" ? `${animal.nombre} ya tiene familia` : `Adoptá a ${animal.nombre} — ${animal.especie} en ${animal.ciudad}`,
     description: descripcion.slice(0, 160),
     openGraph: {
-      title: `Adoptá a ${animal.nombre} | AdoptAR`,
+      title: animal.estado === "adoptado" ? `${animal.nombre} ya tiene familia | AdoptAR` : `Adoptá a ${animal.nombre} | AdoptAR`,
       description: descripcion.slice(0, 160),
     },
   };
@@ -56,13 +57,7 @@ export default async function PaginaAnimal({
     : null;
 
   // Animales relacionados: misma provincia o especie, excluyendo el actual
-  const relacionados = (await obtenerAnimales())
-    .filter(
-      (a) =>
-        a.id !== animal.id &&
-        (a.provincia === animal.provincia || a.especie === animal.especie)
-    )
-    .slice(0, 3);
+  const relacionados = await obtenerAnimalesRelacionados(animal);
 
   const adoptado = animal.estado === "adoptado";
 
@@ -197,7 +192,7 @@ export default async function PaginaAnimal({
           </div>
 
           <p className="mt-2 text-tinta-suave font-bold">
-            {animal.tipo === "transito" ? "💛 Necesita hogar de tránsito" : "🏡 En adopción"}
+            {adoptado ? "Ya tiene familia" : animal.tipo === "transito" ? "💛 Necesita hogar de tránsito" : "🏡 En adopción"}
             {" · "}📍 {animal.ciudad}, {animal.provincia}
           </p>
 
@@ -217,7 +212,7 @@ export default async function PaginaAnimal({
           {animal.descripcion && <p className="mt-6 leading-relaxed">{animal.descripcion}</p>}
 
           {/* Contacto */}
-          <div className="mt-8 rounded-2xl bg-salvia-oscuro text-crema p-6">
+          {!adoptado && <div className="mt-8 rounded-2xl bg-salvia-oscuro text-crema p-6">
             <h2 className="font-display text-2xl font-bold">
               ¿Querés darle un hogar a {animal.nombre}?
             </h2>
@@ -260,7 +255,17 @@ export default async function PaginaAnimal({
                 texto={`Mirá a ${animal.nombre} en AdoptAR`}
               />
             </div>
-          </div>
+          </div>}
+
+          {adoptado && (
+            <div className="mt-8 rounded-2xl bg-salvia-oscuro p-6 text-crema">
+              <h2 className="font-display text-2xl font-bold">{animal.nombre} ya tiene familia</h2>
+              <p className="mt-2">Esta adopción ya se concretó. Otros animales siguen esperando un hogar.</p>
+              <Link href="/animales" className="mt-4 inline-block min-h-11 rounded-full bg-sol px-5 py-3 font-bold text-tinta">Conocé a quienes esperan</Link>
+            </div>
+          )}
+          <Link href="/adopcion-responsable" className="mt-4 inline-block py-3 text-sm font-bold text-terracota-oscuro underline">Guía de adopción responsable y señales de alerta</Link>
+          {supabaseDisponible() && clerkDisponible() && <FormularioReporte animalId={animal.id} logueado={logueado} />}
 
           {/* Postulación de adopción (animal disponible / en proceso) */}
           {supabaseDisponible() && !adoptado && (

@@ -98,6 +98,16 @@ export default async function Home() {
       </section>
 
       {/* REFUGIOS */}
+      <section className="mx-auto max-w-6xl px-4 pb-10">
+        <div className="rounded-2xl border-2 border-crema-2 bg-blanco-calido p-6 sm:p-8">
+          <h2 className="font-display text-3xl font-black">Cada adopción cuenta</h2>
+          <p className="mt-3 max-w-2xl text-tinta-suave">Conocé a quienes ya encontraron una familia y preparate para recibir a tu próximo compañero.</p>
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+            <Link href="/adoptados" className="min-h-11 py-3 font-bold text-terracota-oscuro underline">Ver adopciones felices</Link>
+            <Link href="/adopcion-responsable" className="min-h-11 py-3 font-bold text-salvia-oscuro underline">Cómo adoptar de forma responsable</Link>
+          </div>
+        </div>
+      </section>
       <section className="bg-crema-2/60">
         <div className="mx-auto max-w-6xl px-4 py-14">
           <div className="flex items-end justify-between gap-4">
