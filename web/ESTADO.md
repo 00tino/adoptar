@@ -59,16 +59,21 @@ Se conserva la identidad visual.
 2. **QA con sesión y correo real:** probar un reporte como usuario, su revisión
    como admin y guardar/pausar una alerta. El panel privado publicado permitió
    enviar las dos pruebas autorizadas (correo y monitoreo); Gmail SMTP aceptó
-   ambas. La recepción en la casilla todavía no está comprobada. Los avisos son de mejor esfuerzo:
+   ambas y Gmail confirmó los dos mensajes en INBOX, fuera de spam. Los avisos son de mejor esfuerzo:
    no hay cola durable ni reintento automático si una función termina por timeout.
 3. **Monitoreo por email:** destino autorizado guardado en Vercel Production como
    `ERROR_ALERT_EMAIL`; cambio publicado en `1b21090` y prueba aceptada por el
-   proveedor desde producción. Falta confirmar recepción.
+   proveedor desde producción, con recepción comprobada en INBOX.
    No se creó ningún canal ni se enviaron mensajes a Slack/Discord. El límite
    por instancia es básico, no una deduplicación global durable.
-4. **Mercado Pago sandbox:** faltan token de prueba y comprador de prueba. No se
-   cambiaron credenciales ni se intentaron débitos. Hacer la prueba en un entorno
-   aislado, sin reemplazar el token de producción.
+4. **Mercado Pago sandbox:** token privado guardado y validado con `/users/me`:
+   vendedor argentino con tag `test_user`. Existen vendedor y comprador de
+   prueba. Se creó una preferencia aislada de ARS 500, con referencia
+   `adoptar-sandbox-*`, vencimiento de una hora y sin `notification_url`.
+   El checkout sandbox abrió correctamente. No se reemplazó el token de
+   producción ni se escribió en Supabase. Falta ingresar con el comprador de
+   prueba y comprobar pago, suscripción y recepción/verificación de webhooks.
+   La creación del checkout no demuestra esos pasos.
 5. **Datos demo:** conservarlos por instrucción del usuario; no eliminar Luna,
    Rocky ni el refugio demo.
 6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin
