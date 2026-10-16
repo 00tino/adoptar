@@ -37,7 +37,7 @@ const percentil = (valores, p) => {
 };
 
 async function pedir(objetivo, etapa) {
-  const muestra = { etapa, ruta: objetivo.ruta, estado: null, ttfbMs: null, totalMs: null, bytesHtml: 0, cacheVercel: null, error: null };
+  const muestra = { etapa, ruta: objetivo.ruta, estado: null, ttfbMs: null, totalMs: null, bytesHtml: 0, cacheVercel: null, regionVercel: null, error: null };
   const salida = performance.now();
   const control = new AbortController();
   const timeout = setTimeout(() => control.abort(), Math.max(1, Math.min(limites.timeoutMs, limites.duracionMs - (performance.now() - inicio))));
@@ -53,6 +53,7 @@ async function pedir(objetivo, etapa) {
     muestra.ttfbMs = Math.round(performance.now() - salida);
     muestra.estado = respuesta.status;
     muestra.cacheVercel = respuesta.headers.get("x-vercel-cache");
+    muestra.regionVercel = respuesta.headers.get("x-vercel-id");
     const partes = [];
     for await (const parte of respuesta.body) {
       bytesHtml += parte.byteLength;
