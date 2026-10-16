@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   pago: vi.fn(), cliente: vi.fn(), from: vi.fn(), update: vi.fn(), eq: vi.fn(),
   neq: vi.fn(), select: vi.fn(), cobro: vi.fn(), suscripcion: vi.fn(),
   gracias: vi.fn(), refugio: vi.fn(), notificacion: vi.fn(),
+  monitoreo: vi.fn(),
 }));
 vi.mock("mercadopago", () => ({
   MercadoPagoConfig: class {}, Payment: class { get = mocks.pago; },
@@ -16,6 +17,7 @@ vi.mock("@/lib/acciones-suscripciones", () => ({
 }));
 vi.mock("@/lib/emails", () => ({ emailGraciasDonante: mocks.gracias, emailDonacionRecibida: mocks.refugio }));
 vi.mock("@/lib/notificaciones", () => ({ crearNotificacion: mocks.notificacion }));
+vi.mock("@/lib/monitoreo", () => ({ registrarError: mocks.monitoreo }));
 import { POST } from "../../app/api/mercadopago/webhook/route";
 
 function solicitud(type = "payment", id = "123", firmaCorrecta = true) {
@@ -66,12 +68,19 @@ describe("Webhook de Mercado Pago sin servicios externos", () => {
     expect(mocks.neq).toHaveBeenCalledWith("estado", "acreditada");
     expect(mocks.update).toHaveBeenCalledWith({ estado: "acreditada" });
   });
-  it("no acredita pagos pendientes ni confía en un pago inexistente", async () => {
+  it("no acredita pagos pendientes y pide reintento si falla la consulta al proveedor", async () => {
     mocks.pago.mockResolvedValueOnce({ status: "pending", external_reference: "donacion-1" });
-    await POST(solicitud());
+    expect((await POST(solicitud())).status).toBe(200);
     mocks.pago.mockRejectedValueOnce(new Error("No encontrado"));
-    await POST(solicitud());
+    expect((await POST(solicitud())).status).toBe(503);
     expect(mocks.cliente).not.toHaveBeenCalled();
+    expect(mocks.monitoreo).toHaveBeenCalledWith(expect.objectContaining({ contexto: "WEBHOOK:mercadopago" }));
+  });
+  it.each(["donacion-1", "grupo:grupo-1"])("no confirma éxito si la base rechaza acreditar %s", async (referencia) => {
+    mocks.pago.mockResolvedValueOnce({ status: "approved", external_reference: referencia });
+    mocks.select.mockResolvedValueOnce({ data: null, error: new Error("Base no disponible") });
+    await expect(POST(solicitud())).rejects.toThrow("Base no disponible");
+    expect(mocks.gracias).not.toHaveBeenCalled(); expect(mocks.refugio).not.toHaveBeenCalled();
   });
   it("un reenvío sin nuevas filas acreditadas no repite correos ni notificaciones", async () => {
     mocks.select.mockResolvedValueOnce({ data: [{ donor_nombre: "Prueba", monto: 500, campanas: { titulo: "Campaña", refugios: { nombre: "Refugio", email: "refugio@example.invalid", usuario_id: "refugio-1" } } }] });

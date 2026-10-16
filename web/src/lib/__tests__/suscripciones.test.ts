@@ -1,7 +1,7 @@
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ crear: vi.fn(), cliente: vi.fn(), redirigir: vi.fn() }));
-vi.mock("mercadopago", () => ({ MercadoPagoConfig: class {}, PreApproval: class { create = mocks.crear; } }));
+const mocks = vi.hoisted(() => ({ crear: vi.fn(), obtener: vi.fn(), cliente: vi.fn(), redirigir: vi.fn() }));
+vi.mock("mercadopago", () => ({ MercadoPagoConfig: class {}, PreApproval: class { create = mocks.crear; get = mocks.obtener; } }));
 vi.mock("@supabase/supabase-js", () => ({ createClient: mocks.cliente }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirigir }));
 vi.mock("../usuarios", () => ({
@@ -10,8 +10,9 @@ vi.mock("../usuarios", () => ({
 }));
 vi.mock("../limites", () => ({ limitarPorIp: async () => {}, campoTexto: (v: unknown) => String(v ?? "") }));
 vi.mock("../emails", () => ({ emailGraciasDonante: vi.fn() }));
-import { crearSuscripcion } from "../acciones-suscripciones";
+import { crearSuscripcion, registrarCobroSuscripcion, sincronizarPreapproval } from "../acciones-suscripciones";
 
+beforeEach(() => { vi.clearAllMocks(); vi.stubEnv("MP_ACCESS_TOKEN", "token-ficticio-sin-red"); });
 afterEach(() => vi.unstubAllEnvs());
 
 it("crea el checkout mensual sin enviar una fecha que puede vencer durante la solicitud", async () => {
@@ -32,4 +33,28 @@ it("crea el checkout mensual sin enviar una fecha que puede vencer durante la so
   expect(cuerpo).toMatchObject({ status: "pending", payer_email: "test@example.invalid", external_reference: "sus:suscripcion-1" });
   expect(consulta.update).toHaveBeenCalledWith({ preapproval_id: "preapproval-1" });
   expect(mocks.redirigir).toHaveBeenCalledWith("https://example.invalid/checkout");
+});
+
+it("propaga los fallos al consultar una suscripción para que el webhook pueda reintentarse", async () => {
+  mocks.obtener.mockRejectedValueOnce(new Error("Proveedor no disponible"));
+  await expect(sincronizarPreapproval("preapproval-1")).rejects.toThrow("Proveedor no disponible");
+  expect(mocks.cliente).not.toHaveBeenCalled();
+});
+
+it("propaga un error de base al actualizar la suscripción", async () => {
+  mocks.obtener.mockResolvedValueOnce({ id: "preapproval-1", status: "authorized" });
+  mocks.cliente.mockReturnValue({ from: () => ({ update: () => ({ eq: async () => ({ error: new Error("Base no disponible") }) }) }) });
+  await expect(sincronizarPreapproval("preapproval-1")).rejects.toThrow("Base no disponible");
+});
+
+it.each(["conteo", "suscripcion", "campanas", "insercion"])("no confirma un cobro recurrente si falla %s", async (paso) => {
+  const fallo = new Error(`Fallo en ${paso}`);
+  const donaciones = {
+    select: () => ({ eq: async () => ({ count: 0, error: paso === "conteo" ? fallo : null }) }),
+    insert: async () => ({ error: paso === "insercion" ? fallo : null }),
+  };
+  const suscripciones = { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { causas: ["general"], usuarios: { nombre: "Prueba", email: null } }, error: paso === "suscripcion" ? fallo : null }) }) }) };
+  const campanas = { select: () => ({ eq: async () => ({ data: [], error: paso === "campanas" ? fallo : null }) }) };
+  mocks.cliente.mockReturnValue({ from: (tabla: string) => tabla === "donaciones" ? donaciones : tabla === "suscripciones" ? suscripciones : campanas });
+  await expect(registrarCobroSuscripcion("suscripcion-1", "pago-1", 500)).rejects.toThrow(`Fallo en ${paso}`);
 });

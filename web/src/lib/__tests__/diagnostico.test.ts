@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ admin: vi.fn(), limite: vi.fn(), correo: vi.fn(), monitoreo: vi.fn() }));
 vi.mock("../auth", () => ({ esAdmin: mocks.admin }));
@@ -13,6 +13,7 @@ const formulario = (tipo: string, email = "test@example.invalid") => {
 beforeEach(() => {
   vi.clearAllMocks(); mocks.admin.mockResolvedValue(true); mocks.correo.mockResolvedValue(true); mocks.monitoreo.mockResolvedValue(true);
 });
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 describe("Pruebas privadas de servicios", () => {
   it("no permite envíos sin administrador", async () => {
     mocks.admin.mockResolvedValue(false);
@@ -42,5 +43,22 @@ describe("Pruebas privadas de servicios", () => {
     mocks.limite.mockRejectedValueOnce(new Error("Límite"));
     expect(await probarServicios({}, formulario("correo"))).toHaveProperty("error");
     expect(mocks.correo).not.toHaveBeenCalled();
+  });
+  it.each([["normal", "REAL"], ["test_user", "DE PRUEBA"]])("identifica una cuenta %s sin crear pagos ni exponer su credencial", async (tag, tipo) => {
+    vi.stubEnv("MP_ACCESS_TOKEN", "secreto-solo-test");
+    const consulta = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ id: 123, nickname: "CUENTA", country_id: "AR", tags: [tag] }) });
+    vi.stubGlobal("fetch", consulta);
+    const resultado = await probarServicios({}, formulario("mercadopago"));
+    expect(resultado.mensaje).toContain(`Cuenta ${tipo}: CUENTA · ID 123`);
+    expect(resultado.mensaje).not.toContain("secreto-solo-test");
+    expect(consulta).toHaveBeenCalledTimes(1);
+    expect(consulta).toHaveBeenCalledWith("https://api.mercadopago.com/users/me", expect.objectContaining({ headers: { Authorization: "Bearer secreto-solo-test" }, cache: "no-store" }));
+    expect(mocks.correo).not.toHaveBeenCalled();
+  });
+  it("no confirma una cuenta real si la credencial falla o faltan los tags", async () => {
+    vi.stubEnv("MP_ACCESS_TOKEN", "secreto-solo-test");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce({ ok: false }).mockResolvedValueOnce({ ok: true, json: async () => ({ id: 123 }) }));
+    expect(await probarServicios({}, formulario("mercadopago"))).toHaveProperty("error");
+    expect(await probarServicios({}, formulario("mercadopago"))).toHaveProperty("error");
   });
 });

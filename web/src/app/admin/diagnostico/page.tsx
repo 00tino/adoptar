@@ -16,6 +16,7 @@ export default async function PaginaDiagnostico() {
       <div className="mt-6 grid gap-5 md:grid-cols-2">
         <FormularioDiagnostico tipo="correo" titulo="Correo real" emailInicial={usuario?.primaryEmailAddress?.emailAddress ?? ""} />
         <FormularioDiagnostico tipo="monitoreo" titulo="Aviso de monitoreo" />
+        <FormularioDiagnostico tipo="mercadopago" titulo="Cuenta cobradora de Mercado Pago" />
       </div>
     </div>
   );

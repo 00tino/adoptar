@@ -12,6 +12,7 @@ import {
 } from "@/lib/acciones-suscripciones";
 import { emailDonacionRecibida, emailGraciasDonante } from "@/lib/emails";
 import { crearNotificacion } from "@/lib/notificaciones";
+import { registrarError } from "@/lib/monitoreo";
 
 /**
  * Valida la firma del webhook (header `x-signature`).
@@ -123,8 +124,11 @@ export async function POST(req: NextRequest) {
 
   // Consultamos el pago directo a MP (nunca confiamos en el cuerpo del webhook)
   const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
-  const pago = await new Payment(mp).get({ id: pagoId }).catch(() => null);
-  if (!pago) return NextResponse.json({ ok: true });
+  const pago = await new Payment(mp).get({ id: pagoId }).catch(async () => {
+    await registrarError({ contexto: "WEBHOOK:mercadopago", mensaje: "No se pudo consultar el pago al proveedor.", ruta: "/api/mercadopago/webhook", metodo: "POST" });
+    return null;
+  });
+  if (!pago) return NextResponse.json({ ok: false }, { status: 503 });
 
   if (pago.status === "approved" && pago.external_reference) {
     const sb = createClient(
@@ -144,20 +148,22 @@ export async function POST(req: NextRequest) {
     } else if (ref.startsWith("grupo:")) {
       // Checkout multi-causa: acredita todas las filas del grupo
       const grupoId = ref.slice("grupo:".length);
-      const { data } = await sb
+      const { data, error } = await sb
         .from("donaciones")
         .update({ estado: "acreditada" })
         .eq("grupo_id", grupoId)
         .neq("estado", "acreditada")
         .select(SELECT_ACREDITADA);
+      if (error) throw error;
       await notificarAcreditadas((data ?? []) as unknown as FilaAcreditada[], emailDonante);
     } else {
-      const { data } = await sb
+      const { data, error } = await sb
         .from("donaciones")
         .update({ estado: "acreditada" })
         .eq("id", ref)
         .neq("estado", "acreditada")
         .select(SELECT_ACREDITADA);
+      if (error) throw error;
       await notificarAcreditadas((data ?? []) as unknown as FilaAcreditada[], emailDonante);
     }
   }

@@ -213,9 +213,7 @@ export async function cancelarSuscripcion() {
 
 /** Sincroniza el estado local cuando MP avisa un cambio en el preapproval */
 export async function sincronizarPreapproval(preapprovalId: string) {
-  const preapproval = await new PreApproval(clienteMp())
-    .get({ id: preapprovalId })
-    .catch(() => null);
+  const preapproval = await new PreApproval(clienteMp()).get({ id: preapprovalId });
   if (!preapproval?.id) return;
 
   const estado =
@@ -225,10 +223,11 @@ export async function sincronizarPreapproval(preapprovalId: string) {
     : "pendiente";
 
   const sb = clienteServidor();
-  await sb
+  const { error } = await sb
     .from("suscripciones")
     .update({ estado, actualizado_el: new Date().toISOString() })
     .eq("preapproval_id", preapproval.id);
+  if (error) throw error;
 }
 
 /**
@@ -244,17 +243,19 @@ export async function registrarCobroSuscripcion(
   const sb = clienteServidor();
 
   // Dedupe: si el pago ya generó filas, no lo repetimos
-  const { count } = await sb
+  const { count, error: errorConteo } = await sb
     .from("donaciones")
     .select("id", { count: "exact", head: true })
     .eq("mp_pago_id", pagoId);
+  if (errorConteo) throw errorConteo;
   if ((count ?? 0) > 0) return;
 
-  const { data: sus } = await sb
+  const { data: sus, error: errorSuscripcion } = await sb
     .from("suscripciones")
     .select("causas,usuario_id,usuarios(nombre,email)")
     .eq("id", suscripcionId)
     .maybeSingle();
+  if (errorSuscripcion) throw errorSuscripcion;
   if (!sus) return;
   const causas: string[] = Array.isArray(sus.causas) ? sus.causas : ["general"];
   const usuario = Array.isArray(sus.usuarios) ? sus.usuarios[0] : sus.usuarios;
@@ -262,10 +263,11 @@ export async function registrarCobroSuscripcion(
     campoTexto((usuario as { nombre?: string } | null)?.nombre, 80) || null;
   const donorEmail = (usuario as { email?: string } | null)?.email ?? null;
 
-  const { data: activas } = await sb
+  const { data: activas, error: errorCampanas } = await sb
     .from("campanas")
     .select("id,causa")
     .eq("estado", "activa");
+  if (errorCampanas) throw errorCampanas;
   const porCausa = new Map<string, string[]>();
   for (const c of activas ?? []) {
     const causa = c.causa ?? "plataforma";
@@ -310,7 +312,8 @@ export async function registrarCobroSuscripcion(
   });
 
   if (filas.length > 0) {
-    await sb.from("donaciones").insert(filas);
+    const { error: errorInsercion } = await sb.from("donaciones").insert(filas);
+    if (errorInsercion) throw errorInsercion;
     // Recibo/agradecimiento al donante por el débito mensual (no corta si falla)
     if (donorEmail) {
       await emailGraciasDonante(donorEmail, donorNombre ?? "amiga/o", Math.round(total));

@@ -34,7 +34,7 @@ Se conserva la identidad visual.
 
 ## Verificación
 
-- `npm test`: 104 pruebas en verde de autorización, alertas, favoritos, postulaciones,
+- `npm test`: 115 pruebas en verde de autorización, alertas, favoritos, postulaciones,
   monitoreo y caché, además de las pruebas previas del importador y del dominio.
 - Las pruebas SQL corren en PGlite (Postgres en memoria) con las tablas base del
   esquema y la migración real: grants, RLS, restricciones, deduplicación, búsqueda
@@ -94,6 +94,15 @@ Se conserva la identidad visual.
    Corrección publicada: `33fc8d6`, estado Vercel `success`; la página de
    donación mensual devuelve HTTP 200. `npm test` (104 pruebas), `npm run lint`
    y `npm run build` pasaron antes de publicar.
+
+   Preparación de la validación productiva: el panel privado ahora consulta la
+   identidad de la cuenta cobradora configurada sin exponer la credencial ni
+   crear pagos. Se corrigieron respuestas exitosas ante fallos de consulta o
+   escritura: el webhook devuelve 503 si no puede consultar el pago y propaga
+   los errores de base/suscripciones para permitir reintentos del proveedor.
+   Las simulaciones HTTP 200 anteriores prueban recepción, no acreditación.
+   La versión con estos controles pasó 115 tests, lint y build; falta comprobar
+   la cuenta desplegada y acordar un único pago real antes de efectuarlo.
 5. **Datos demo:** conservarlos por instrucción del usuario; no eliminar Luna,
    Rocky ni el refugio demo.
 6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin

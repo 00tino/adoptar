@@ -10,6 +10,18 @@ export async function probarServicios(_anterior: { error?: string; mensaje?: str
   try {
     await limitarPorIp("diagnostico-servicios", 5, 60);
     const tipo = String(formData.get("tipo") ?? "");
+    if (tipo === "mercadopago") {
+      const token = process.env.MP_ACCESS_TOKEN;
+      if (!token) return { error: "Mercado Pago no tiene una credencial configurada." };
+      const respuesta = await fetch("https://api.mercadopago.com/users/me", {
+        headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: AbortSignal.timeout(10_000),
+      });
+      if (!respuesta.ok) return { error: "Mercado Pago no aceptó la credencial configurada." };
+      const cuenta = await respuesta.json();
+      if (!cuenta.id || !Array.isArray(cuenta.tags)) return { error: "No pudimos determinar el tipo de cuenta cobradora." };
+      const tipoCuenta = cuenta.tags.includes("test_user") ? "DE PRUEBA" : "REAL";
+      return { mensaje: `Cuenta ${tipoCuenta}: ${cuenta.nickname ?? "sin alias"} · ID ${cuenta.id} · País ${cuenta.country_id ?? "sin informar"}. Solo se consultó la identidad; no se creó ningún pago.` };
+    }
     if (tipo === "correo") {
       const para = campoTexto(formData.get("email"), 120);
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(para)) return { error: "Ingresá un email válido." };
