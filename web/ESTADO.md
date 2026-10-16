@@ -101,8 +101,29 @@ Se conserva la identidad visual.
    escritura: el webhook devuelve 503 si no puede consultar el pago y propaga
    los errores de base/suscripciones para permitir reintentos del proveedor.
    Las simulaciones HTTP 200 anteriores prueban recepción, no acreditación.
-   La versión con estos controles pasó 115 tests, lint y build; falta comprobar
-   la cuenta desplegada y acordar un único pago real antes de efectuarlo.
+   La versión con estos controles pasó 115 tests, lint y build, se publicó en
+   `9d252db` y Vercel confirmó `success`. La consulta desde el panel desplegado
+   confirmó cuenta REAL `FONTEVIVAVALENTINO`, ID `305489481`, país AR.
+   La campaña para validar es «Mantenimiento de AdoptAR», ID
+   `4f84e29d-68b1-46b6-91ff-ca5c4770bfff`, sin refugio ni avisos a terceros.
+   Su saldo inicial acreditado es cero; conserva 4 intentos pendientes de ARS
+   100 de junio de 2026. El usuario autorizó un único pago real de ARS 100 como
+   donación, sin suscripción ni devolución automática, y confirmó que dispone
+   de otra cuenta pagadora. Checkout abierto:
+   `305489481-f28a328c-4a7d-4316-b9a9-4c55da65efbc`; donación
+   `d4b09499-e8fa-465d-b813-dca8756e8702`, ARS 100, creada el
+   2026-10-16 a las 19:02 ART, todavía `pendiente` en la consulta posterior.
+   El usuario completa el pago; después se verificará el cambio de estado por
+   webhook sin acreditar manualmente ninguna fila ni crear otro intento.
+   El primer intento de pago quedó bloqueado con «Pagar» deshabilitado y la
+   sesión de `fonteviva.valen.tino00@gmail.com` aún activa en el checkout.
+   Se cerró esa sesión y se abrió un ingreso limpio, conservando la misma
+   preferencia. Falta identificar/ingresar la cuenta pagadora alternativa;
+   no hay un cargo aprobado ni acreditación productiva confirmada.
+   El usuario indicó como pagador `fonteviva.valen.tino00@gmail.com`, que es la
+   misma sesión cobradora observada. Para continuar falta otro comprador real
+   con cuenta/email diferentes; no se volverá a intentar con la cuenta cobradora
+   ni se generará otra preferencia para resolver este bloqueo.
 5. **Datos demo:** conservarlos por instrucción del usuario; no eliminar Luna,
    Rocky ni el refugio demo.
 6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin
