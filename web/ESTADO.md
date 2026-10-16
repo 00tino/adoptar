@@ -47,7 +47,7 @@ Se conserva la identidad visual.
 - El primer build falló al descargar Fraunces/Nunito Sans por la restricción de
   red del entorno. Con acceso de red la compilación pasó.
 
-## Pendientes reales
+## Cierre operativo y pendientes
 
 1. **Migración aplicada y verificada:** `supabase/migracion-comunidad.sql` en
    `mkiedljddnlrncfzbkek`, registrada como `comunidad_reportes_alertas_y_consultas_publicas`.
@@ -56,8 +56,16 @@ Se conserva la identidad visual.
    usuarios (1) y campañas (2) coinciden antes y después. Las funciones de conteo
    y cercanía responden en la base real. Lectura anónima/autenticada revocada
    sobre las tres tablas privadas; escritura disponible solo para service role.
-2. **QA con sesión y correo real:** probar un reporte como usuario, su revisión
-   como admin y guardar/pausar una alerta. El panel privado publicado permitió
+2. **QA con sesión y correo real:** verificado en producción con la sesión del
+   usuario: guardar una alerta de perros en Buenos Aires, pausarla y recargar
+   conserva los criterios y `activa=false`. Se envió un reporte privado de Luna
+   identificado como «PRUEBA QA AdoptAR 16/10/2026», apareció en la cola del admin
+   y se descartó desde el panel. La cola quedó en cero; se conserva el registro
+   de prueba descartado `31aca606-8961-4f4a-9f71-967a55f9870c` y una alerta pausada.
+   No se modificó la publicación ni se enviaron avisos al refugio demo.
+   Esta sesión tiene rol admin: no se probó manualmente una segunda cuenta sin
+   ese rol ni un envío de alerta causado por publicar un animal nuevo.
+   El panel privado publicado permitió
    enviar las dos pruebas autorizadas (correo y monitoreo); Gmail SMTP aceptó
    ambas y Gmail confirmó los dos mensajes en INBOX, fuera de spam. Los avisos son de mejor esfuerzo:
    no hay cola durable ni reintento automático si una función termina por timeout.
@@ -124,12 +132,35 @@ Se conserva la identidad visual.
    misma sesión cobradora observada. Para continuar falta otro comprador real
    con cuenta/email diferentes; no se volverá a intentar con la cuenta cobradora
    ni se generará otra preferencia para resolver este bloqueo.
+   **El usuario pidió dejar este pago pendiente y continuar con el resto del
+   proyecto.** No retomar el cobro ni abrir otro intento al cerrar otras tareas.
 5. **Datos demo:** conservarlos por instrucción del usuario; no eliminar Luna,
    Rocky ni el refugio demo.
 6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin
    contratar servicios ni habilitar planes pagos.
 7. **Capacidad:** no se realizó una prueba de carga. El build y la caché no
    demuestran 1.000 usuarios simultáneos ni latencia menor a 300 ms.
+
+## Verificación final de este cierre
+
+- Se repitieron `npm test` (115 pruebas, 13 archivos), `npm run lint` y
+  `npm run build`: todo en verde. El primer build falló al descargar las fuentes
+  por la restricción de red; la repetición con acceso de red compiló correctamente.
+- Ocho páginas públicas respondieron HTTP 200: inicio, catálogo, adopciones
+  felices, guía, alertas, donaciones, donación mensual y refugios. Sin sesión,
+  `/admin/reportes` y `/admin/diagnostico` respondieron HTTP 404 sin contenido
+  privado; el endpoint del chat respondió `{"mensajes":[]}`.
+- Formularios reales de alertas y cola de reportes comprobados a 375 × 812 px,
+  con ancho del documento de 375 px, sin desborde horizontal.
+- Vercel mostró el despliegue de `8bfeda5` en estado Ready y tasa de error de
+  0% en su ventana visible de seis horas. Esto es una observación del panel,
+  no una prueba de carga ni una garantía de disponibilidad.
+- Tras el QA, las huellas completas de las 15 filas de animales, 2 refugios,
+  1 usuario y 2 campañas coincidieron con el inicio. Cero reportes pendientes y
+  cero alertas de adopción activas. La campaña conserva sus cinco intentos:
+  cuatro históricos y el único pago autorizado de ARS 100, todavía pendiente.
+- No hizo falta modificar el código funcional ni aplicar otra migración para
+  cerrar estas verificaciones.
 
 Publicación autorizada: push a `main` del repositorio `00tino/adoptar`, conectado
 al proyecto Vercel `adoptar` (`prj_HJO5TcccOPJW9bMPdg6NYsazelgj`). El sitio público
