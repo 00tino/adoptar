@@ -22,8 +22,10 @@ Se conserva la identidad visual.
 - Favoritos idempotentes frente a solicitudes concurrentes y errores visibles.
   Postulaciones solo para animales disponibles/en proceso; se respeta la suspensión
   del usuario y se usa el slug de la base al confirmar.
-- Caché de 60 segundos solo para lecturas anónimas de animales. Las mutaciones
-  invalidan la etiqueta y la galería. Las cuentas, mensajes y escrituras no se cachean.
+- Caché de 60 segundos para lecturas anónimas de animales, refugios y conteos
+  públicos por refugio. Las mutaciones de animales invalidan sus datos y los
+  conteos; editar, aprobar o suspender refugios invalida su etiqueta. Las cuentas,
+  mensajes, escrituras e importes recaudados no se cachean.
 - Tres relacionados consultados con límite; conteos agregados en Postgres y
   cercanía resuelta en la base, con los 100 resultados más cercanos y aviso en UI.
 - Monitoreo compatible con Slack y Discord, con timeout, límite de Discord y
@@ -34,7 +36,7 @@ Se conserva la identidad visual.
 
 ## Verificación
 
-- `npm test`: 115 pruebas en verde de autorización, alertas, favoritos, postulaciones,
+- `npm test`: 123 pruebas en verde de autorización, alertas, favoritos, postulaciones,
   monitoreo y caché, además de las pruebas previas del importador y del dominio.
 - Las pruebas SQL corren en PGlite (Postgres en memoria) con las tablas base del
   esquema y la migración real: grants, RLS, restricciones, deduplicación, búsqueda
@@ -222,6 +224,50 @@ Después se comprobaron las mismas huellas completas de animales, refugios,
 usuarios y campañas. El pago real sigue pendiente, conserva los cinco intentos
 totales de su campaña y no se activó ninguna alerta ni quedó un reporte abierto.
 Se repitieron 115 tests, lint y build con resultado correcto.
+
+## Optimización de velocidad — 16 de octubre de 2026
+
+Publicada en `be6f20b`, con despliegue Vercel `success`. Se cachean durante 60
+segundos las lecturas anónimas de refugios y el conteo público de animales por
+refugio; se invalidan al modificar los datos correspondientes. El conteo usa GET
+para una función Postgres `STABLE` y `SECURITY INVOKER` ya existente, sin migración.
+Es el modo de lectura documentado por
+[Supabase para RPC](https://supabase.com/docs/reference/javascript/rpc).
+La ficha consulta refugio, relacionados y favoritos en paralelo, manteniendo
+la sesión y los favoritos fuera de la caché compartida. Los importes de campañas
+y donaciones siguen consultándose sin esta caché.
+
+Se repitió el mismo ensayo de cuatro rutas, con 122 GET por versión (cuatro de
+calentamiento y 118 medidos), tandas de 1/5/10/20 y cero errores. Esta vez no hubo
+builds ni tests locales en paralelo durante ninguna de las dos corridas.
+
+| Medida de HTML completo | Antes (`4fcdaa8`) | Después (`be6f20b`) | Reducción observada |
+| --- | --- | --- | --- |
+| Mediana global | 768 ms | 485 ms | 36,8% |
+| p95 global | 1.538 ms | 1.241 ms | 19,3% |
+| Mediana inicio | 830 ms | 668 ms | 19,5% |
+| Mediana catálogo | 429 ms | 414 ms | 3,5% |
+| Mediana ficha de Luna | 875 ms | 498 ms | 43,1% |
+| Mediana refugios | 780 ms | 354 ms | 54,6% |
+
+El TTFB global mediano bajó de 657 a 345 ms; el p95 de HTML completo en las
+tandas de 20 bajó de 1.538 a 875 ms. Las dos corridas son mediciones breves desde
+esta Mac y están afectadas por red, conexiones y calentamiento de caché: muestran
+una mejora observada, sin garantizar el mismo porcentaje para cada visitante.
+No prueban LCP, sesiones, escrituras, 1.000 usuarios simultáneos ni menos de
+300 ms para todas las respuestas.
+
+Evidencia completa:
+[`antes`](../output/qa/velocidad-2026-10-16-antes.json) y
+[`después`](../output/qa/velocidad-2026-10-16-despues.json).
+Pasaron 123 tests, lint y build. Las ocho pruebas nuevas cubren las lecturas
+cacheadas permitidas, importes/escrituras excluidos y la invalidación al editar
+o cambiar el estado de refugios, incluyendo permiso denegado y fallo de escritura.
+No se modificaron refugios reales para probar invalidaciones en producción.
+En el navegador se comprobó la ficha de Luna con la sesión existente y el
+listado desplegado de refugios, con sus conteos de uno y cero disponibles.
+Las huellas completas de animales, refugios, usuarios y campañas coinciden
+antes y después. La otra cuenta, las fotos y el pago real siguen pendientes.
 
 Publicación autorizada: push a `main` del repositorio `00tino/adoptar`, conectado
 al proyecto Vercel `adoptar` (`prj_HJO5TcccOPJW9bMPdg6NYsazelgj`). El sitio público

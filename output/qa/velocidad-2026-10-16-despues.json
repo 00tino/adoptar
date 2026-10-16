@@ -1,0 +1,1338 @@
+{
+  "fechaUtc": "2026-10-16T22:49:45.588Z",
+  "origen": "https://adoptar.dpdns.org",
+  "limites": {
+    "solicitudes": 122,
+    "bytesHtml": 67108864,
+    "duracionMs": 120000,
+    "timeoutMs": 8000,
+    "p95Ms": 5000
+  },
+  "duracionMs": 32402,
+  "solicitudesIncluidoCalentamiento": 122,
+  "erroresIncluidoCalentamiento": 0,
+  "bytesHtmlDecodificado": 13856049,
+  "picoSolicitudesActivas": 20,
+  "rssClienteMiB": 84,
+  "motivoParada": null,
+  "etapas": [
+    {
+      "concurrencia": 1,
+      "duracionMs": 11506,
+      "solicitudes": 8,
+      "errores": 0,
+      "ttfbP50Ms": 385,
+      "ttfbP95Ms": 911,
+      "totalP50Ms": 396,
+      "totalP95Ms": 962,
+      "totalMaxMs": 962
+    },
+    {
+      "concurrencia": 5,
+      "duracionMs": 7467,
+      "solicitudes": 20,
+      "errores": 0,
+      "ttfbP50Ms": 321,
+      "ttfbP95Ms": 1464,
+      "totalP50Ms": 502,
+      "totalP95Ms": 1597,
+      "totalMaxMs": 1735
+    },
+    {
+      "concurrencia": 10,
+      "duracionMs": 5002,
+      "solicitudes": 30,
+      "errores": 0,
+      "ttfbP50Ms": 373,
+      "ttfbP95Ms": 1215,
+      "totalP50Ms": 531,
+      "totalP95Ms": 1241,
+      "totalMaxMs": 1438
+    },
+    {
+      "concurrencia": 20,
+      "duracionMs": 4995,
+      "solicitudes": 60,
+      "errores": 0,
+      "ttfbP50Ms": 326,
+      "ttfbP95Ms": 721,
+      "totalP50Ms": 462,
+      "totalP95Ms": 875,
+      "totalMaxMs": 1373
+    }
+  ],
+  "resumen": {
+    "solicitudes": 118,
+    "errores": 0,
+    "ttfbP50Ms": 345,
+    "ttfbP95Ms": 1130,
+    "totalP50Ms": 485,
+    "totalP95Ms": 1241,
+    "totalMaxMs": 1735
+  },
+  "porRuta": [
+    {
+      "ruta": "/",
+      "solicitudes": 30,
+      "errores": 0,
+      "ttfbP50Ms": 639,
+      "ttfbP95Ms": 1002,
+      "totalP50Ms": 668,
+      "totalP95Ms": 1121,
+      "totalMaxMs": 1301
+    },
+    {
+      "ruta": "/animales",
+      "solicitudes": 30,
+      "errores": 0,
+      "ttfbP50Ms": 302,
+      "ttfbP95Ms": 911,
+      "totalP50Ms": 414,
+      "totalP95Ms": 948,
+      "totalMaxMs": 1241
+    },
+    {
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "solicitudes": 29,
+      "errores": 0,
+      "ttfbP50Ms": 317,
+      "ttfbP95Ms": 1215,
+      "totalP50Ms": 498,
+      "totalP95Ms": 1438,
+      "totalMaxMs": 1735
+    },
+    {
+      "ruta": "/refugios",
+      "solicitudes": 29,
+      "errores": 0,
+      "ttfbP50Ms": 258,
+      "ttfbP95Ms": 682,
+      "totalP50Ms": 354,
+      "totalP95Ms": 688,
+      "totalMaxMs": 1597
+    }
+  ],
+  "limitesInterpretacion": "Ráfagas de solicitudes HTTP desde una Mac; no representa usuarios navegando, imágenes, JS, sesiones, escrituras ni 1.000 usuarios simultáneos. Bytes de HTML descomprimido, no transferencia facturada.",
+  "muestras": [
+    {
+      "etapa": "calentamiento",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 1179,
+      "totalMs": 1297,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "calentamiento",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 416,
+      "totalMs": 533,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "calentamiento",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 660,
+      "totalMs": 778,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "calentamiento",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 816,
+      "totalMs": 818,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-1",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 638,
+      "totalMs": 839,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-1",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 411,
+      "totalMs": 415,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-1",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 385,
+      "totalMs": 396,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-1",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 259,
+      "totalMs": 270,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-1",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 835,
+      "totalMs": 962,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-1",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 911,
+      "totalMs": 948,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-1",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 317,
+      "totalMs": 319,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-1",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 229,
+      "totalMs": 345,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 408,
+      "totalMs": 525,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 543,
+      "totalMs": 549,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 1002,
+      "totalMs": 1121,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 1464,
+      "totalMs": 1597,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 1511,
+      "totalMs": 1735,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 321,
+      "totalMs": 439,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 321,
+      "totalMs": 440,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 336,
+      "totalMs": 453,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 315,
+      "totalMs": 539,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 1130,
+      "totalMs": 1301,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 235,
+      "totalMs": 241,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 282,
+      "totalMs": 401,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 268,
+      "totalMs": 502,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 399,
+      "totalMs": 518,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 639,
+      "totalMs": 754,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 208,
+      "totalMs": 325,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 240,
+      "totalMs": 357,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 239,
+      "totalMs": 371,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 290,
+      "totalMs": 401,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-5",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 657,
+      "totalMs": 668,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 216,
+      "totalMs": 225,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 217,
+      "totalMs": 336,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 318,
+      "totalMs": 543,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 571,
+      "totalMs": 575,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 641,
+      "totalMs": 658,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 620,
+      "totalMs": 697,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 598,
+      "totalMs": 708,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 680,
+      "totalMs": 794,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 575,
+      "totalMs": 804,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 743,
+      "totalMs": 863,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 243,
+      "totalMs": 263,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 240,
+      "totalMs": 350,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 241,
+      "totalMs": 359,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 260,
+      "totalMs": 485,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 306,
+      "totalMs": 531,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 652,
+      "totalMs": 659,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 550,
+      "totalMs": 681,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 692,
+      "totalMs": 805,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 1235,
+      "totalMs": 1241,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 1215,
+      "totalMs": 1438,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 224,
+      "totalMs": 349,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 353,
+      "totalMs": 355,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 247,
+      "totalMs": 366,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 394,
+      "totalMs": 404,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 299,
+      "totalMs": 414,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 308,
+      "totalMs": 424,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 353,
+      "totalMs": 465,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 373,
+      "totalMs": 488,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 394,
+      "totalMs": 551,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-10",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 465,
+      "totalMs": 691,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 227,
+      "totalMs": 229,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 295,
+      "totalMs": 299,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 217,
+      "totalMs": 332,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 233,
+      "totalMs": 354,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 242,
+      "totalMs": 357,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 242,
+      "totalMs": 359,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 345,
+      "totalMs": 462,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 269,
+      "totalMs": 498,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 584,
+      "totalMs": 602,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 647,
+      "totalMs": 652,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 644,
+      "totalMs": 653,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 554,
+      "totalMs": 669,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 556,
+      "totalMs": 671,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 660,
+      "totalMs": 673,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 570,
+      "totalMs": 684,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 575,
+      "totalMs": 799,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 815,
+      "totalMs": 828,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 720,
+      "totalMs": 875,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 733,
+      "totalMs": 894,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 1144,
+      "totalMs": 1373,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 230,
+      "totalMs": 232,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 233,
+      "totalMs": 240,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 267,
+      "totalMs": 274,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 272,
+      "totalMs": 277,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 302,
+      "totalMs": 309,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 225,
+      "totalMs": 342,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 217,
+      "totalMs": 342,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 276,
+      "totalMs": 391,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 301,
+      "totalMs": 423,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 312,
+      "totalMs": 435,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 430,
+      "totalMs": 437,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 252,
+      "totalMs": 478,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 268,
+      "totalMs": 492,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 311,
+      "totalMs": 520,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 429,
+      "totalMs": 558,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 405,
+      "totalMs": 567,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 472,
+      "totalMs": 586,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 469,
+      "totalMs": 634,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 682,
+      "totalMs": 688,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 562,
+      "totalMs": 736,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 224,
+      "totalMs": 229,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 238,
+      "totalMs": 241,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 253,
+      "totalMs": 268,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 326,
+      "totalMs": 332,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 224,
+      "totalMs": 341,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 258,
+      "totalMs": 343,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 229,
+      "totalMs": 355,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 253,
+      "totalMs": 368,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 299,
+      "totalMs": 425,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 223,
+      "totalMs": 447,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 329,
+      "totalMs": 442,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 341,
+      "totalMs": 453,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/refugios",
+      "estado": 200,
+      "ttfbMs": 348,
+      "totalMs": 473,
+      "bytesHtml": 96109,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 376,
+      "totalMs": 494,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 446,
+      "totalMs": 566,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 441,
+      "totalMs": 578,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 384,
+      "totalMs": 607,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 713,
+      "totalMs": 831,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 640,
+      "totalMs": 847,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "concurrencia-20",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 721,
+      "totalMs": 877,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    }
+  ]
+}
