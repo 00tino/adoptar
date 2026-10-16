@@ -22,6 +22,9 @@ function gmailTransport() {
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
       // Google muestra la app password con espacios ("abcd efgh ijkl mnop");
       // los sacamos para que la auth no falle con 535 si se pegó tal cual.
       auth: {

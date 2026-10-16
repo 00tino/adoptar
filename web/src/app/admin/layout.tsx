@@ -30,6 +30,7 @@ export default async function LayoutAdmin({
     { href: "/admin/campanas", texto: "Campañas" },
     { href: "/admin/donaciones", texto: "Donaciones" },
     { href: "/admin/suscripciones", texto: "Suscripciones" },
+    { href: "/admin/diagnostico", texto: "Pruebas de servicios" },
   ];
 
   return (

@@ -13,8 +13,10 @@ interface DatosError {
   digest?: string;
 }
 
+const ultimosAvisosCorreo = new Map<string, number>();
+
 /** Registra un error 500 de forma estructurada (y opcionalmente lo reenvía). */
-export async function registrarError(datos: DatosError): Promise<void> {
+export async function registrarError(datos: DatosError): Promise<boolean> {
   const registro = {
     nivel: "error",
     ts: new Date().toISOString(),
@@ -39,8 +41,35 @@ export async function registrarError(datos: DatosError): Promise<void> {
         signal: AbortSignal.timeout(5000),
       });
       if (!respuesta.ok) console.error("[ERROR500] Webhook de monitoreo rechazado:", respuesta.status);
+      return respuesta.ok;
     } catch {
       // El monitoreo nunca debe romper la request.
+      return false;
     }
+  }
+
+  const para = process.env.ERROR_ALERT_EMAIL;
+  if (!para || process.env.NEXT_RUNTIME !== "nodejs") return false;
+  // Protección básica ante ráfagas; en Vercel el límite es por instancia.
+  const ahora = Date.now();
+  const anterior = ultimosAvisosCorreo.get(datos.contexto);
+  if (anterior != null && ahora - anterior < 15 * 60_000) return false;
+  if (ultimosAvisosCorreo.size >= 1000) ultimosAvisosCorreo.clear();
+  ultimosAvisosCorreo.set(datos.contexto, ahora);
+  try {
+    const { enviarEmail, escaparHtml } = await import("./emails");
+    const enviado = await enviarEmail({
+      para,
+      asunto: `[AdoptAR] ${datos.contexto.slice(0, 100)}`,
+      html: `<h1>Alerta de AdoptAR</h1><p>${escaparHtml(datos.contexto)}</p>` +
+        `<p>${escaparHtml(datos.mensaje.slice(0, 1000))}</p>` +
+        `<p>Ruta: ${escaparHtml((datos.ruta ?? "").split("?")[0])}</p>` +
+        `<p>${registro.ts}</p><p>Los errores repetidos del mismo contexto se agrupan durante 15 minutos por instancia.</p>`,
+    });
+    if (!enviado) ultimosAvisosCorreo.delete(datos.contexto);
+    return enviado;
+  } catch {
+    ultimosAvisosCorreo.delete(datos.contexto);
+    return false;
   }
 }

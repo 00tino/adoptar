@@ -27,11 +27,14 @@ Se conserva la identidad visual.
 - Tres relacionados consultados con límite; conteos agregados en Postgres y
   cercanía resuelta en la base, con los 100 resultados más cercanos y aviso en UI.
 - Monitoreo compatible con Slack y Discord, con timeout, límite de Discord y
-  menciones desactivadas. Sin webhook sigue el registro local `[ERROR500]`.
+  menciones desactivadas. Como alternativa, `ERROR_ALERT_EMAIL` envía avisos por
+  correo en Node.js, agrupados por contexto durante 15 minutos por instancia.
+  Sigue el registro local `[ERROR500]`. El panel privado `/admin/diagnostico`
+  permite probar correo y monitoreo sin modificar los datos demo.
 
 ## Verificación
 
-- `npm test`: 84 pruebas en verde de autorización, alertas, favoritos, postulaciones,
+- `npm test`: 94 pruebas en verde de autorización, alertas, favoritos, postulaciones,
   monitoreo y caché, además de las pruebas previas del importador y del dominio.
 - Las pruebas SQL corren en PGlite (Postgres en memoria) con las tablas base del
   esquema y la migración real: grants, RLS, restricciones, deduplicación, búsqueda
@@ -57,13 +60,15 @@ Se conserva la identidad visual.
    como admin, guardar/pausar una alerta y recibir un aviso de prueba autorizado.
    La entrega real todavía no está comprobada. Los avisos son de mejor esfuerzo:
    no hay cola durable ni reintento automático si una función termina por timeout.
-3. **Monitoreo:** falta configurar `ERROR_WEBHOOK_URL`; no se creó ningún canal
-   ni se enviaron mensajes a Slack/Discord.
+3. **Monitoreo por email:** destino autorizado guardado en Vercel Production como
+   `ERROR_ALERT_EMAIL`; requiere el deploy de este cambio y probar recepción.
+   No se creó ningún canal ni se enviaron mensajes a Slack/Discord. El límite
+   por instancia es básico, no una deduplicación global durable.
 4. **Mercado Pago sandbox:** faltan token de prueba y comprador de prueba. No se
    cambiaron credenciales ni se intentaron débitos. Hacer la prueba en un entorno
    aislado, sin reemplazar el token de producción.
-5. **Limpieza demo:** sigue pendiente decidir qué conservar; no está autorizada
-   la eliminación de Luna, Rocky ni del refugio demo.
+5. **Datos demo:** conservarlos por instrucción del usuario; no eliminar Luna,
+   Rocky ni el refugio demo.
 6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin
    contratar servicios ni habilitar planes pagos.
 7. **Capacidad:** no se realizó una prueba de carga. El build y la caché no
