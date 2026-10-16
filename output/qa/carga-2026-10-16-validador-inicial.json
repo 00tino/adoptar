@@ -1,0 +1,102 @@
+{
+  "fechaUtc": "2026-10-16T22:38:14.833Z",
+  "origen": "https://adoptar.dpdns.org",
+  "limites": {
+    "solicitudes": 122,
+    "bytesHtml": 67108864,
+    "duracionMs": 120000,
+    "timeoutMs": 8000,
+    "p95Ms": 5000
+  },
+  "duracionMs": 3028,
+  "solicitudesIncluidoCalentamiento": 3,
+  "bytesHtmlDecodificado": 357954,
+  "picoSolicitudesActivas": 1,
+  "rssClienteMiB": 94,
+  "motivoParada": "Calentamiento: El HTML no contiene el contenido esperado o contiene un error de Next.js",
+  "etapas": [],
+  "resumen": {
+    "solicitudes": 0,
+    "errores": 0,
+    "ttfbP50Ms": null,
+    "ttfbP95Ms": null,
+    "totalP50Ms": null,
+    "totalP95Ms": null,
+    "totalMaxMs": null
+  },
+  "porRuta": [
+    {
+      "ruta": "/",
+      "solicitudes": 0,
+      "errores": 0,
+      "ttfbP50Ms": null,
+      "ttfbP95Ms": null,
+      "totalP50Ms": null,
+      "totalP95Ms": null,
+      "totalMaxMs": null
+    },
+    {
+      "ruta": "/animales",
+      "solicitudes": 0,
+      "errores": 0,
+      "ttfbP50Ms": null,
+      "ttfbP95Ms": null,
+      "totalP50Ms": null,
+      "totalP95Ms": null,
+      "totalMaxMs": null
+    },
+    {
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "solicitudes": 0,
+      "errores": 0,
+      "ttfbP50Ms": null,
+      "ttfbP95Ms": null,
+      "totalP50Ms": null,
+      "totalP95Ms": null,
+      "totalMaxMs": null
+    },
+    {
+      "ruta": "/refugios",
+      "solicitudes": 0,
+      "errores": 0,
+      "ttfbP50Ms": null,
+      "ttfbP95Ms": null,
+      "totalP50Ms": null,
+      "totalP95Ms": null,
+      "totalMaxMs": null
+    }
+  ],
+  "limitesInterpretacion": "Ráfagas de solicitudes HTTP desde una Mac; no representa usuarios navegando, imágenes, JS, sesiones, escrituras ni 1.000 usuarios simultáneos. Bytes de HTML descomprimido, no transferencia facturada.",
+  "muestras": [
+    {
+      "etapa": "calentamiento",
+      "ruta": "/",
+      "estado": 200,
+      "ttfbMs": 1934,
+      "totalMs": 2065,
+      "bytesHtml": 116789,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "calentamiento",
+      "ruta": "/animales",
+      "estado": 200,
+      "ttfbMs": 317,
+      "totalMs": 394,
+      "bytesHtml": 117370,
+      "cacheVercel": "MISS",
+      "error": null
+    },
+    {
+      "etapa": "calentamiento",
+      "ruta": "/animales/adoptar-perra-luna-avellaneda-demo",
+      "estado": 200,
+      "ttfbMs": 445,
+      "totalMs": 563,
+      "bytesHtml": 123795,
+      "cacheVercel": "MISS",
+      "error": "El HTML no contiene el contenido esperado o contiene un error de Next.js"
+    }
+  ]
+}

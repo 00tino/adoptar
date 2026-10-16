@@ -138,8 +138,9 @@ Se conserva la identidad visual.
    Rocky ni el refugio demo.
 6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin
    contratar servicios ni habilitar planes pagos.
-7. **Capacidad:** no se realizó una prueba de carga. El build y la caché no
-   demuestran 1.000 usuarios simultáneos ni latencia menor a 300 ms.
+7. **Capacidad:** se completó una prueba acotada de lecturas públicas, detallada
+   debajo: 122 solicitudes con pico de 20 simultáneas y cero errores.
+   No demuestra 1.000 usuarios simultáneos ni latencia menor a 300 ms.
 
 ## Verificación final de este cierre
 
@@ -161,6 +162,66 @@ Se conserva la identidad visual.
   cuatro históricos y el único pago autorizado de ARS 100, todavía pendiente.
 - No hizo falta modificar el código funcional ni aplicar otra migración para
   cerrar estas verificaciones.
+
+## Prueba de carga pública — 16 de octubre de 2026
+
+Corrida contra `https://adoptar.dpdns.org`, con `97d091b` desplegado, terminada a
+las 19:40 ART. Datos completos en
+[`output/qa/carga-2026-10-16.json`](../output/qa/carga-2026-10-16.json).
+
+Se consultaron inicio, catálogo, ficha demo de Luna y refugios sin cookies,
+autenticación, formularios, pagos, imágenes ni scripts del navegador. Son tandas
+de GET con un segundo de pausa entre tandas: no es tráfico sostenido ni una
+simulación de personas navegando.
+
+| Solicitudes simultáneas por tanda | Lecturas medidas | Errores | TTFB p95 | HTML completo p95 |
+| --- | --- | --- | --- | --- |
+| 1 | 8 | 0 | 737 ms | 920 ms |
+| 5 | 20 | 0 | 1.714 ms | 1.936 ms |
+| 10 | 30 | 0 | 2.004 ms | 2.227 ms |
+| 20 | 60 | 0 | 1.264 ms | 1.380 ms |
+
+La corrida válida duró 37,23 segundos: 118 lecturas medidas más cuatro de
+calentamiento, todas HTTP 200 y con el contenido esperado. El HTML completo
+tuvo p50 de 772 ms, p95 de 1.762 ms y máximo de 2.462 ms; el TTFB global p95 fue
+1.578 ms. Se descargaron 13.856.049 bytes de HTML descomprimido (13,21 MiB),
+no equivalentes a transferencia facturada; el proceso cliente terminó con
+82 MiB de RSS. La portada fue la ruta más lenta: p95 de HTML completo 2.152 ms.
+
+Las 122 respuestas mostraron `x-vercel-cache: MISS`: esto se refiere a la caché
+del HTML en Vercel y no prueba que las consultas internas de Supabase omitan
+su caché de datos. Las etapas se ejecutan en orden y reutilizan conexiones y
+cachés: que la última sea más rápida no permite inferir que más concurrencia
+mejora la velocidad.
+
+El generador es esta Mac y sus tiempos incluyen red, conexiones y carga local;
+un build local corrió durante parte de la prueba. No se midieron métricas
+internas del servidor, renderizado, LCP, imágenes, JavaScript, cuentas,
+escrituras ni 1.000 usuarios simultáneos. El objetivo de menos de 300 ms no está
+alcanzado en estas mediciones. El resultado solo confirma ausencia de errores
+para este volumen pequeño de lecturas durante esta ventana.
+
+El script reproducible es `web/scripts/probar-carga.mjs`; sin argumentos solo
+muestra el plan. Para ejecutar conscientemente:
+
+```bash
+cd web
+node scripts/probar-carga.mjs --ejecutar /tmp/adoptar-carga.json
+```
+
+Tiene límites de 122 solicitudes, 20 activas, 64 MiB de HTML y dos minutos;
+timeout de ocho segundos por solicitud y corte ante errores o p95 de una tanda
+mayor a cinco segundos. No forma parte de `npm test` ni corre automáticamente.
+El primer intento se detuvo tras tres lecturas por un falso negativo del
+validador: React separa «La historia de» y «Luna» con comentarios HTML. Se
+corrigió el validador, sin tocar la web. Se conserva
+[`carga-2026-10-16-validador-inicial.json`](../output/qa/carga-2026-10-16-validador-inicial.json).
+Con dos consultas de diagnóstico adicionales, esta tarea usó 127 GET de HTML.
+
+Después se comprobaron las mismas huellas completas de animales, refugios,
+usuarios y campañas. El pago real sigue pendiente, conserva los cinco intentos
+totales de su campaña y no se activó ninguna alerta ni quedó un reporte abierto.
+Se repitieron 115 tests, lint y build con resultado correcto.
 
 Publicación autorizada: push a `main` del repositorio `00tino/adoptar`, conectado
 al proyecto Vercel `adoptar` (`prj_HJO5TcccOPJW9bMPdg6NYsazelgj`). El sitio público
