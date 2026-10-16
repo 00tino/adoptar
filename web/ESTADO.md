@@ -80,9 +80,20 @@ Se conserva la identidad visual.
    El proveedor devuelve `live_mode=true` también para este flujo con cuentas
    de prueba; el aislamiento se comprobó por el tag `test_user` y los IDs de las
    cuentas, no por ese campo ni por el prefijo del token. No se reemplazó el
-   token de producción ni se escribió en Supabase. Falta comprobar la recepción
-   real de webhooks: los 9 tests locales de firma, acreditación, reenvíos y
-   eventos de suscripción usan dobles de los proveedores y no prueban entrega.
+   token de producción. El simulador de Mercado Pago entregó los eventos
+   `payment.updated` y `subscription_preapproval` al webhook publicado con HTTP
+   200, usando los IDs de estos recursos de prueba. Una solicitud de firma
+   inválida devolvió HTTP 401 y `firma inválida`. Se habilitó y verificó guardado
+   el evento «Planes y suscripciones»; «Pagos (legacy)» sigue habilitado.
+   Los 9 tests locales cubren firma, acreditación, reenvíos y suscripciones con
+   dobles de los proveedores. La entrega del simulador no demuestra la
+   acreditación automática de un pago real en la base. La consulta posterior
+   confirmó 15 animales, 2 refugios, 1 usuario, 2 campañas y cero filas de estas
+   pruebas en donaciones/suscripciones de producción.
+
+   Corrección publicada: `33fc8d6`, estado Vercel `success`; la página de
+   donación mensual devuelve HTTP 200. `npm test` (104 pruebas), `npm run lint`
+   y `npm run build` pasaron antes de publicar.
 5. **Datos demo:** conservarlos por instrucción del usuario; no eliminar Luna,
    Rocky ni el refugio demo.
 6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin
