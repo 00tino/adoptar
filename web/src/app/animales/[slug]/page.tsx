@@ -49,15 +49,14 @@ export default async function PaginaAnimal({
 }) {
   const { slug } = await params;
   const { postulado } = await searchParams;
-  const animal = await obtenerAnimalPorSlug(slug);
+  const [animal, usuario] = await Promise.all([obtenerAnimalPorSlug(slug), usuarioActual()]);
   if (!animal) notFound();
 
-  const refugio = animal.refugioId
-    ? await obtenerRefugioPorId(animal.refugioId)
-    : null;
-
-  // Animales relacionados: misma provincia o especie, excluyendo el actual
-  const relacionados = await obtenerAnimalesRelacionados(animal);
+  const [refugio, relacionados, favoritos] = await Promise.all([
+    animal.refugioId ? obtenerRefugioPorId(animal.refugioId) : Promise.resolve(null),
+    obtenerAnimalesRelacionados(animal),
+    usuario ? idsFavoritos() : Promise.resolve(new Set<string>()),
+  ]);
 
   const adoptado = animal.estado === "adoptado";
 
@@ -84,9 +83,8 @@ export default async function PaginaAnimal({
   const telefono = refugio?.telefono ?? null;
 
   // Estado de sesión + favorito (para el corazón y el formulario de adopción)
-  const usuario = await usuarioActual();
   const logueado = !!usuario;
-  const esFavorito = logueado ? (await idsFavoritos()).has(animal.id) : false;
+  const esFavorito = favoritos.has(animal.id);
 
   // Schema.org para que Google entienda que es un animal en adopción
   const schema = {

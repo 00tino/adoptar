@@ -535,7 +535,7 @@ export async function contarAnimalesPorRefugio(): Promise<Record<string, number>
   const conteos: Record<string, number> = {};
   if (supabaseDisponible()) {
     const sb = crearClienteSupabase();
-    const { data, error } = await sb.rpc("contar_animales_por_refugio");
+    const { data, error } = await sb.rpc("contar_animales_por_refugio", undefined, { get: true });
     if (error) throw error;
     for (const fila of data ?? []) conteos[fila.refugio_id] = Number(fila.total);
     return conteos;

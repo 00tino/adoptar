@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   usuario: vi.fn(), activo: vi.fn(), admin: vi.fn(), limite: vi.fn(), from: vi.fn(),
-  revalidar: vi.fn(), notificar: vi.fn(), email: vi.fn(), redirect: vi.fn(),
+  revalidar: vi.fn(), revalidarTag: vi.fn(), notificar: vi.fn(), email: vi.fn(), redirect: vi.fn(),
 }));
 vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from: mocks.from }) }));
 vi.mock("../usuarios", () => ({ asegurarUsuario: mocks.usuario, exigirUsuarioActivo: mocks.activo }));
 vi.mock("../auth", () => ({ esAdmin: mocks.admin }));
 vi.mock("../limites", () => ({ limitarPorIp: mocks.limite, campoTexto: (v: unknown, max: number) => String(v ?? "").trim().slice(0, max) }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidar, revalidateTag: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidar, revalidateTag: mocks.revalidarTag }));
 vi.mock("next/server", () => ({ after: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("../alertas-adopcion", () => ({ notificarAlertasAdopcion: vi.fn() }));
@@ -20,7 +20,9 @@ import { reportarPublicacion, listarReportes, resolverReporte } from "../accione
 import { guardarAlertaAdopcion, miAlertaAdopcion } from "../acciones-alertas-adopcion";
 import { alternarFavorito } from "../acciones-favoritos";
 import { misPostulaciones, postularAdopcion } from "../acciones-adopcion";
-import { cambiarEstadoPostulacion } from "../acciones-refugio";
+import { actualizarPerfilRefugio, cambiarEstadoPostulacion } from "../acciones-refugio";
+import { decidirRefugio } from "../acciones-admin";
+import { cambiarEstadoRefugioAdmin } from "../acciones-admin-gestion";
 
 const usuario = { id: "usuario-a", nombre: "Prueba", email: "test@example.invalid", suspendido: false };
 const animalId = "30000000-0000-4000-8000-000000000001";
@@ -109,6 +111,37 @@ describe("Reportes y alertas con autorización en servidor", () => {
     respuestas.push({ error: new Error("Falla") });
     await expect(miAlertaAdopcion()).rejects.toThrow("cargar");
     expect(consultas[0].cadena.eq).toHaveBeenCalledWith("usuario_id", usuario.id);
+  });
+});
+
+describe("Actualización de la caché pública de refugios", () => {
+  it("invalida el listado y las fichas después de aprobar o suspender desde la cola", async () => {
+    respuestas.push({ data: { nombre: "Refugio", email: null, usuario_id: null } });
+    await decidirRefugio(formulario({ id: "refugio", decision: "aprobar" }));
+    expect(mocks.revalidarTag).toHaveBeenCalledWith("refugios-publicos", { expire: 0 });
+  });
+  it("invalida los datos públicos después de cambiar el estado desde gestión", async () => {
+    respuestas.push({ data: { nombre: "Refugio", usuario_id: null } });
+    await cambiarEstadoRefugioAdmin(formulario({ id: "refugio", estado: "suspendido" }));
+    expect(mocks.revalidarTag).toHaveBeenCalledWith("refugios-publicos", { expire: 0 });
+  });
+  it("muestra el perfil editado por su propietario sin esperar el TTL", async () => {
+    respuestas.push({ data: { id: "refugio", slug: "refugio", nombre: "Refugio", estado: "verificado", fotos: [] } }, { error: null });
+    await actualizarPerfilRefugio(formulario({ descripcion: "Nueva descripción" }));
+    expect(mocks.revalidarTag).toHaveBeenCalledWith("refugios-publicos", { expire: 0 });
+    expect(consultas[1].cadena.eq).toHaveBeenCalledWith("id", "refugio");
+  });
+  it("no invalida ni modifica nada si falta permiso de administrador", async () => {
+    mocks.admin.mockResolvedValue(false);
+    await expect(decidirRefugio(formulario({ id: "refugio", decision: "aprobar" }))).rejects.toThrow("administrador");
+    await expect(cambiarEstadoRefugioAdmin(formulario({ id: "refugio", estado: "suspendido" }))).rejects.toThrow("administrador");
+    expect(mocks.from).not.toHaveBeenCalled();
+    expect(mocks.revalidarTag).not.toHaveBeenCalled();
+  });
+  it("no confirma actualización de caché si falla la escritura", async () => {
+    respuestas.push({ error: { message: "Sin conexión" } });
+    await expect(cambiarEstadoRefugioAdmin(formulario({ id: "refugio", estado: "suspendido" }))).rejects.toThrow("Sin conexión");
+    expect(mocks.revalidarTag).not.toHaveBeenCalled();
   });
 });
 

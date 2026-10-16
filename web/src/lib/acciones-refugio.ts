@@ -472,6 +472,7 @@ export async function actualizarPerfilRefugio(formData: FormData) {
     .eq("id", refugio.id);
   if (error) throw new Error(`No pudimos guardar el perfil: ${error.message}`);
 
+  revalidateTag("refugios-publicos", { expire: 0 });
   revalidatePath(`/refugios/${refugio.slug}`);
   revalidatePath("/refugios");
   redirect("/mi-refugio/perfil?guardado=1");

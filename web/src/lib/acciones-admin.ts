@@ -188,6 +188,7 @@ export async function decidirRefugio(formData: FormData) {
       ? `Tu solicitud de refugio "${data?.nombre}" fue rechazada.`
       : `¡Tu refugio "${data?.nombre}" fue aprobado${estado === "estrella" ? " como estrella ⭐" : ""}! 🎉`
   );
+  revalidateTag("refugios-publicos", { expire: 0 });
   revalidatePath("/admin");
   revalidatePath("/refugios");
 }

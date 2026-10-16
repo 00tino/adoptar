@@ -342,6 +342,7 @@ export async function cambiarEstadoRefugioAdmin(formData: FormData) {
       ? `Tu refugio "${data?.nombre}" fue suspendido. Escribinos si creés que es un error.`
       : `Tu refugio "${data?.nombre}" ahora figura como ${estado}.`
   );
+  revalidateTag("refugios-publicos", { expire: 0 });
   revalidatePath("/admin/refugios");
   revalidatePath("/refugios");
 }
