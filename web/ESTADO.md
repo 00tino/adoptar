@@ -34,7 +34,7 @@ Se conserva la identidad visual.
 
 ## Verificación
 
-- `npm test`: 94 pruebas en verde de autorización, alertas, favoritos, postulaciones,
+- `npm test`: 104 pruebas en verde de autorización, alertas, favoritos, postulaciones,
   monitoreo y caché, además de las pruebas previas del importador y del dominio.
 - Las pruebas SQL corren en PGlite (Postgres en memoria) con las tablas base del
   esquema y la migración real: grants, RLS, restricciones, deduplicación, búsqueda
@@ -70,10 +70,19 @@ Se conserva la identidad visual.
    vendedor argentino con tag `test_user`. Existen vendedor y comprador de
    prueba. Se creó una preferencia aislada de ARS 500, con referencia
    `adoptar-sandbox-*`, vencimiento de una hora y sin `notification_url`.
-   El checkout sandbox abrió correctamente. No se reemplazó el token de
-   producción ni se escribió en Supabase. Falta ingresar con el comprador de
-   prueba y comprobar pago, suscripción y recepción/verificación de webhooks.
-   La creación del checkout no demuestra esos pasos.
+   Pago simulado aprobado: `183543579685`, vendedor `3466462978`, comprador
+   `3464210539`, ARS 500 desde saldo ficticio. Suscripción de prueba
+   `203f08d4c5a04a33ad0082f96f8af212` autorizada, primer cobro ficticio de ARS 500
+   confirmado por API y cancelada luego para no dejar recurrencias activas.
+   Se corrigió un error reproducido contra la API: `start_date=ahora` llegaba
+   vencido y era rechazado; se omite para iniciar al autorizar. La creación sin
+   esa fecha y el primer cobro se comprobaron en las cuentas de prueba.
+   El proveedor devuelve `live_mode=true` también para este flujo con cuentas
+   de prueba; el aislamiento se comprobó por el tag `test_user` y los IDs de las
+   cuentas, no por ese campo ni por el prefijo del token. No se reemplazó el
+   token de producción ni se escribió en Supabase. Falta comprobar la recepción
+   real de webhooks: los 9 tests locales de firma, acreditación, reenvíos y
+   eventos de suscripción usan dobles de los proveedores y no prueban entrega.
 5. **Datos demo:** conservarlos por instrucción del usuario; no eliminar Luna,
    Rocky ni el refugio demo.
 6. **Fotos reales y trámites:** requieren material/gestión del usuario, sin

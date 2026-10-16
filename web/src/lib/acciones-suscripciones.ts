@@ -124,9 +124,7 @@ export async function crearSuscripcion(formData: FormData) {
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
-        // start_date "ahora" hace que el primer cobro se genere al autorizar,
-        // no recién el mes siguiente. Los siguientes caen cada mes desde acá.
-        start_date: new Date().toISOString(),
+        // Sin fecha explícita, MP inicia al autorizar. "Ahora" puede llegar vencido.
         transaction_amount: monto,
         currency_id: "ARS",
       },
