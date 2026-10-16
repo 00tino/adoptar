@@ -57,11 +57,13 @@ Se conserva la identidad visual.
    y cercanía responden en la base real. Lectura anónima/autenticada revocada
    sobre las tres tablas privadas; escritura disponible solo para service role.
 2. **QA con sesión y correo real:** probar un reporte como usuario, su revisión
-   como admin, guardar/pausar una alerta y recibir un aviso de prueba autorizado.
-   La entrega real todavía no está comprobada. Los avisos son de mejor esfuerzo:
+   como admin y guardar/pausar una alerta. El panel privado publicado permitió
+   enviar las dos pruebas autorizadas (correo y monitoreo); Gmail SMTP aceptó
+   ambas. La recepción en la casilla todavía no está comprobada. Los avisos son de mejor esfuerzo:
    no hay cola durable ni reintento automático si una función termina por timeout.
 3. **Monitoreo por email:** destino autorizado guardado en Vercel Production como
-   `ERROR_ALERT_EMAIL`; requiere el deploy de este cambio y probar recepción.
+   `ERROR_ALERT_EMAIL`; cambio publicado en `1b21090` y prueba aceptada por el
+   proveedor desde producción. Falta confirmar recepción.
    No se creó ningún canal ni se enviaron mensajes a Slack/Discord. El límite
    por instancia es básico, no una deduplicación global durable.
 4. **Mercado Pago sandbox:** faltan token de prueba y comprador de prueba. No se
