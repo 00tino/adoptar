@@ -3,16 +3,17 @@
 // funciona en "modo demo" sin login.
 
 import { currentUser } from "@clerk/nextjs/server";
+import { cache } from "react";
 
 export function clerkDisponible(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 }
 
-/** Devuelve el usuario logueado, o null si no hay sesión o Clerk no está configurado */
-export async function usuarioActual() {
+/** Comparte la consulta entre header y página solo durante este render, nunca entre sesiones. */
+export const usuarioActual = cache(async () => {
   if (!clerkDisponible()) return null;
   return currentUser();
-}
+});
 
 /** El admin es el dueño de la plataforma: se define por email en .env.local */
 export async function esAdmin(): Promise<boolean> {

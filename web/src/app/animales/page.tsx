@@ -51,13 +51,15 @@ export default async function PaginaAnimales({
   const radioNumero = Number(radioCruda);
   const radio = Number.isFinite(radioNumero) ? Math.max(0, radioNumero) : 0;
 
-  const [cercanos, { animales, total }, provincias] = await Promise.all([
+  const [cercanos, { animales, total }, provincias, { logueado, favs }] = await Promise.all([
     cercania ? obtenerAnimalesCercanos(filtros, lat, lng, radio) : Promise.resolve([]),
     cercania ? Promise.resolve({ animales: [], total: 0 }) : obtenerAnimalesPaginados(filtros, pagina),
     obtenerProvincias(),
+    usuarioActual().then(async (usuario) => ({
+      logueado: !!usuario,
+      favs: usuario ? await idsFavoritos() : new Set<string>(),
+    })),
   ]);
-  const logueado = !!(await usuarioActual());
-  const favs = logueado ? await idsFavoritos() : new Set<string>();
 
   const cercaniaParams = cercania
     ? { lat: latCruda!, lng: lngCruda!, radio: String(radio) }
