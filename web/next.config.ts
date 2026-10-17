@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { constants } from "@clerk/backend/internal";
 
 const nextConfig: NextConfig = {
   turbopack: { root: __dirname },
@@ -24,10 +23,8 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     const sinSesion = [
-      ...["cookie", "authorization", "x-clerk-auth-status", "x-clerk-request-data", "next-action"]
+      ...["cookie", "authorization", "x-clerk-auth-status", "x-clerk-request-data"]
         .map((key) => ({ type: "header" as const, key })),
-      ...[...Object.values(constants.QueryParameters), "__clerk_ticket", "__clerk_status"]
-        .map((key) => ({ type: "query" as const, key })),
     ];
     return {
       beforeFiles: [

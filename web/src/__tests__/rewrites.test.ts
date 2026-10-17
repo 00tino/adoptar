@@ -17,12 +17,23 @@ describe("HTML público y páginas con sesión", () => {
     }
   });
 
-  it.each(["authorization", "x-clerk-auth-status", "x-clerk-request-data", "next-action"])("%s impide servir la vista compartida", async (cabecera) => {
+  it.each(["authorization", "x-clerk-auth-status", "x-clerk-request-data"])("%s impide servir la vista compartida", async (cabecera) => {
     expect(getRewrittenUrl(await respuesta("/animales", { [cabecera]: "prueba" }))).toBeNull();
   });
 
   it.each([...Object.values(constants.QueryParameters), "__clerk_ticket", "__clerk_status"])("%s conserva el retorno de ingreso original", async (parametro) => {
-    expect(getRewrittenUrl(await respuesta(`/?${parametro}=prueba`))).toBeNull();
+    // El matcher probado en proxy.test.ts ejecuta Clerk antes de estas reglas.
+    expect(getRewrittenUrl(await respuesta(`/?${parametro}=prueba`, { "x-clerk-auth-status": "signed-out" }))).toBeNull();
+  });
+
+  it("una acción que pasó por Clerk conserva su ruta original", async () => {
+    expect(getRewrittenUrl(await respuesta("/animales", { "next-action": "accion", "x-clerk-auth-status": "signed-out" }))).toBeNull();
+  });
+
+  it("respeta el máximo de 16 condiciones por ruta del builder de Vercel", async () => {
+    const rutas = await nextConfig.rewrites!();
+    if (Array.isArray(rutas)) throw new Error("Se esperaban reglas beforeFiles");
+    for (const ruta of rutas.beforeFiles ?? []) expect((ruta.missing?.length ?? 0) + (ruta.has?.length ?? 0)).toBeLessThanOrEqual(16);
   });
 
   it.each(["especie", "tipo", "provincia", "tamano", "sexo", "edad", "castrado", "q", "pagina", "lat", "lng", "radio"])("el filtro %s conserva el catálogo dinámico", async (parametro) => {
