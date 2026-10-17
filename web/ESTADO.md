@@ -378,6 +378,115 @@ coinciden antes y después. No se modificaron los demo, el plan ni los servicios
 Fluid Compute ya estaba habilitado en Hobby. La donación real de ARS 100 sigue
 en estado `pendiente`; la otra cuenta y las fotos siguen postergadas.
 
+## HTML público desde CDN y medición aislada — 17/10/2026
+
+Mediciones sobre `1c3804d`, Vercel `success`; ajuste posterior `ce3fc9a` para
+conservar en el servidor la selección del proxy de Clerk. Las vistas de portada, catálogo sin
+filtros, refugios y fichas con slug `adoptar-`/`transito-` se prerenderizan para
+peticiones sin cookies ni contexto de autenticación. Conservan las consultas
+públicas etiquetadas y una revalidación de 60 segundos. Las rutas internas
+`/publico/...` redirigen a sus URL originales cuando se piden directamente.
+No se agrega `s-maxage` a páginas personalizadas.
+
+Las peticiones con cookies, autorización, filtros, postulaciones o contexto de
+Clerk mantienen el render original. El matcher sigue procesando rutas privadas,
+API, acciones y los parámetros de retorno del SDK. Las reglas de reescritura se
+evalúan después de ese procesamiento; el contexto que produce Clerk impide
+servir la vista compartida. Se comprobó en HTTP local y producción la separación
+`public`/`private, no-cache, no-store`; la sesión existente conservó su menú y
+los tres animales públicos después de recargar.
+
+La portada consulta las campañas después de cargar el HTML mediante
+`/api/campanas-publicas`, con `force-dynamic` y `Cache-Control: no-store` tanto
+en la API como en la petición del navegador. No muestra un monto de respaldo
+si la consulta falla; ofrece ir a donaciones y registra el fallo con el
+monitoreo existente. **La latencia del HTML ya no incluye esta consulta**.
+La página `/donaciones` conserva su render fresco. Se verificó en el navegador
+que la campaña activa aparece después de la consulta.
+
+También se dejó de serializar en cada HTML el objeto de traducciones de Clerk
+(52.382 bytes): el mismo proveedor y la traducción española viven en un
+componente cliente. El HTML compilado quedó entre 33 y 61 KB según la ruta.
+Los metadatos de las fichas declaran la URL original de su imagen al compartir,
+también en la vista prerenderizada.
+
+Los ensayos locales intermedios se conservan completos, sin elegir solo la
+mejor corrida:
+
+| Versión local | Mediana HTML | p95 HTML | Evidencia |
+| --- | ---: | ---: | --- |
+| Antes | 179 ms | 511 ms | [JSON](../output/qa/publico-2026-10-17-antes.json) |
+| Salida temprana dentro del proxy | 184 ms | 546 ms | [JSON](../output/qa/publico-2026-10-17-intermedio.json) |
+| Matcher sin prerender | 161 ms | 980 ms | [JSON](../output/qa/matcher-2026-10-17-intermedio.json) |
+| CDN con traducciones serializadas | 126 ms | 1.060 ms | [JSON](../output/qa/cdn-2026-10-17-intermedio.json) |
+
+Una traza de la versión intermedia mostró 376 ms en middleware sin llamadas
+externas y 40 ms en la ficha; [captura](../output/qa/traza-publica-middleware-376ms.png).
+En la última corrida local las 118 respuestas medidas fueron `HIT`. Durante
+la continuación se observó un render externo de video consumiendo varios núcleos
+en la Mac y una mayor duración de los tests. No se lo interrumpió ni se atribuye
+toda la variación a esa carga sin una comparación controlada.
+
+La prueba remota es manual, en un runner estándar gratuito del repositorio
+público: `.github/workflows/carga-publica.yml`. No tiene permisos de token,
+secretos, dependencias externas, tareas programadas ni artefactos de pago.
+Ejecuta el mismo script tres veces, con pausas de 30 segundos, y conserva cada
+informe completo en los logs. No se compara porcentualmente con la Mac:
+el origen de red, el sistema y la versión de Node son diferentes.
+
+Resultado del [run manual 39045851085](https://github.com/00tino/adoptar/actions/runs/39045851085)
+sobre `1c3804d`, cliente Linux/Node 22.23.3, punto de entrada CDN `cle1`:
+
+| Corrida remota | Mediana HTML | p95 HTML | Errores | Evidencia |
+| --- | ---: | ---: | ---: | --- |
+| 1 | 39 ms | 401 ms | 0 | [JSON](../output/qa/cdn-2026-10-17-remoto-1.json) |
+| 2 | 41 ms | 249 ms | 0 | [JSON](../output/qa/cdn-2026-10-17-remoto-2.json) |
+| 3 | 39 ms | 519 ms | 0 | [JSON](../output/qa/cdn-2026-10-17-remoto-3.json) |
+
+[Entorno exacto](../output/qa/cdn-2026-10-17-entorno.json) y
+[captura del resumen](../output/qa/cdn-2026-10-17-resumen-remoto.png).
+Cada corrida tiene 4 GET de calentamiento excluidos del percentil y 118 medidos,
+con la misma cobertura de rutas y concurrencia. Se recalcularon los percentiles
+desde las muestras y se verificaron 366 respuestas HTTP 200 sin errores.
+**No se cumplió el criterio fijado de tres corridas con p95 ≤350 ms**:
+el p95 no se sostiene cerca de 300 ms. El éxito del workflow acredita la
+finalización HTTP, no el cumplimiento del objetivo de latencia.
+
+Para una respuesta de `/refugios` de la tercera corrida, el cliente midió
+594 ms (TTFB 593 ms) y la traza de Vercel indicó `HIT`, sin invocación de
+página ni middleware, con respuesta terminada en 16 ms:
+[captura](../output/qa/cdn-2026-10-17-hit-16ms.png).
+La diferencia de esa muestra está fuera del trabajo de servidor medido;
+no identifica por sí sola dónde se consumió ni explica todas las colas.
+Las pruebas miden HTML público sin sesión, no LCP, recursos del navegador,
+consultas de campañas ni navegación autenticada. No se declara un p95 global.
+
+Validación final del código: **226 tests, lint y build en verde**. La primera
+publicación de las reescrituras excedía el límite de 16 condiciones del builder;
+se corrigió, agregó contrato y publicó correctamente. La traducción de Clerk
+sigue en español; `ce3fc9a` conserva además la selección de proxy del proveedor
+original. Las tres mediciones remotas corresponden a `1c3804d`, no a ese ajuste
+posterior. No se simuló una escritura de demo para probar invalidaciones.
+
+`ce3fc9a` quedó en Vercel `success`. La revisión pública posterior confirmó
+catálogo HTTP 200 `HIT` (54.514 bytes), cookies y filtros con respuesta
+`private, no-cache, no-store`, imagen original al compartir HTTP 200 PNG,
+dos lecturas de campañas HTTP 200 `no-store` con una campaña y recaudado 0,
+y diagnóstico de administrador HTTP 404 sin sesión. En el navegador la sesión
+existente siguió mostrando «Hola, Valentino» y la campaña cargó después del HTML.
+Un primer chequeo esperaba `s-maxage=60` en el encabezado que recibe el cliente:
+falló porque Vercel entrega `public, max-age=0, must-revalidate`; se corrigió
+esa expectativa y se verificó el estado CDN `HIT`. No requirió cambiar código.
+
+La consulta final de solo lectura conservó las mismas huellas de las tablas
+`animales` (15 filas), `refugios` (2), `usuarios` (1) y `campanas` (2).
+La donación real de ARS 100 sigue `pendiente`; no se creó otro intento ni se
+cobró ni se acreditó manualmente. La otra cuenta y las fotos propias también
+siguen pendientes. Sin nuevos servicios pagos ni cambios de plan.
+
+Referencias: [reglas condicionales con ISR de Vercel](https://vercel.com/changelog/routing-based-on-headers-and-query-string-parameters),
+[runner estándar gratuito para repositorios públicos](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job).
+
 Publicación autorizada: push a `main` del repositorio `00tino/adoptar`, conectado
 al proyecto Vercel `adoptar` (`prj_HJO5TcccOPJW9bMPdg6NYsazelgj`). El sitio público
 es `https://adoptar.dpdns.org`; la verificación pública se hace después del deploy.

@@ -1,0 +1,7 @@
+{
+  "ejecutor": "GitHub Actions ubuntu-latest",
+  "node": "v22.23.3",
+  "plataforma": "linux",
+  "sha": "1c3804d37dda37ff7a0742fc9cf3212ea32f6bfb",
+  "run": "39045851085"
+}
