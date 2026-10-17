@@ -329,6 +329,55 @@ Verificaciones desde `gru1`:
   con cinco intentos totales en la campaña, cero reportes abiertos y cero alertas
   de adopción activas. La otra cuenta y las fotos también siguen postergadas.
 
+## Sesión en paralelo y variación del p95 — 17/10/2026
+
+Publicada en `43c9390`, despliegue Vercel `success`. El catálogo inicia la sesión
+y sus favoritos en paralelo con animales y provincias. `usuarioActual` usa
+`React.cache` para compartir la consulta entre header, página y favoritos dentro
+del mismo render; no guarda identidades entre solicitudes ni agrega caché de HTML.
+Los importes, las escrituras y las consultas privadas mantienen su política anterior.
+
+La línea de base y las dos corridas posteriores usaron el mismo script, cuatro
+rutas, 122 GET por corrida (118 medidos), máximo de 20 solicitudes simultáneas y
+los mismos límites. No hubo builds ni tests locales durante las mediciones.
+Se comprobó que las coberturas coinciden y todas las respuestas ejecutaron en
+`gru1::gru1`; ninguna corrida tuvo errores ni activó el corte preventivo.
+
+| Corrida, hora argentina | Mediana HTML completo | p95 HTML completo | Máximo |
+| --- | ---: | ---: | ---: |
+| Antes, 11:22 | 192 ms | 567 ms | 1.140 ms |
+| Primera después, 11:27 | 195 ms | 821 ms | 1.008 ms |
+| Repetición por el resultado peor, 11:29 | 161 ms | 311 ms | 506 ms |
+
+La repetición se hizo para investigar el aumento del p95, sin otros cambios de
+código. No se descarta la primera medición posterior: **no hay evidencia de una
+reducción estable del p95 ni de una relación causal cuantificada con este cambio**.
+Los 311 ms acercan una corrida al objetivo; no demuestran 300 ms sostenidos.
+Tampoco prueban 1.000 usuarios, recursos de página o LCP. No se atribuye la
+variación a un arranque frío o a la red sin trazas que lo demuestren.
+
+En la última corrida, el p95 de HTML completo por ruta fue portada 374 ms,
+catálogo 238 ms, ficha 460 ms y refugios 253 ms. El TTFB global p95 fue 304 ms;
+se sigue informando el HTML completo, no solo el primer byte.
+
+Evidencia íntegra: [`antes`](../output/qa/p95-2026-10-17-antes.json),
+[`primera después`](../output/qa/p95-2026-10-17-despues.json) y
+[`repetición`](../output/qa/p95-2026-10-17-confirmacion.json).
+
+Pasaron 125 tests, lint y build. La primera compilación local no pudo descargar
+Google Fonts por la red restringida; al repetir con acceso a las fuentes compiló
+correctamente. Los tests comprueban que los favoritos empiezan con el catálogo
+aún pendiente y que una visita anónima posterior no hereda sus valores.
+En producción, la sesión existente vio su menú y los tres animales públicos;
+una lectura sin cookies vio tres botones de ingreso para favoritos, sin menú
+personal y con `Cache-Control: private, no-cache, no-store`. Diagnóstico y reportes
+continuaron en HTTP 404 para visitas anónimas.
+
+Las huellas completas de animales (15), refugios (2), usuarios (1) y campañas (2)
+coinciden antes y después. No se modificaron los demo, el plan ni los servicios:
+Fluid Compute ya estaba habilitado en Hobby. La donación real de ARS 100 sigue
+en estado `pendiente`; la otra cuenta y las fotos siguen postergadas.
+
 Publicación autorizada: push a `main` del repositorio `00tino/adoptar`, conectado
 al proyecto Vercel `adoptar` (`prj_HJO5TcccOPJW9bMPdg6NYsazelgj`). El sitio público
 es `https://adoptar.dpdns.org`; la verificación pública se hace después del deploy.
