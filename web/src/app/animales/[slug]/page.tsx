@@ -30,13 +30,16 @@ export async function generateMetadata({
   const animal = await obtenerAnimalPorSlug(slug);
   if (!animal) return {};
   const descripcion = animal.descripcion.trim() || `${animal.nombre} busca hogar en ${animal.ciudad}, ${animal.provincia}.`;
+  const imagen = { url: `/animales/${animal.slug}/opengraph-image`, width: 1200, height: 630, alt: "Animal en adopción en AdoptAR" };
   return {
     title: animal.estado === "adoptado" ? `${animal.nombre} ya tiene familia` : `Adoptá a ${animal.nombre} — ${animal.especie} en ${animal.ciudad}`,
     description: descripcion.slice(0, 160),
     openGraph: {
       title: animal.estado === "adoptado" ? `${animal.nombre} ya tiene familia | AdoptAR` : `Adoptá a ${animal.nombre} | AdoptAR`,
       description: descripcion.slice(0, 160),
+      images: [imagen],
     },
+    twitter: { card: "summary_large_image", images: [imagen] },
   };
 }
 
