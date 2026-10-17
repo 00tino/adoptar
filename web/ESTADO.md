@@ -1,8 +1,11 @@
-# AdoptAR — estado del trabajo, 16 de octubre de 2026
+# AdoptAR — estado del trabajo, 17 de octubre de 2026
 
 Migración aplicada en Supabase `adoptar` el 16 de octubre de 2026. El usuario
 autorizó publicar este lote por GitHub → Vercel. No se eliminaron datos demo.
 Se conserva la identidad visual.
+
+Las funciones de Vercel ejecutan en São Paulo (`gru1`), cerca de la base de
+Supabase existente (`sa-east-1`), sin migración de datos ni cambio de plan.
 
 ## Implementado
 
@@ -268,6 +271,63 @@ En el navegador se comprobó la ficha de Luna con la sesión existente y el
 listado desplegado de refugios, con sus conteos de uno y cero disponibles.
 Las huellas completas de animales, refugios, usuarios y campañas coinciden
 antes y después. La otra cuenta, las fotos y el pago real siguen pendientes.
+
+## Servidor cerca de la base — 17 de octubre de 2026
+
+Se detectó ejecución en Washington: las 122 respuestas del ensayo previo
+mostraron `x-vercel-id: gru1::iad1::...`, mientras Supabase confirmó región
+`sa-east-1` (São Paulo). `web/vercel.json` fija una única región `gru1`, opción
+permitida en Hobby según la
+[configuración oficial de Vercel](https://vercel.com/docs/project-configuration/vercel-json#regions).
+No se movió la base, no se contrataron servicios ni se modificaron credenciales.
+El cambio se publicó en `58fae62`, con Vercel `success`; las 122 respuestas
+posteriores confirmaron `gru1::gru1::...`.
+
+Se usó el mismo ensayo limitado a 122 GET, con cuatro de calentamiento y 118
+medidos, sin builds ni tests locales en paralelo. Ambas corridas terminaron sin
+errores y con el mismo contenido esperado.
+
+| HTML completo | Antes, `iad1` | Después, `gru1` |
+| --- | --- | --- |
+| Mediana global | 454 ms | 211 ms |
+| p95 global | 928 ms | 574 ms |
+| Mediana inicio | 670 ms | 235 ms |
+| Mediana catálogo | 391 ms | 187 ms |
+| Mediana ficha de Luna | 351 ms | 212 ms |
+| Mediana refugios | 366 ms | 206 ms |
+
+La reducción observada es 53,5% en mediana y 38,1% en p95. El TTFB mediano
+bajó de 336 a 205 ms. La mediana del HTML ya está debajo de 300 ms en las cuatro
+rutas medidas; el p95 global sigue en 574 ms, con máximo de 771 ms. No se
+garantizan 300 ms para todas las respuestas ni 1.000 personas simultáneas.
+
+La referencia terminó el 16/10 a las 19:55 ART y la medición posterior el
+17/10 a las 11:12 ART, después de una interrupción. El cambio real de región se
+comprobó en los encabezados, pero los porcentajes comparan dos ventanas de red y
+horario diferentes; no constituyen una prueba estadística ni una garantía de
+rendimiento para todos los visitantes. Solo miden HTML, sin recursos de página,
+LCP, sesiones ni escrituras.
+
+Evidencia completa:
+[`antes`](../output/qa/region-2026-10-16-antes.json) y
+[`después`](../output/qa/region-2026-10-17-despues.json).
+El script ahora registra `x-vercel-id` en cada muestra para comprobar la región.
+Pasaron 123 tests, lint y build antes del despliegue.
+
+Verificaciones desde `gru1`:
+
+- Las rutas privadas de reportes y diagnóstico devuelven HTTP 404 sin sesión;
+  el chat anónimo devuelve `{"mensajes":[]}` y el webhook rechaza la firma
+  inválida con HTTP 401. No se envió ningún evento firmado para acreditar pagos.
+- La sesión existente pudo entrar al panel. Correo real y aviso de monitoreo
+  aceptados por Gmail SMTP y recibidos el 17/10 en INBOX, fuera de spam, en el
+  destino autorizado. Consulta de identidad de Mercado Pago correcta: la cuenta
+  REAL configurada sigue siendo `FONTEVIVAVALENTINO`, ID `305489481`; no se creó
+  ningún pago.
+- Las huellas completas de 15 animales, 2 refugios, 1 usuario y 2 campañas
+  coincidieron antes y después. El único pago real autorizado sigue pendiente,
+  con cinco intentos totales en la campaña, cero reportes abiertos y cero alertas
+  de adopción activas. La otra cuenta y las fotos también siguen postergadas.
 
 Publicación autorizada: push a `main` del repositorio `00tino/adoptar`, conectado
 al proyecto Vercel `adoptar` (`prj_HJO5TcccOPJW9bMPdg6NYsazelgj`). El sitio público
