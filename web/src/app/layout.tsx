@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import ProveedorClerk from "@/components/ProveedorClerk";
+import { getAutoProxyUrlFromEnvironment } from "@clerk/shared/proxy";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -62,5 +63,9 @@ export default function RootLayout({
   // Clerk (login) en español, solo si hay claves configuradas.
   // Sin claves, la app corre igual en modo demo.
   if (!clerkDisponible()) return contenido;
-  return <ProveedorClerk>{contenido}</ProveedorClerk>;
+  const proxyUrl = process.env.NEXT_PUBLIC_CLERK_PROXY_URL || getAutoProxyUrlFromEnvironment({
+    publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "",
+    hasDomain: Boolean(process.env.NEXT_PUBLIC_CLERK_DOMAIN),
+  });
+  return <ProveedorClerk proxyUrl={proxyUrl}>{contenido}</ProveedorClerk>;
 }
