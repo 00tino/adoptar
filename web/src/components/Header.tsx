@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { SignInButton, SignOutButton } from "@clerk/nextjs";
 import { clerkDisponible, usuarioActual } from "@/lib/auth";
-import { tieneRefugio } from "@/lib/acciones-refugio";
-import { contarNoLeidos } from "@/lib/acciones-chat";
 import {
   marcarNotificacionesLeidas,
   obtenerNoLeidas,
@@ -68,8 +66,8 @@ export default async function Header() {
   const [conRefugio, noLeidos, notificaciones] =
     usuario && supabaseDisponible()
       ? await Promise.all([
-          tieneRefugio(usuario.id),
-          contarNoLeidos(usuario.id),
+          import("@/lib/acciones-refugio").then(({ tieneRefugio }) => tieneRefugio(usuario.id)),
+          import("@/lib/acciones-chat").then(({ contarNoLeidos }) => contarNoLeidos(usuario.id)),
           obtenerNoLeidas(usuario.id),
         ])
       : [false, 0, []];

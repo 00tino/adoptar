@@ -4,6 +4,7 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { cache } from "react";
+import { headers } from "next/headers";
 
 export function clerkDisponible(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
@@ -12,6 +13,9 @@ export function clerkDisponible(): boolean {
 /** Comparte la consulta entre header y página solo durante este render, nunca entre sesiones. */
 export const usuarioActual = cache(async () => {
   if (!clerkDisponible()) return null;
+  const cabeceras = await headers();
+  if (cabeceras.get("x-adoptar-visita-anonima") === "1"
+    && !cabeceras.has("cookie") && !cabeceras.has("authorization")) return null;
   return currentUser();
 });
 
