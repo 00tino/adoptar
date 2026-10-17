@@ -1,15 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
-import { obtenerAnimales, obtenerCampanasActivas, obtenerRefugios } from "@/lib/datos";
+import { obtenerAnimales, obtenerRefugios } from "@/lib/datos";
 import { FOTOS } from "@/lib/fotos";
 import CardAnimal from "@/components/CardAnimal";
+import CampanasPortada from "@/components/CampanasPortada";
 
 // HOME: hero emocional + buscador + animales destacados + refugios + donaciones.
 export default async function Home() {
-  const [animales, refugios, campanas] = await Promise.all([
+  const [animales, refugios] = await Promise.all([
     obtenerAnimales({}, 6),
     obtenerRefugios(3),
-    obtenerCampanasActivas(2),
   ]);
 
   return (
@@ -136,30 +136,7 @@ export default async function Home() {
           <h2 className="font-display text-3xl font-black">Causas que necesitan tu ayuda</h2>
           <Link href="/donaciones" className="shrink-0 text-sm font-bold text-terracota-oscuro hover:underline">Ver todas</Link>
         </div>
-        <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          {campanas.map((c) => (
-            <div key={c.id} className="rounded-2xl bg-blanco-calido border-2 border-crema-2 p-6">
-              <h3 className="font-display text-xl font-bold">{c.titulo}</h3>
-              <p className="mt-2 text-sm text-tinta-suave">{c.descripcion}</p>
-              {c.metaMonto && (
-                <div className="mt-4">
-                  <div className="h-3 rounded-full bg-crema-2 overflow-hidden">
-                    <div
-                      className="h-full bg-salvia"
-                      style={{ width: `${Math.min(100, (c.recaudado / c.metaMonto) * 100)}%` }}
-                    />
-                  </div>
-                  <p className="mt-1 text-xs font-bold text-salvia-oscuro">
-                    ${c.recaudado.toLocaleString("es-AR")} de ${c.metaMonto.toLocaleString("es-AR")}
-                  </p>
-                </div>
-              )}
-              <Link href="/donaciones" className="mt-4 inline-block rounded-full bg-terracota-oscuro text-blanco-calido px-5 py-2 text-sm font-bold hover:bg-terracota-mas-oscuro transition-colors">
-                Donar 💛
-              </Link>
-            </div>
-          ))}
-        </div>
+        <CampanasPortada />
       </section>
     </div>
   );
