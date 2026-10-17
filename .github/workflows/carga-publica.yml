@@ -1,0 +1,26 @@
+name: Carga pública acotada
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+concurrency:
+  group: carga-publica
+  cancel-in-progress: false
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Tres corridas de solo lectura, sin credenciales
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 30 "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/web/scripts/probar-carga.mjs" -o probar-carga.mjs
+          node -e 'const fs=require("node:fs");console.log("ADOPTAR_QA_ENTORNO=" + JSON.stringify({ejecutor:"GitHub Actions ubuntu-latest",node:process.version,plataforma:process.platform,sha:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID}));fs.writeFileSync(process.env.GITHUB_STEP_SUMMARY,"Tres corridas de 122 GET públicos, máximo 20 simultáneos, sin cookies ni escrituras.\n\n| Corrida | Mediana HTML | p95 HTML | Errores |\n| --- | ---: | ---: | ---: |\n")'
+          for corrida in 1 2 3; do
+            node probar-carga.mjs --ejecutar "carga-${corrida}.json"
+            node -e 'const fs=require("node:fs");const corrida=Number(process.argv[1]);const informe=JSON.parse(fs.readFileSync("carga-"+corrida+".json","utf8"));console.log("ADOPTAR_QA_JSON="+JSON.stringify({corrida,informe}));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,"| "+corrida+" | "+informe.resumen.totalP50Ms+" ms | "+informe.resumen.totalP95Ms+" ms | "+informe.erroresIncluidoCalentamiento+" |\n")' "$corrida"
+            if [ "$corrida" -lt 3 ]; then sleep 30; fi
+          done

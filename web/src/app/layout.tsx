@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
-import { esES } from "@clerk/localizations";
+import ProveedorClerk from "@/components/ProveedorClerk";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -63,5 +62,5 @@ export default function RootLayout({
   // Clerk (login) en español, solo si hay claves configuradas.
   // Sin claves, la app corre igual en modo demo.
   if (!clerkDisponible()) return contenido;
-  return <ClerkProvider localization={esES}>{contenido}</ClerkProvider>;
+  return <ProveedorClerk>{contenido}</ProveedorClerk>;
 }
