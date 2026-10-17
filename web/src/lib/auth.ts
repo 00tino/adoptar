@@ -14,8 +14,8 @@ export function clerkDisponible(): boolean {
 export const usuarioActual = cache(async () => {
   if (!clerkDisponible()) return null;
   const cabeceras = await headers();
-  if (cabeceras.get("x-adoptar-visita-anonima") === "1"
-    && !cabeceras.has("cookie") && !cabeceras.has("authorization")) return null;
+  if (!cabeceras.get("cookie") && !cabeceras.get("authorization")
+    && !cabeceras.get("x-clerk-auth-status")) return null;
   return currentUser();
 });
 

@@ -1,71 +1,40 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { NextRequest, NextResponse, type NextFetchEvent } from "next/server";
+import { describe, expect, it, vi } from "vitest";
+import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
+import { constants } from "@clerk/backend/internal";
+import { config } from "../proxy";
 
-const mocks = vi.hoisted(() => ({ crear: vi.fn(), manejar: vi.fn() }));
-vi.mock("@clerk/nextjs/server", () => ({ clerkMiddleware: mocks.crear }));
-const evento = { waitUntil: vi.fn() } as unknown as NextFetchEvent;
+vi.mock("@clerk/nextjs/server", () => ({ clerkMiddleware: vi.fn() }));
+const coincide = (ruta: string, headers?: Record<string, string>, cookies?: Record<string, string>) =>
+  unstable_doesMiddlewareMatch({ config, nextConfig: {}, url: `https://local.invalid${ruta}`, headers: { ...headers }, cookies });
 
-beforeEach(() => {
-  vi.resetModules();
-  vi.clearAllMocks();
-  vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "pk_test_solo_prueba");
-  mocks.manejar.mockResolvedValue(NextResponse.next());
-  mocks.crear.mockReturnValue(mocks.manejar);
-});
-afterEach(() => vi.unstubAllEnvs());
-
-describe("Paso público sin sesión", () => {
-  it.each(["/", "/animales", "/animales?especie=gato", "/refugios", "/animales/adoptar-perra-luna-demo", "/animales/transito-perro-rocky-demo"])("%s evita cargar Clerk sin credenciales", async (ruta) => {
-    const { default: proxy } = await import("../proxy");
-    const respuesta = await proxy(new NextRequest(`https://local.invalid${ruta}`), evento);
-    expect(mocks.crear).not.toHaveBeenCalled();
-    expect(respuesta?.headers.get("x-middleware-request-x-adoptar-visita-anonima")).toBe("1");
+describe("Matcher público y contexto de autenticación", () => {
+  it.each(["/", "/animales", "/animales?especie=gato", "/refugios", "/animales/adoptar-perra-luna-demo", "/animales/transito-perro-rocky-demo"])("%s no invoca middleware sin credenciales", (ruta) => {
+    expect(coincide(ruta)).toBe(false);
   });
 
-  it.each(["/admin", "/admin/diagnostico", "/admin/reportes", "/mi-refugio", "/favoritos", "/animales/alertas", "/api/chat/luna", "/api/mercadopago/webhook", "/__clerk/v1/client"])("%s conserva Clerk aun sin cookies", async (ruta) => {
-    const { default: proxy } = await import("../proxy");
-    await proxy(new NextRequest(`https://local.invalid${ruta}`), evento);
-    expect(mocks.manejar).toHaveBeenCalledOnce();
+  it.each(["/admin", "/admin/diagnostico", "/admin/reportes", "/mi-refugio", "/favoritos", "/animales/alertas", "/api/chat/luna", "/api/mercadopago/webhook", "/__clerk/v1/client", "/animales/luna", "/refugios/patitas"])("%s conserva el middleware aun sin cookies", (ruta) => {
+    expect(coincide(ruta)).toBe(true);
   });
 
-  it.each([{ cookie: "__session=sesion" }, { cookie: "__session_instancia=sesion" }, { cookie: "consentimiento=1" }, { authorization: "Bearer credencial" }])("las credenciales o cookies mantienen la validación: %j", async (cabeceras) => {
-    const { default: proxy } = await import("../proxy");
-    await proxy(new NextRequest("https://local.invalid/animales", { headers: cabeceras }), evento);
-    expect(mocks.manejar).toHaveBeenCalledOnce();
+  it.each([{ cookies: { __session: "sesion" } }, { cookies: { __session_instancia: "sesion" } }, { cookies: { consentimiento: "1" } }, { headers: { authorization: "Bearer credencial" } }])("las credenciales y cookies mantienen la validación: %j", (contexto) => {
+    for (const ruta of ["/", "/animales", "/refugios", "/animales/adoptar-perra-luna-demo"]) {
+      expect(coincide(ruta, contexto.headers, contexto.cookies)).toBe(true);
+    }
   });
 
-  it.each(["__clerk_handshake", "__clerk_ticket", "__clerk_db_jwt", "__clerk_synced", "__session", "suffixed_cookies", "__dev_session"])("%s conserva el flujo de ingreso", async (parametro) => {
-    const { default: proxy } = await import("../proxy");
-    await proxy(new NextRequest(`https://local.invalid/?${parametro}=prueba`), evento);
-    expect(mocks.manejar).toHaveBeenCalledOnce();
+  it.each([...new Set([...Object.values(constants.QueryParameters), "__clerk_ticket", "__clerk_status"])])("el parámetro %s del SDK conserva el flujo de ingreso", (parametro) => {
+    expect(coincide(`/?${parametro}=prueba`)).toBe(true);
   });
 
-  it("no omite Clerk en una operación POST sobre una ruta pública", async () => {
-    const { default: proxy } = await import("../proxy");
-    await proxy(new NextRequest("https://local.invalid/animales", { method: "POST" }), evento);
-    expect(mocks.manejar).toHaveBeenCalledOnce();
+  it.each(["x-clerk-auth-status", "x-clerk-request-data", "next-action"])("%s exige el middleware incluso en páginas públicas", (cabecera) => {
+    expect(coincide("/animales", { [cabecera]: "prueba" })).toBe(true);
   });
 
-  it("descarta marcas de anonimato falsificadas antes de validar una ruta privada", async () => {
-    const { default: proxy } = await import("../proxy");
-    const request = new NextRequest("https://local.invalid/admin", { headers: { "x-adoptar-visita-anonima": "1" } });
-    await proxy(request, evento);
-    expect(mocks.manejar).toHaveBeenCalledWith(request, evento);
-    expect(request.headers.has("x-adoptar-visita-anonima")).toBe(false);
+  it.each(["/_next/static/chunk.js", "/_next/image?url=foto", "/foto.webp", "/manifest.webmanifest"])("%s no agrega autenticación a recursos estáticos", (ruta) => {
+    expect(coincide(ruta, undefined, { __session: "sesion" })).toBe(false);
   });
 
-  it("elimina cabeceras de identidad falsificadas del paso anónimo", async () => {
-    const { default: proxy } = await import("../proxy");
-    const respuesta = await proxy(new NextRequest("https://local.invalid/", { headers: { "x-clerk-auth-status": "signed-in", "x-clerk-auth-token": "falso" } }), evento);
-    expect(respuesta?.headers.get("x-middleware-override-headers")).not.toContain("x-clerk-");
-    expect(respuesta?.headers.get("x-middleware-request-x-adoptar-visita-anonima")).toBe("1");
-    expect(mocks.crear).not.toHaveBeenCalled();
-  });
-
-  it("conserva el modo demo sin claves", async () => {
-    vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "");
-    const { default: proxy } = await import("../proxy");
-    await proxy(new NextRequest("https://local.invalid/admin"), evento);
-    expect(mocks.crear).not.toHaveBeenCalled();
+  it("una cookie vacía no constituye una credencial", () => {
+    expect(coincide("/animales", { cookie: "" })).toBe(false);
   });
 });

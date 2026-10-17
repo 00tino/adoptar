@@ -10,24 +10,24 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "pk_test_solo_prueba");
   mocks.usuario.mockResolvedValue(usuario);
-  mocks.cabeceras.mockResolvedValue(new Headers());
+  mocks.cabeceras.mockResolvedValue(new Headers({ "x-clerk-auth-status": "signed-in" }));
 });
 afterEach(() => vi.unstubAllEnvs());
 
 describe("Identidad durante el paso público", () => {
-  it("la visita marcada sin credenciales no consulta una identidad", async () => {
-    mocks.cabeceras.mockResolvedValue(new Headers({ "x-adoptar-visita-anonima": "1" }));
+  it("la visita sin credenciales ni contexto de Clerk no consulta una identidad", async () => {
+    mocks.cabeceras.mockResolvedValue(new Headers());
     expect(await usuarioActual()).toBeNull();
     expect(mocks.usuario).not.toHaveBeenCalled();
   });
 
-  it("sin marca conserva la consulta de Clerk, incluido el retorno de ingreso", async () => {
+  it("el contexto del proxy conserva la consulta de Clerk, incluido el retorno de ingreso", async () => {
     expect(await usuarioActual()).toEqual(usuario);
     expect(mocks.usuario).toHaveBeenCalledOnce();
   });
 
-  it.each([{ cookie: "__session=sesion" }, { authorization: "Bearer credencial" }])("una marca no reemplaza la validación si hay credenciales: %j", async (credenciales) => {
-    mocks.cabeceras.mockResolvedValue(new Headers({ ...credenciales, "x-adoptar-visita-anonima": "1" }));
+  it.each([{ cookie: "__session=sesion" }, { authorization: "Bearer credencial" }])("las credenciales siempre se validan con Clerk: %j", async (credenciales) => {
+    mocks.cabeceras.mockResolvedValue(new Headers(credenciales));
     expect(await usuarioActual()).toEqual(usuario);
     expect(mocks.usuario).toHaveBeenCalledOnce();
   });
@@ -42,5 +42,11 @@ describe("Identidad durante el paso público", () => {
     expect(await usuarioActual()).toBeNull();
     expect(mocks.usuario).not.toHaveBeenCalled();
     expect(mocks.cabeceras).not.toHaveBeenCalled();
+  });
+
+  it("una cookie vacía sigue siendo una visita sin identidad", async () => {
+    mocks.cabeceras.mockResolvedValue(new Headers({ cookie: "" }));
+    expect(await usuarioActual()).toBeNull();
+    expect(mocks.usuario).not.toHaveBeenCalled();
   });
 });
